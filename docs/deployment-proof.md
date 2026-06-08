@@ -21,6 +21,7 @@ This file tracks the proof needed for the Qwen Cloud hackathon submission. Fill 
 - Qwen Cloud env contract: `https://github.com/JOY/huyen-qwen-cloud/blob/main/docs/huyen-agent-config.md`
 - Live Qwen Cloud adapter: `https://github.com/JOY/huyen-qwen-cloud/blob/main/src/lib/qwen.ts`
 - Runtime deployment guide: `https://github.com/JOY/huyen-qwen-cloud/blob/main/docs/alibaba-cloud-deploy.md`
+- Function Compute deploy script: `https://github.com/JOY/huyen-qwen-cloud/blob/main/scripts/deploy-fc.ps1`
 - Demo API: `https://github.com/JOY/huyen-qwen-cloud/blob/main/src/app/api/demo/route.ts`
 - Health API: `https://github.com/JOY/huyen-qwen-cloud/blob/main/src/app/api/health/route.ts`
 

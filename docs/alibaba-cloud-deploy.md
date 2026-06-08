@@ -75,6 +75,18 @@ bash scripts/deploy-acr.sh
 
 Record the pushed image URL in `deployment-proof.md`.
 
+## Function Compute Custom Container
+
+After the image is available in Alibaba Cloud Container Registry, deploy it to Function Compute:
+
+```powershell
+$env:QWEN_CLOUD_API_KEY = "<secret>"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy-fc.ps1 `
+  -Image "registry.ap-southeast-1.aliyuncs.com/<namespace>/huyen-qwen-cloud:hackathon-2026-06-08"
+```
+
+The script creates a separate demo service, a Custom Container function, and an anonymous HTTP trigger. It does not delete or recreate an existing function; if the function already exists, it stops and asks you to use a new function name or update manually.
+
 ## Runtime Environment
 
 Set these variables on the Alibaba Cloud runtime:

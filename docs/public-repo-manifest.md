@@ -10,6 +10,7 @@ The public hackathon repository should be a sanitized slice, not a dump of the p
 - `scripts/verify-public.ps1`
 - `scripts/smoke-scenarios.ps1`
 - `scripts/package-submission.ps1`
+- `scripts/deploy-fc.ps1`
 - `scripts/deploy-acr.sh`
 - `docs/hackathons/qwen-cloud-2026/devpost-draft.md`
 - `docs/hackathons/qwen-cloud-2026/blog-post-draft.md`

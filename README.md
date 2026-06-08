@@ -72,6 +72,13 @@ export IMAGE_TAG=hackathon-2026-06-08
 bash scripts/deploy-acr.sh
 ```
 
+## Deploy to Function Compute
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy-fc.ps1 `
+  -Image "registry.ap-southeast-1.aliyuncs.com/<namespace>/huyen-qwen-cloud:hackathon-2026-06-08"
+```
+
 ## Environment
 
 ```bash
