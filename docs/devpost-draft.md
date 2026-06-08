@@ -71,6 +71,12 @@ Vietnamese SMEs often run support through chat channels and informal staff hando
 - Zalo/Telegram channels
 - MCP tools for memory, knowledge, and handoff
 
+## Links
+
+- Source code: `https://github.com/JOY/huyen-qwen-cloud`
+- Qwen Cloud provider contract: `https://github.com/JOY/huyen-qwen-cloud/blob/main/docs/huyen-agent-config.md`
+- Demo API: `https://github.com/JOY/huyen-qwen-cloud/blob/main/src/app/api/demo/route.ts`
+
 ## Submission Checklist
 
 - Public source repository with open source license.

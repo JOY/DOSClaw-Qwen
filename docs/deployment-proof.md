@@ -9,11 +9,19 @@ This file tracks the proof needed for the Qwen Cloud hackathon submission. Fill 
 - [x] Local Docker container serves `/api/health` and `/api/demo`.
 - [ ] Public app URL for the Huyen demo surface.
 - [ ] Alibaba Cloud service URL or console screenshot proving the backend is hosted on Alibaba Cloud.
-- [ ] Public code link showing Qwen Cloud environment variables and provider wiring.
-- [ ] Public code link showing the demo API or runtime adapter.
+- [x] Public code link showing Qwen Cloud environment variables and provider wiring.
+- [x] Public code link showing the demo API or runtime adapter.
 - [ ] Smoke-test output for one memory scenario.
 - [ ] Smoke-test output for one knowledge scenario.
 - [ ] Smoke-test output for one handoff scenario.
+
+## Public Source
+
+- Repository: `https://github.com/JOY/huyen-qwen-cloud`
+- Qwen Cloud env contract: `https://github.com/JOY/huyen-qwen-cloud/blob/main/docs/huyen-agent-config.md`
+- Runtime deployment guide: `https://github.com/JOY/huyen-qwen-cloud/blob/main/docs/alibaba-cloud-deploy.md`
+- Demo API: `https://github.com/JOY/huyen-qwen-cloud/blob/main/src/app/api/demo/route.ts`
+- Health API: `https://github.com/JOY/huyen-qwen-cloud/blob/main/src/app/api/health/route.ts`
 
 ## Candidate Deployment Shape
 
