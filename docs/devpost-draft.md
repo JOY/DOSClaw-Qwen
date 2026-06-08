@@ -79,6 +79,8 @@ Vietnamese SMEs often run support through chat channels and informal staff hando
 - Qwen Cloud provider contract: `https://github.com/JOY/huyen-qwen-cloud/blob/main/docs/huyen-agent-config.md`
 - Live Qwen Cloud adapter: `https://github.com/JOY/huyen-qwen-cloud/blob/main/src/lib/qwen.ts`
 - Demo API: `https://github.com/JOY/huyen-qwen-cloud/blob/main/src/app/api/demo/route.ts`
+- Blog draft: `https://github.com/JOY/huyen-qwen-cloud/blob/main/docs/blog-post-draft.md`
+- Social post draft: `https://github.com/JOY/huyen-qwen-cloud/blob/main/docs/social-post-draft.md`
 
 ## Submission Checklist
 

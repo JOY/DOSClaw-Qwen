@@ -27,6 +27,8 @@ try {
     $docFiles = @(
         "README.md",
         "docs/devpost-draft.md",
+        "docs/blog-post-draft.md",
+        "docs/social-post-draft.md",
         "docs/demo-script.md",
         "docs/video-recording-packet.md",
         "docs/architecture.mmd",

@@ -30,6 +30,7 @@ This packet maps Huyen directly to the Qwen Cloud hackathon submission requireme
 | Text description | Ready | `docs/devpost-draft.md` |
 | Track identification | Ready | Track 4 primary in `docs/devpost-draft.md` |
 | Smoke proof for live demo | Automated | `scripts/smoke-scenarios.ps1` writes `docs/proof/smoke-latest.json` |
+| Optional blog or social post | Draft ready | `docs/blog-post-draft.md`, `docs/social-post-draft.md` |
 
 ## Judging Criteria Response
 
@@ -74,6 +75,8 @@ Evidence:
 - `README.md`
 - `docs/deployment-proof.md`
 - `docs/alibaba-cloud-deploy.md`
+- `docs/blog-post-draft.md`
+- `docs/social-post-draft.md`
 - `scripts/package-submission.ps1`
 
 ## Current Blocking Item
@@ -97,6 +100,7 @@ The preflight must pass before image push or runtime creation. Use `docs/alibaba
 - [x] Demo script exists.
 - [x] Smoke proof automation exists.
 - [x] Evidence package automation exists.
+- [x] Blog/social drafts exist.
 - [ ] Alibaba Cloud runtime URL is live.
 - [ ] Alibaba Cloud proof recording/link is captured.
 - [ ] Demo video is recorded and public.
