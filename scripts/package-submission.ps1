@@ -30,6 +30,7 @@ try {
         "docs/demo-script.md",
         "docs/architecture.mmd",
         "docs/deployment-proof.md",
+        "docs/judging-packet.md",
         "docs/alibaba-cloud-deploy.md",
         "docs/alibaba-ram-policy-huyen-deploy.json",
         "scripts/preflight-alibaba.ps1",

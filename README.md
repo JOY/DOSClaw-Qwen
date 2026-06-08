@@ -60,6 +60,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/package-submission.p
 
 The package includes Devpost copy, architecture, deployment proof checklist, RAM policy, preflight/smoke scripts, and any JSON smoke evidence under `docs/proof/`.
 
+For judges, `docs/judging-packet.md` maps the project to the hackathon requirements and scoring criteria.
+
 ## Push to Alibaba Cloud Container Registry
 
 ```bash
