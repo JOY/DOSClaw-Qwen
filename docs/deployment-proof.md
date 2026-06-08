@@ -67,6 +67,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/smoke-scenarios.ps1
 
 It checks `/api/health`, all three `/api/demo` scenarios, the `qwen-cloud/*` model ref, MCP tool evidence, and `answerSource`. It writes JSON evidence to `docs/proof/smoke-latest.json`.
 
+Package all submission evidence after a smoke run:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/package-submission.ps1
+```
+
+The package includes Devpost copy, architecture, deployment checklist, preflight/smoke scripts, RAM policy, public links, and JSON proof files under `docs/proof/`.
+
 ## Current Private-Repo Evidence
 
 - `apps/huyen` is the standalone product slice.

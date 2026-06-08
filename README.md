@@ -52,6 +52,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/smoke-scenarios.ps1
 
 The smoke script checks health, all three scenarios, Qwen model evidence, MCP tool evidence, and writes `docs/proof/smoke-latest.json`.
 
+## Package Submission Evidence
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/package-submission.ps1
+```
+
+The package includes Devpost copy, architecture, deployment proof checklist, RAM policy, preflight/smoke scripts, and any JSON smoke evidence under `docs/proof/`.
+
 ## Push to Alibaba Cloud Container Registry
 
 ```bash
