@@ -38,6 +38,7 @@ try {
         "docs/alibaba-ram-policy-huyen-deploy.json",
         "scripts/preflight-alibaba.ps1",
         "scripts/deploy-fc.ps1",
+        "scripts/deploy-eci.ps1",
         "scripts/smoke-scenarios.ps1"
     )
 
@@ -70,6 +71,7 @@ try {
         smokeScript = "https://github.com/JOY/huyen-qwen-cloud/blob/main/scripts/smoke-scenarios.ps1"
         preflightScript = "https://github.com/JOY/huyen-qwen-cloud/blob/main/scripts/preflight-alibaba.ps1"
         functionComputeDeployScript = "https://github.com/JOY/huyen-qwen-cloud/blob/main/scripts/deploy-fc.ps1"
+        elasticContainerInstanceDeployScript = "https://github.com/JOY/huyen-qwen-cloud/blob/main/scripts/deploy-eci.ps1"
     }
 
     $utf8NoBom = New-Object System.Text.UTF8Encoding($false)

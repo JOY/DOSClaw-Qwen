@@ -24,7 +24,7 @@ This packet maps Huyen directly to the Qwen Cloud hackathon submission requireme
 | Source code, assets, and functional instructions | Ready | `README.md`, `Dockerfile`, `.github/workflows/ci.yml`, `scripts/verify-public.ps1` |
 | Open source license visible in repository | Ready | `LICENSE` |
 | Qwen Cloud usage | Ready | `src/lib/qwen.ts`, `src/app/api/demo/route.ts`, `docs/huyen-agent-config.md` |
-| Alibaba Cloud backend proof | Blocked | Current RAM user is denied ACR, Function Compute, and ECI actions; deploy code exists in `scripts/deploy-fc.ps1` |
+| Alibaba Cloud backend proof | Blocked | Current RAM user is denied ACR, Function Compute, and ECI actions; deploy code exists in `scripts/deploy-fc.ps1` and `scripts/deploy-eci.ps1` |
 | Architecture diagram | Ready | `docs/architecture.mmd` |
 | About 3-minute demo video | Recording packet ready | `docs/demo-script.md`, `docs/video-recording-packet.md` |
 | Text description | Ready | `docs/devpost-draft.md` |
@@ -76,6 +76,7 @@ Evidence:
 - `docs/deployment-proof.md`
 - `docs/alibaba-cloud-deploy.md`
 - `scripts/deploy-fc.ps1`
+- `scripts/deploy-eci.ps1`
 - `docs/blog-post-draft.md`
 - `docs/social-post-draft.md`
 - `scripts/package-submission.ps1`

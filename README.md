@@ -79,6 +79,15 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy-fc.ps1 `
   -Image "registry.ap-southeast-1.aliyuncs.com/<namespace>/huyen-qwen-cloud:hackathon-2026-06-08"
 ```
 
+## Deploy to Elastic Container Instance
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy-eci.ps1 `
+  -Image "registry.ap-southeast-1.aliyuncs.com/<namespace>/huyen-qwen-cloud:hackathon-2026-06-08" `
+  -VSwitchId "<vswitch-id>" `
+  -SecurityGroupId "<security-group-id>"
+```
+
 ## Environment
 
 ```bash

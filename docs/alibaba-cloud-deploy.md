@@ -87,6 +87,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy-fc.ps1 `
 
 The script creates a separate demo service, a Custom Container function, and an anonymous HTTP trigger. It does not delete or recreate an existing function; if the function already exists, it stops and asks you to use a new function name or update manually.
 
+## Elastic Container Instance Alternative
+
+If ECI permissions are available before Function Compute permissions, deploy the same image as an Elastic Container Instance:
+
+```powershell
+$env:QWEN_CLOUD_API_KEY = "<secret>"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy-eci.ps1 `
+  -Image "registry.ap-southeast-1.aliyuncs.com/<namespace>/huyen-qwen-cloud:hackathon-2026-06-08" `
+  -VSwitchId "<vswitch-id>" `
+  -SecurityGroupId "<security-group-id>"
+```
+
+The script requires explicit VSwitch and Security Group IDs. Make sure the security group allows inbound traffic to port `3010`, or put the ECI behind a load balancer before running the smoke script.
+
 ## Runtime Environment
 
 Set these variables on the Alibaba Cloud runtime:
