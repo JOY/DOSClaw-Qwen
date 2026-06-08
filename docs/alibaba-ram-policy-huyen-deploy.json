@@ -1,0 +1,68 @@
+{
+  "Version": "1",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "sts:GetCallerIdentity"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "cr:ListInstance",
+        "cr:GetInstance",
+        "cr:ListNamespace",
+        "cr:GetNamespace",
+        "cr:CreateNamespace",
+        "cr:ListRepository",
+        "cr:GetRepository",
+        "cr:CreateRepository",
+        "cr:UpdateRepository",
+        "cr:GetAuthorizationToken",
+        "cr:ListRepoTag",
+        "cr:GetRepoTag",
+        "cr:CreateRepoTag"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "fc:ListServices",
+        "fc:GetService",
+        "fc:CreateService",
+        "fc:UpdateService",
+        "fc:ListFunctions",
+        "fc:GetFunction",
+        "fc:CreateFunction",
+        "fc:UpdateFunction",
+        "fc:ListTriggers",
+        "fc:GetTrigger",
+        "fc:CreateTrigger",
+        "fc:UpdateTrigger",
+        "fc:InvokeFunction"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "eci:DescribeRegions",
+        "eci:ListUsage",
+        "eci:DescribeAvailableResource",
+        "eci:CreateContainerGroup",
+        "eci:DescribeContainerGroups",
+        "eci:DescribeContainerGroupStatus",
+        "eci:DescribeContainerGroupEvents",
+        "eci:DescribeContainerLog",
+        "eci:UpdateContainerGroup",
+        "eci:RestartContainerGroup",
+        "eci:DeleteContainerGroup",
+        "eci:TagResources"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

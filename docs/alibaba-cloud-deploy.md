@@ -117,6 +117,12 @@ Capture:
 
 Run these checks before attempting the deploy:
 
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/preflight-alibaba.ps1
+```
+
+The equivalent manual checks are:
+
 ```bash
 aliyun sts GetCallerIdentity
 aliyun cr ListInstance
@@ -125,6 +131,8 @@ aliyun eci ListUsage
 ```
 
 If `cr:ListInstance` is denied, the image cannot be pushed to Alibaba Cloud Container Registry yet. If `fc:ListServices` or ECI usage is denied, the runtime cannot be created by that credential yet.
+
+Use `docs/alibaba-ram-policy-huyen-deploy.json` as the scoped RAM policy template for the hackathon deploy credential. The policy intentionally covers only Container Registry plus the two supported runtime paths, Function Compute and Elastic Container Instance.
 
 ## Official Documentation References
 

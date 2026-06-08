@@ -13,6 +13,7 @@ The public hackathon repository should be a sanitized slice, not a dump of the p
 - `docs/hackathons/qwen-cloud-2026/demo-script.md`
 - `docs/hackathons/qwen-cloud-2026/architecture.mmd`
 - `docs/hackathons/qwen-cloud-2026/alibaba-cloud-deploy.md`
+- `docs/hackathons/qwen-cloud-2026/alibaba-ram-policy-huyen-deploy.json`
 - `docs/hackathons/qwen-cloud-2026/huyen-agent-config.md`
 - A short `README.md` at the repository root
 - An open source license

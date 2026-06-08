@@ -34,6 +34,11 @@ Last checked on 2026-06-08:
 
 Grant the deploy credential the ACR and runtime permissions listed in `docs/alibaba-cloud-deploy.md`, then rerun the post-deploy smoke commands.
 
+Permission unlock packet:
+
+- Preflight script: `https://github.com/JOY/huyen-qwen-cloud/blob/main/scripts/preflight-alibaba.ps1`
+- RAM policy template: `https://github.com/JOY/huyen-qwen-cloud/blob/main/docs/alibaba-ram-policy-huyen-deploy.json`
+
 ## Candidate Deployment Shape
 
 Use a separate Alibaba Cloud service for the hackathon demo. Do not move or recreate production DOSClaw fleet containers for the submission.
