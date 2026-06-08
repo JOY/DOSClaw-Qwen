@@ -23,6 +23,17 @@ This file tracks the proof needed for the Qwen Cloud hackathon submission. Fill 
 - Demo API: `https://github.com/JOY/huyen-qwen-cloud/blob/main/src/app/api/demo/route.ts`
 - Health API: `https://github.com/JOY/huyen-qwen-cloud/blob/main/src/app/api/health/route.ts`
 
+## Alibaba Cloud Permission Gate
+
+Last checked on 2026-06-08:
+
+- `aliyun sts GetCallerIdentity` succeeds.
+- `aliyun cr ListInstance` is denied for the current RAM user, so the image cannot be pushed to Alibaba Cloud Container Registry yet.
+- `aliyun fc-open ListServices` is denied for the current RAM user, so Function Compute cannot be created by this credential yet.
+- `aliyun eci ListUsage` is denied for the current RAM user, so Elastic Container Instance cannot be created by this credential yet.
+
+Grant the deploy credential the ACR and runtime permissions listed in `docs/alibaba-cloud-deploy.md`, then rerun the post-deploy smoke commands.
+
 ## Candidate Deployment Shape
 
 Use a separate Alibaba Cloud service for the hackathon demo. Do not move or recreate production DOSClaw fleet containers for the submission.

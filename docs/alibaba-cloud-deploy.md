@@ -49,6 +49,18 @@ npm run build
 
 ## Alibaba Cloud Container Registry
 
+The deploy credential must have permission to read or create the target registry resources. Minimum practical actions for the container-first path:
+
+```text
+cr:ListInstance
+cr:CreateNamespace
+cr:CreateRepository
+cr:GetAuthorizationToken
+cr:ListRepository
+cr:GetRepository
+cr:ListRepoTag
+```
+
 Replace placeholders before running:
 
 ```bash
@@ -100,6 +112,19 @@ Capture:
 - Image URL in Alibaba Cloud Container Registry
 - Screenshot or CLI output showing Alibaba Cloud runtime
 - Smoke output for all three scenarios
+
+## Permission Preflight
+
+Run these checks before attempting the deploy:
+
+```bash
+aliyun sts GetCallerIdentity
+aliyun cr ListInstance
+aliyun fc-open ListServices
+aliyun eci ListUsage
+```
+
+If `cr:ListInstance` is denied, the image cannot be pushed to Alibaba Cloud Container Registry yet. If `fc:ListServices` or ECI usage is denied, the runtime cannot be created by that credential yet.
 
 ## Official Documentation References
 
