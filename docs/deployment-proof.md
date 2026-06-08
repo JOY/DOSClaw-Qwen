@@ -1,0 +1,99 @@
+# Deployment Proof Plan
+
+This file tracks the proof needed for the Qwen Cloud hackathon submission. Fill the unchecked items only after the Alibaba Cloud deployment is live.
+
+## Required Proof
+
+- [x] Standalone public bundle builds outside the private monorepo.
+- [x] Standalone public bundle builds as a Docker image.
+- [x] Local Docker container serves `/api/health` and `/api/demo`.
+- [ ] Public app URL for the Huyen demo surface.
+- [ ] Alibaba Cloud service URL or console screenshot proving the backend is hosted on Alibaba Cloud.
+- [ ] Public code link showing Qwen Cloud environment variables and provider wiring.
+- [ ] Public code link showing the demo API or runtime adapter.
+- [ ] Smoke-test output for one memory scenario.
+- [ ] Smoke-test output for one knowledge scenario.
+- [ ] Smoke-test output for one handoff scenario.
+
+## Candidate Deployment Shape
+
+Use a separate Alibaba Cloud service for the hackathon demo. Do not move or recreate production DOSClaw fleet containers for the submission.
+
+Recommended minimum:
+
+1. Deploy `apps/huyen` as the public product surface.
+2. Deploy a sanitized demo backend or adapter that exposes `/api/demo`.
+3. Configure Qwen Cloud env vars on the Alibaba Cloud runtime:
+
+```bash
+QWEN_CLOUD_API_KEY=<secret>
+QWEN_CLOUD_BASE_URL=https://dashscope-intl.aliyuncs.com/compatible-mode/v1
+QWEN_CLOUD_MODEL=qwen3.7-plus
+```
+
+## Smoke Commands
+
+```bash
+curl https://<huyen-demo-domain>/api/demo
+curl -X POST https://<huyen-demo-domain>/api/demo \
+  -H "Content-Type: application/json" \
+  -d '{"scenario":"memory"}'
+curl -X POST https://<huyen-demo-domain>/api/demo \
+  -H "Content-Type: application/json" \
+  -d '{"scenario":"knowledge"}'
+curl -X POST https://<huyen-demo-domain>/api/demo \
+  -H "Content-Type: application/json" \
+  -d '{"scenario":"handoff"}'
+```
+
+## Current Private-Repo Evidence
+
+- `apps/huyen` is the standalone product slice.
+- `services/api-gateway/service/agent/templates.go` injects the `qwen-cloud` provider into OpenClaw config when the agent opts in.
+- `services/api-gateway/service/agent/agent_service.go` injects Qwen Cloud env vars only for opt-in agents.
+- `docs/hackathons/qwen-cloud-2026/huyen-agent-config.md` defines the safe demo payload.
+- `scripts/export-huyen-public.ps1` exports a sanitized public bundle to `.tmp/huyen-public`.
+
+## Local Smoke Evidence
+
+Last verified on 2026-06-08:
+
+```bash
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/export-huyen-public.ps1
+Copy-Item .tmp/huyen-public $env:TEMP/huyen-public-verify -Recurse
+cd $env:TEMP/huyen-public-verify
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-public.ps1
+```
+
+Result:
+
+```text
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/demo
+└ ƒ /api/health
+```
+
+The verification script performs a clean install, production Next build, Docker image build, local container run, `/api/health` check, and `/api/demo` handoff scenario check.
+
+```json
+{
+  "health": {
+    "ok": true,
+    "service": "huyen",
+    "modelProvider": "qwen-cloud",
+    "runtime": "nextjs"
+  },
+  "handoff": {
+    "ok": true,
+    "scenario": "handoff",
+    "evidence": {
+      "qwenPrimaryModelRef": "qwen-cloud/qwen3.7-plus",
+      "mcpTools": ["handoff_to_human"]
+    }
+  }
+}
+```
+
+The first smoke caught and fixed a real export bug: `package.json` was written with a UTF-8 BOM, which Turbopack rejected. The export script now writes `package.json` and the generated root `README.md` as UTF-8 without BOM.

@@ -1,0 +1,26 @@
+{
+    "name":  "huyen-qwen-cloud",
+    "version":  "0.1.0",
+    "private":  false,
+    "scripts":  {
+                    "dev":  "next dev --turbopack --port 3010",
+                    "build":  "next build",
+                    "start":  "next start -p 3010",
+                    "docker:build":  "docker build -t huyen-qwen-cloud:local .",
+                    "verify":  "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-public.ps1"
+                },
+    "dependencies":  {
+                         "next":  "^16.2.6",
+                         "react":  "^19",
+                         "react-dom":  "^19"
+                     },
+    "devDependencies":  {
+                            "@types/node":  "^25",
+                            "@types/react":  "^19",
+                            "@types/react-dom":  "^19",
+                            "typescript":  "^6"
+                        },
+    "overrides":  {
+                      "postcss":  "8.5.10"
+                  }
+}

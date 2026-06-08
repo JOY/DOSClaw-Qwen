@@ -1,0 +1,22 @@
+flowchart LR
+  Customer["Vietnamese customer on Zalo or Telegram"]
+  Huyen["Huyen product slice"]
+  OpenClaw["OpenClaw runtime container"]
+  DOSClaw["DOSClaw Go gateway"]
+  Qwen["Qwen Cloud OpenAI-compatible API"]
+  Memory["Per-customer memory MCP"]
+  Knowledge["Knowledge search MCP"]
+  Handoff["Human handoff MCP"]
+  Staff["Support staff"]
+  Alibaba["Alibaba Cloud deployment"]
+
+  Customer --> Huyen
+  Huyen --> OpenClaw
+  OpenClaw --> Qwen
+  OpenClaw --> DOSClaw
+  DOSClaw --> Memory
+  DOSClaw --> Knowledge
+  DOSClaw --> Handoff
+  Handoff --> Staff
+  DOSClaw --> Alibaba
+  Qwen --> Alibaba
