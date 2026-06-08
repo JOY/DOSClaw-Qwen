@@ -26,10 +26,7 @@ if (!$SkipDocker) {
         if (!$health.ok -or $health.service -ne "huyen") {
             throw "Unexpected health response: $($health | ConvertTo-Json -Depth 5)"
         }
-        $handoff = Invoke-RestMethod -Uri "http://localhost:3010/api/demo" -Method Post -ContentType "application/json" -Body '{"scenario":"handoff"}'
-        if (!$handoff.ok -or $handoff.scenario -ne "handoff") {
-            throw "Unexpected handoff response: $($handoff | ConvertTo-Json -Depth 5)"
-        }
+        powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $bundleRoot "scripts/smoke-scenarios.ps1") -BaseUrl "http://localhost:3010" -OutputPath "docs/proof/local-smoke-latest.json"
     } finally {
         $existing = docker ps -a --filter "name=^huyen-verify$" --format "{{.Names}}"
         if ($existing -contains "huyen-verify") {

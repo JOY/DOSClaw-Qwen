@@ -43,6 +43,15 @@ curl http://localhost:3010/api/health
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-public.ps1
 ```
 
+## Smoke a Running Demo
+
+```powershell
+$env:HUYEN_URL = "http://localhost:3010"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/smoke-scenarios.ps1
+```
+
+The smoke script checks health, all three scenarios, Qwen model evidence, MCP tool evidence, and writes `docs/proof/smoke-latest.json`.
+
 ## Push to Alibaba Cloud Container Registry
 
 ```bash

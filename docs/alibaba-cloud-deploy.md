@@ -92,7 +92,18 @@ The public demo app uses synthetic data. The real DOSClaw/OpenClaw agent uses th
 
 ```bash
 export HUYEN_URL=https://<public-demo-domain>
+```
 
+Automated proof:
+
+```powershell
+$env:HUYEN_URL = "https://<public-demo-domain>"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/smoke-scenarios.ps1
+```
+
+Manual equivalent:
+
+```bash
 curl "$HUYEN_URL/api/health"
 curl "$HUYEN_URL/api/demo"
 curl -X POST "$HUYEN_URL/api/demo" \

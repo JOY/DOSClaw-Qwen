@@ -58,18 +58,14 @@ QWEN_CLOUD_MODEL=qwen3.7-plus
 
 ## Smoke Commands
 
-```bash
-curl https://<huyen-demo-domain>/api/demo
-curl -X POST https://<huyen-demo-domain>/api/demo \
-  -H "Content-Type: application/json" \
-  -d '{"scenario":"memory"}'
-curl -X POST https://<huyen-demo-domain>/api/demo \
-  -H "Content-Type: application/json" \
-  -d '{"scenario":"knowledge"}'
-curl -X POST https://<huyen-demo-domain>/api/demo \
-  -H "Content-Type: application/json" \
-  -d '{"scenario":"handoff"}'
+Use the proof script after local run or deployed Alibaba Cloud run:
+
+```powershell
+$env:HUYEN_URL = "https://<huyen-demo-domain>"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/smoke-scenarios.ps1
 ```
+
+It checks `/api/health`, all three `/api/demo` scenarios, the `qwen-cloud/*` model ref, MCP tool evidence, and `answerSource`. It writes JSON evidence to `docs/proof/smoke-latest.json`.
 
 ## Current Private-Repo Evidence
 
@@ -100,7 +96,8 @@ Route (app)
 └ ƒ /api/health
 ```
 
-The verification script performs a clean install, production Next build, Docker image build, local container run, `/api/health` check, and `/api/demo` handoff scenario check.
+The verification script performs a clean install, production Next build, Docker image build, local container run, `/api/health` check, and all three `/api/demo` scenario checks.
+It also runs `scripts/smoke-scenarios.ps1` against the local Docker container and writes `docs/proof/local-smoke-latest.json`.
 
 ```json
 {
