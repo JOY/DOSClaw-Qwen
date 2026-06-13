@@ -37,6 +37,7 @@ try {
         "scripts/preflight-alibaba.ps1",
         "scripts/deploy-fc.ps1",
         "scripts/deploy-eci.ps1",
+        "scripts/deploy-ecs-ssh.ps1",
         "scripts/deploy-acr.sh",
         "scripts/smoke-scenarios.ps1"
     )
@@ -70,6 +71,7 @@ try {
         preflightScript = "https://github.com/JOY/DOSClaw-Qwen/blob/main/scripts/preflight-alibaba.ps1"
         functionComputeDeployScript = "https://github.com/JOY/DOSClaw-Qwen/blob/main/scripts/deploy-fc.ps1"
         elasticContainerInstanceDeployScript = "https://github.com/JOY/DOSClaw-Qwen/blob/main/scripts/deploy-eci.ps1"
+        ecsSshDeployScript = "https://github.com/JOY/DOSClaw-Qwen/blob/main/scripts/deploy-ecs-ssh.ps1"
     }
 
     $utf8NoBom = New-Object System.Text.UTF8Encoding($false)

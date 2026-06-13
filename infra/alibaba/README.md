@@ -16,13 +16,22 @@ Run the read-only preflight before deployment:
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/preflight-alibaba.ps1
 ```
 
-The deploy user needs, at minimum:
+For the managed-container scripts, the deploy user needs, at minimum:
 
 - ACR read/write access for image push and repository lookup.
 - Either Function Compute permissions for `scripts/deploy-fc.ps1`, or Elastic Container Instance permissions for `scripts/deploy-eci.ps1`.
 - Network permissions for the chosen runtime path, such as VSwitch/Security Group references for ECI.
 
-The current scripts intentionally fail before mutation when these permissions are missing.
+The current managed-container scripts intentionally fail before mutation when these permissions are missing.
+
+If you already have an ECS host with SSH access, you can deploy without ACR/FC/ECI RAM permissions:
+
+```powershell
+$env:DASHSCOPE_API_KEY = "<secret>"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy-ecs-ssh.ps1 -HostName "<ecs-public-ip-or-host>"
+```
+
+That path clones the public repo on the ECS host, writes a server-side `.env`, starts Postgres, builds the app image locally on the ECS host, seeds embeddings, and verifies `/api/health`.
 
 ## Environment
 

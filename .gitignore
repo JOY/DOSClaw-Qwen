@@ -4,3 +4,4 @@ __pycache__/
 .pytest_cache/
 .env
 .mem0/
+docs/proof/*.zip

@@ -1,5 +1,7 @@
 param(
-    [string]$Region = "ap-southeast-1"
+    [string]$Region = "ap-southeast-1",
+    [ValidateSet("ManagedContainer", "EcsReadOnly")]
+    [string]$Mode = "ManagedContainer"
 )
 
 $ErrorActionPreference = "Continue"
@@ -10,23 +12,41 @@ $checks = @(
         Name = "Caller identity"
         Command = @("sts", "GetCallerIdentity")
         Required = $true
-    },
-    @{
-        Name = "Container Registry access"
-        Command = @("cr", "ListInstance", "--region", $Region)
-        Required = $true
-    },
-    @{
-        Name = "Function Compute access"
-        Command = @("fc-open", "ListServices", "--region", $Region)
-        Required = $false
-    },
-    @{
-        Name = "Elastic Container Instance access"
-        Command = @("eci", "ListUsage", "--region", $Region)
-        Required = $false
     }
 )
+
+if ($Mode -eq "ManagedContainer") {
+    $checks += @(
+        @{
+            Name = "Container Registry access"
+            Command = @("cr", "ListInstance", "--region", $Region)
+            Required = $true
+        },
+        @{
+            Name = "Function Compute access"
+            Command = @("fc-open", "ListServices", "--region", $Region)
+            Required = $false
+        },
+        @{
+            Name = "Elastic Container Instance access"
+            Command = @("eci", "ListUsage", "--region", $Region)
+            Required = $false
+        }
+    )
+} else {
+    $checks += @(
+        @{
+            Name = "ECS instance read access"
+            Command = @("ecs", "DescribeInstances", "--RegionId", $Region, "--PageSize", "10")
+            Required = $true
+        },
+        @{
+            Name = "VPC read access"
+            Command = @("vpc", "DescribeVpcs", "--RegionId", $Region, "--PageSize", "10")
+            Required = $false
+        }
+    )
+}
 
 $failedRequired = $false
 $runtimeAvailable = $false
@@ -68,11 +88,15 @@ foreach ($check in $checks) {
     }
 }
 
-if ($failedRequired) {
+if ($failedRequired -and $Mode -eq "ManagedContainer") {
     throw "Alibaba Cloud preflight failed: Container Registry access is required before pushing the DOSClaw-Qwen image."
 }
 
-if (!$runtimeAvailable) {
+if ($failedRequired) {
+    throw "Alibaba Cloud preflight failed: ECS read access is required for this preflight mode, or deploy to a known ECS host with scripts/deploy-ecs-ssh.ps1."
+}
+
+if ($Mode -eq "ManagedContainer" -and !$runtimeAvailable) {
     throw "Alibaba Cloud preflight failed: grant either Function Compute or Elastic Container Instance permissions before creating the public runtime."
 }
 
