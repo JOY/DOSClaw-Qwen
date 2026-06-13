@@ -1,7 +1,7 @@
 # Global AI Hackathon Series with Qwen Cloud - Reference
 
 > Captured 2026-06-09 from the official Devpost pages (rendered via browser; the pages are
-> JS-only and blank to plain fetch). Source of truth for our Huyen / MemoryAgent submission.
+> JS-only and blank to plain fetch). Source of truth for our DOSClaw-Qwen / MemoryAgent submission.
 > Links: https://qwencloud-hackathon.devpost.com/ · /rules · /resources
 
 ## Dates (Pacific Time)
@@ -43,14 +43,14 @@
    user preferences, cross-session multi-turn; focus on efficient storage/retrieval, timely
    forgetting of outdated info, recalling critical memories in limited context windows.
    Official idea list includes: *"a customer support agent that recalls full conversation history
-   and user preferences without re-asking"* (= exactly our Huyen).
+   and user preferences without re-asking"* (= exactly our DOSClaw-Qwen).
 2. **AI Showrunner**: video generation (Wan / HappyHorse), full short-drama pipeline; highest
    token allowance.
 3. **Agent Society**: multi-agent collaboration (task division, dialogue, negotiation); measurable
    efficiency gain over single-agent baselines.
 4. **Autopilot Agent**: automate real-world business workflows end-to-end (e.g. inquiry email ->
    quote; alert -> remediation); ambiguous inputs, external tools, human-in-the-loop checkpoints;
-   production-readiness over toy demos. (Huyen also plausibly fits here; we chose MemoryAgent.)
+   production-readiness over toy demos. (DOSClaw-Qwen also plausibly fits here; we chose MemoryAgent.)
 5. **EdgeAgent**: Qwen-powered physical devices (robots/IoT); edge-cloud orchestration, offline
    degradation.
 
@@ -83,7 +83,7 @@
 - Project gallery: /project-gallery · Updates: /updates · Forum: /forum_topics
 
 ## Our submission (decided)
-- Track: **MemoryAgent**. Project: **Huyen** - VN SME customer-support agent with per-customer
+- Track: **MemoryAgent**. Project: **DOSClaw-Qwen** - VN SME customer-support agent with per-customer
   persistent memory. Runtime: **AgentScope** (QwenPaw as reference only, NOT forked). Model:
   Qwen Cloud (DashScope). Deploy: Alibaba ECS + Postgres/pgvector on Alibaba. Design spec:
-  `docs/superpowers/specs/2026-06-09-huyen-qwen-memoryagent-design.md`.
+  `docs/superpowers/specs/2026-06-09-dosclaw_qwen-qwen-memoryagent-design.md`.

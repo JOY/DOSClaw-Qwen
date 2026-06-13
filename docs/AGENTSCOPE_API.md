@@ -120,7 +120,7 @@ def make_model() -> DashScopeChatModel:
 
 def build_agent(toolkit: Toolkit, system_prompt: str) -> Agent:
     return Agent(
-        name="Huyen",
+        name="DOSClaw-Qwen",
         system_prompt=system_prompt,
         model=make_model(),
         toolkit=toolkit,
@@ -165,7 +165,7 @@ Implement memory as **our own service**, surfaced two ways:
 2. **Agentic recall (tool, optional):** also register a `search_memory(query)` `FunctionTool` so the
    model can pull more memory mid-reasoning when it wants. Scores Innovation points (agent-controlled memory).
 
-So the plan's `huyen/memory.py` becomes a plain `MemoryService` class (NOT a LongTermMemoryBase subclass):
+So the plan's `dosclaw_qwen/memory.py` becomes a plain `MemoryService` class (NOT a LongTermMemoryBase subclass):
 - `async recall(customer_id, query) -> str`     # profile + ranked episodic, compact block
 - `async record(customer_id, user_text, assistant_text) -> None`   # LLM-extract durable facts + episode, embed, store
 - `async consolidate(customer_id, floor=0.1) -> int`   # forgetting (decay below floor)

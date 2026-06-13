@@ -1,4 +1,4 @@
-# Huyen - Build Handoff (for Codex / the implementing agent)
+# DOSClaw-Qwen - Build Handoff (for Codex / the implementing agent)
 
 You are picking up a hackathon project cold. This file is self-contained: read it fully, then
 the four docs it points to, then start building. Code and docs in **English**. Deadline:
@@ -6,7 +6,10 @@ the four docs it points to, then start building. Code and docs in **English**. D
 
 ## What we are building
 
-**Huyen** - a Vietnamese SME customer-support agent with **per-customer persistent memory**.
+**DOSClaw-Qwen** - an SME customer-support agent with **per-customer persistent memory**. The agent
+is **multilingual** (Qwen handles many languages), but the **demo runs in English** so global judges
+can follow. NOTE: older reference docs (`spec-design.md`, `implementation-plan.md`) may still say
+"Huyen" or "Vietnamese" - the project is now **DOSClaw-Qwen**, **English-first**; treat those as superseded.
 Entry for the **Global AI Hackathon Series with Qwen Cloud** (Devpost), **MemoryAgent track**.
 The differentiator (what judges score) is a real memory engine: a durable structured **profile**
 + decaying **episodic** memory in **pgvector**, recalled into a compact context block by
@@ -22,11 +25,11 @@ Postgres, or RDS). Qwen Cloud is the model/embedding API; this is what makes the
 
 ## Read these, in order
 
-0. **`docs/MEMORY_STACK.md`** - the MEMORY architecture decision (READ FIRST): Huyen runs on
+0. **`docs/MEMORY_STACK.md`** - the MEMORY architecture decision (READ FIRST): DOSClaw-Qwen runs on
    **AgentScope 2.0** and gets long-term memory from the **`Mem0Middleware`** in upstream **PR #1775**
    (mem0 routed through our DashScope/Qwen model - no OpenAI; until merged, install from
    `git+https://github.com/Osier-Yi/agentscope.git@mem0-dev`). We add a custom layer (profile, recall
-   composition, UI) and contribute a Huyen **example** upstream (NOT a duplicate PR). This
+   composition, UI) and contribute a DOSClaw-Qwen **example** upstream (NOT a duplicate PR). This
    **supersedes the hand-rolled store/episodic design** in implementation-plan.md AND §5 of
    AGENTSCOPE_API.md. Read it before Phase 2.
 1. **`docs/AGENTSCOPE_API.md`** - the VERIFIED AgentScope 2.0.1 API (introspected from the
@@ -45,14 +48,14 @@ Postgres, or RDS). Qwen Cloud is the model/embedding API; this is what makes the
   to install on 3.14), `docker-compose.yml` (pgvector Postgres), `.env.example`, `.gitignore`,
   `db/schema.sql` (customers, customer_profile, episodic_memory[vector(1024)], knowledge, handoffs),
   `db/seed.sql` (2 demo customers; episodic+knowledge rows need embeddings - a seed script does that),
-  `huyen/__init__.py`, and empty `web/ tests/ infra/alibaba/`.
+  `dosclaw_qwen/__init__.py`, and empty `web/ tests/ infra/alibaba/`.
 - **`docs/legacy/`** - assets from a PRIOR, abandoned Next.js/TypeScript attempt (a scripted demo,
   not a real memory engine). It was **never deployed live to Alibaba**. **Mine it for reusable
   material but treat its architecture as outdated:**
   - `docs/legacy/devpost-draft.md`, `judging-packet.md`, `demo-script.md`,
     `video-recording-packet.md`, `blog-post-draft.md`, `social-post-draft.md` - submission
     narrative you can adapt (re-point from "OpenClaw/DOSClaw/Next.js" to "AgentScope + real memory").
-  - `docs/legacy/alibaba-cloud-deploy.md`, `alibaba-ram-policy-huyen-deploy.json` - Alibaba deploy notes/RAM policy.
+  - `docs/legacy/alibaba-cloud-deploy.md`, `alibaba-ram-policy-dosclaw_qwen-deploy.json` - Alibaba deploy notes/RAM policy.
 - **`scripts/`** - Alibaba deploy scripts from the old attempt (`deploy-fc.ps1`, `deploy-eci.ps1`,
   `deploy-acr.sh`, `preflight-alibaba.ps1`, `package-submission.ps1`, `smoke-scenarios.ps1`,
   `verify-public.ps1`). They build/push/deploy a **container** - reusable for the Python container
@@ -64,17 +67,17 @@ Postgres, or RDS). Qwen Cloud is the model/embedding API; this is what makes the
 
 Work in this repo on `main` (or a feature branch off it). Follow TDD where the plan marks it.
 1. **Confirm-by-introspection checklist** (AGENTSCOPE_API.md section 6) - lock the last few signatures.
-2. **Phase 1 - `huyen/ranking.py` + `tests/test_ranking.py`** (TDD, pure logic: `decay_score`,
+2. **Phase 1 - `dosclaw_qwen/ranking.py` + `tests/test_ranking.py`** (TDD, pure logic: `decay_score`,
    `rank_episodes`, `merge_profile`). No DB/LLM. `pytest` must pass. This is the only fully
    offline-testable unit and the core of the memory scoring - do it first and well.
-3. **Phase 2 - `huyen/config.py`, `huyen/model.py`** (DashScope chat model + `DashScopeTextEmbedding`
-   per AGENTSCOPE_API.md), **`huyen/store.py`** (asyncpg + pgvector access), **`huyen/memory_service.py`**
+3. **Phase 2 - `dosclaw_qwen/config.py`, `dosclaw_qwen/model.py`** (DashScope chat model + `DashScopeTextEmbedding`
+   per AGENTSCOPE_API.md), **`dosclaw_qwen/store.py`** (asyncpg + pgvector access), **`dosclaw_qwen/memory_service.py`**
    (plain `MemoryService` class - NOT a LongTermMemoryBase subclass - `recall`/`record`/`consolidate`,
-   using ranking + store + embeddings + an LLM extract step), **`huyen/seed_embeddings.py`**.
-4. **Phase 3 - `huyen/tools.py`** (`knowledge_search`, `human_handoff` returning `ToolResponse`;
-   optional `search_memory` tool), **`huyen/agent.py`** (`Agent` + `Toolkit(tools=[FunctionTool(...)])`
+   using ranking + store + embeddings + an LLM extract step), **`dosclaw_qwen/seed_embeddings.py`**.
+4. **Phase 3 - `dosclaw_qwen/tools.py`** (`knowledge_search`, `human_handoff` returning `ToolResponse`;
+   optional `search_memory` tool), **`dosclaw_qwen/agent.py`** (`Agent` + `Toolkit(tools=[FunctionTool(...)])`
    + the recall->observe->reply->record turn handler from AGENTSCOPE_API.md section 3).
-5. **Phase 4 - `huyen/app.py`** (FastAPI: `/api/chat` SSE via `reply_stream`, emit a "memory recalled"
+5. **Phase 4 - `dosclaw_qwen/app.py`** (FastAPI: `/api/chat` SSE via `reply_stream`, emit a "memory recalled"
    block first then the reply; `/api/customers`, `/api/consolidate`; a simple demo-login cookie gate;
    serve `web/`), **`web/index.html`** (chat + customer selector + new-session + memory side-panel;
    render replies via DOM/textContent, never innerHTML).
@@ -82,7 +85,7 @@ Work in this repo on `main` (or a feature branch off it). Follow TDD where the p
    run the 5-step memory demo in the plan (returning customer recall, multi-customer isolation, handoff).
 7. **Phase 6 - deploy on Alibaba** (Dockerfile python:3.11-slim; ECS + Dockerized Postgres, or RDS;
    adapt `scripts/`), then submission assets: architecture diagram, <3min video, devpost description,
-   proof-of-Alibaba code link (`huyen/model.py` calls DashScope), testing access + demo login.
+   proof-of-Alibaba code link (`dosclaw_qwen/model.py` calls DashScope), testing access + demo login.
 
 ## Prerequisites you will need (the human, JOY, provides)
 
@@ -92,8 +95,8 @@ Work in this repo on `main` (or a feature branch off it). Follow TDD where the p
 
 ## Hard constraints
 
-- Code, comments, docs, commits = **English**. (The bot's user-facing replies must support
-  **Vietnamese with full diacritics** for demo realism.)
+- Code, comments, docs, commits = **English**. The agent replies in the **customer's language**;
+  the **demo runs in English** so global judges can follow (Qwen is multilingual).
 - **Never commit secrets.** `.env.example` holds placeholders only; real keys live in `.env` (gitignored).
 - Keep the repo **public + MIT-licensed** (hackathon requirement).
 - The memory engine is the scored differentiator - do not fake it (the old attempt did; that is why it was replaced).
@@ -103,6 +106,6 @@ Work in this repo on `main` (or a feature branch off it). Follow TDD where the p
 ## Definition of done (hackathon deliverables)
 
 Public repo (this one) with all source + setup instructions; text description; **proof of Alibaba
-deployment** (link to `huyen/model.py` using DashScope + the live ECS URL); **architecture diagram**;
+deployment** (link to `dosclaw_qwen/model.py` using DashScope + the live ECS URL); **architecture diagram**;
 **<3-min demo video** (public) showing cross-session per-customer recall; track identified
 (**MemoryAgent**); **testing access** (live URL + demo login). Optional blog post for the bonus prize.

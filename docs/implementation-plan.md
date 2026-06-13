@@ -1,10 +1,10 @@
-# Huyen on Qwen Cloud (MemoryAgent) Implementation Plan
+# DOSClaw-Qwen on Qwen Cloud (MemoryAgent) Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build "Huyen" - a Vietnamese SME customer-support agent with per-customer persistent memory - on AgentScope 2.0 + Qwen Cloud (DashScope), deployed on Alibaba Cloud, as a MemoryAgent-track hackathon entry.
+**Goal:** Build "DOSClaw-Qwen" - an SME customer-support agent with per-customer persistent memory - on AgentScope 2.0 + Qwen Cloud (DashScope), deployed on Alibaba Cloud, as a MemoryAgent-track hackathon entry.
 
-**Architecture:** An AgentScope `ReActAgent` (Qwen `qwen3.6-plus` via `DashScopeChatModel`) whose persistence comes from a CUSTOM `LongTermMemoryBase` subclass (`HuyenMemory`) implementing a hybrid per-customer memory: a structured profile + decaying episodic memory in Postgres+pgvector, with semantic+recency recall into a compact context block and active forgetting/consolidation. Tools: `knowledge_search` (shop FAQ RAG) and `human_handoff`. Served via FastAPI with a web chat UI (customer selector + new-session). Everything (app + Postgres) runs on an Alibaba ECS instance; DashScope (Qwen Cloud) is the model/embedding API.
+**Architecture:** An AgentScope `ReActAgent` (Qwen `qwen3.6-plus` via `DashScopeChatModel`) whose persistence comes from a CUSTOM `LongTermMemoryBase` subclass (`DOSClaw-QwenMemory`) implementing a hybrid per-customer memory: a structured profile + decaying episodic memory in Postgres+pgvector, with semantic+recency recall into a compact context block and active forgetting/consolidation. Tools: `knowledge_search` (shop FAQ RAG) and `human_handoff`. Served via FastAPI with a web chat UI (customer selector + new-session). Everything (app + Postgres) runs on an Alibaba ECS instance; DashScope (Qwen Cloud) is the model/embedding API.
 
 **Tech Stack:** Python 3.11+, AgentScope 2.0 (`agentscope`), DashScope (`qwen3.6-plus` chat + `text-embedding-v4`), Postgres + pgvector, `asyncpg`, FastAPI + uvicorn, Docker, Alibaba ECS.
 
@@ -15,25 +15,25 @@
 ## File Structure
 
 ```
-apps/huyen-qwen/                  # NEW standalone app (in DOS-AI repo; public repo extracted at the end)
+apps/dosclaw_qwen-qwen/                  # NEW standalone app (in DOS-AI repo; public repo extracted at the end)
   requirements.txt
   Dockerfile
   docker-compose.yml              # app + postgres(pgvector) for local + ECS
   .env.example
-  huyen/
+  dosclaw_qwen/
     __init__.py
     config.py                     # env: DASHSCOPE_API_KEY, DASHSCOPE_BASE_URL, DATABASE_URL, model ids
     model.py                      # DashScopeChatModel factory + embeddings client
     ranking.py                    # PURE memory math: recall ranking, decay, conflict merge (unit-tested)
     store.py                      # Postgres+pgvector access (asyncpg): profile, episodic, knowledge, handoffs
-    memory.py                     # HuyenMemory(LongTermMemoryBase): record/retrieve + writer + consolidation
+    memory.py                     # DOSClaw-QwenMemory(LongTermMemoryBase): record/retrieve + writer + consolidation
     tools.py                      # knowledge_search + human_handoff tool functions
-    agent.py                      # build_huyen_agent(customer_id) -> ReActAgent
+    agent.py                      # build_agent(customer_id) -> ReActAgent
     app.py                        # FastAPI: /api/chat (SSE), /api/customers, serves web/
   web/
     index.html                    # chat UI: customer selector + new-session + memory side-panel
   db/
-    schema.sql                    # huyen schema + tables (pgvector)
+    schema.sql                    # dosclaw_qwen schema + tables (pgvector)
     seed.sql                      # demo shop FAQ + 2-3 customers (some with prior memory)
   tests/
     test_ranking.py               # pure unit tests (no DB/LLM)
@@ -51,15 +51,15 @@ apps/huyen-qwen/                  # NEW standalone app (in DOS-AI repo; public r
 
 - [ ] **Step 1: Worktree off `dev`** (repo rule: never branch-switch the shared checkout)
 ```bash
-cd D:/Projects/DOS-AI && git fetch origin dev && git worktree add -b feat/huyen-qwen ../DOS-AI-huyen origin/dev
+cd D:/Projects/DOS-AI && git fetch origin dev && git worktree add -b feat/dosclaw_qwen-qwen ../DOS-AI-dosclaw_qwen origin/dev
 ```
-All paths below are relative to `../DOS-AI-huyen`.
+All paths below are relative to `../DOS-AI-dosclaw_qwen`.
 
 - [ ] **Step 2: Create dirs + `requirements.txt`**
 ```bash
-mkdir -p apps/huyen-qwen/huyen apps/huyen-qwen/web apps/huyen-qwen/db apps/huyen-qwen/tests apps/huyen-qwen/infra/alibaba
+mkdir -p apps/dosclaw_qwen-qwen/dosclaw_qwen apps/dosclaw_qwen-qwen/web apps/dosclaw_qwen-qwen/db apps/dosclaw_qwen-qwen/tests apps/dosclaw_qwen-qwen/infra/alibaba
 ```
-`apps/huyen-qwen/requirements.txt`:
+`apps/dosclaw_qwen-qwen/requirements.txt`:
 ```
 agentscope>=2.0.1
 openai>=1.40.0
@@ -79,15 +79,15 @@ DASHSCOPE_BASE_URL=https://dashscope-intl.aliyuncs.com/compatible-mode/v1
 QWEN_CHAT_MODEL=qwen3.6-plus
 QWEN_EMBED_MODEL=text-embedding-v4
 EMBED_DIM=1024
-DATABASE_URL=postgresql://huyen:huyen@localhost:5432/huyen
+DATABASE_URL=postgresql://dosclaw_qwen:dosclaw_qwen@localhost:5432/dosclaw_qwen
 DEMO_LOGIN_USER=judge
 DEMO_LOGIN_PASS=<random>
 ```
 
 - [ ] **Step 4: Commit scaffold**
 ```bash
-git add apps/huyen-qwen/requirements.txt apps/huyen-qwen/.env.example
-git commit -m "feat(huyen): scaffold AgentScope Qwen MemoryAgent app
+git add apps/dosclaw_qwen-qwen/requirements.txt apps/dosclaw_qwen-qwen/.env.example
+git commit -m "feat(dosclaw_qwen): scaffold AgentScope Qwen MemoryAgent app
 
 Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
@@ -100,9 +100,9 @@ services:
   db:
     image: pgvector/pgvector:pg16
     environment:
-      POSTGRES_USER: huyen
-      POSTGRES_PASSWORD: huyen
-      POSTGRES_DB: huyen
+      POSTGRES_USER: dosclaw_qwen
+      POSTGRES_PASSWORD: dosclaw_qwen
+      POSTGRES_DB: dosclaw_qwen
     ports: ["5432:5432"]
     volumes: ["pgdata:/var/lib/postgresql/data", "./db:/docker-entrypoint-initdb.d"]
 volumes: { pgdata: {} }
@@ -164,8 +164,8 @@ insert into customer_profile (customer_id, facts) values
 ```
 - [ ] **Step 4: Commit**
 ```bash
-git add apps/huyen-qwen/docker-compose.yml apps/huyen-qwen/db/schema.sql apps/huyen-qwen/db/seed.sql
-git commit -m "feat(huyen): postgres+pgvector schema and base seed
+git add apps/dosclaw_qwen-qwen/docker-compose.yml apps/dosclaw_qwen-qwen/db/schema.sql apps/dosclaw_qwen-qwen/db/seed.sql
+git commit -m "feat(dosclaw_qwen): postgres+pgvector schema and base seed
 
 Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
@@ -174,13 +174,13 @@ Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 
 ## Phase 1 - Memory math (pure, TDD)
 
-### Task 1.1: `huyen/ranking.py` - recall ranking, decay, profile merge (TDD)
+### Task 1.1: `dosclaw_qwen/ranking.py` - recall ranking, decay, profile merge (TDD)
 
-**Files:** Create `apps/huyen-qwen/huyen/ranking.py`; Test `apps/huyen-qwen/tests/test_ranking.py`.
+**Files:** Create `apps/dosclaw_qwen-qwen/dosclaw_qwen/ranking.py`; Test `apps/dosclaw_qwen-qwen/tests/test_ranking.py`.
 
 - [ ] **Step 1: Write the failing test** `tests/test_ranking.py`
 ```python
-from huyen.ranking import rank_episodes, decay_score, merge_profile
+from dosclaw_qwen.ranking import rank_episodes, decay_score, merge_profile
 
 def test_rank_blends_similarity_and_recency():
     eps = [
@@ -204,9 +204,9 @@ def test_merge_profile_overrides_conflicts():
 ```
 
 - [ ] **Step 2: Run, verify it fails**
-Run: `cd apps/huyen-qwen && python -m pytest tests/test_ranking.py -v` -> FAIL (module not found).
+Run: `cd apps/dosclaw_qwen-qwen && python -m pytest tests/test_ranking.py -v` -> FAIL (module not found).
 
-- [ ] **Step 3: Implement `huyen/ranking.py`**
+- [ ] **Step 3: Implement `dosclaw_qwen/ranking.py`**
 ```python
 """Pure, dependency-free memory math: ranking, decay, profile merge. Unit-tested."""
 from __future__ import annotations
@@ -250,8 +250,8 @@ Run: `python -m pytest tests/test_ranking.py -v` -> PASS (3 tests).
 
 - [ ] **Step 5: Commit**
 ```bash
-git add apps/huyen-qwen/huyen/ranking.py apps/huyen-qwen/tests/test_ranking.py
-git commit -m "feat(huyen): pure memory ranking/decay/profile-merge (TDD)
+git add apps/dosclaw_qwen-qwen/dosclaw_qwen/ranking.py apps/dosclaw_qwen-qwen/tests/test_ranking.py
+git commit -m "feat(dosclaw_qwen): pure memory ranking/decay/profile-merge (TDD)
 
 Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
@@ -260,9 +260,9 @@ Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 
 ## Phase 2 - Model, store, memory service
 
-### Task 2.1: `huyen/config.py` + `huyen/model.py`
+### Task 2.1: `dosclaw_qwen/config.py` + `dosclaw_qwen/model.py`
 
-- [ ] **Step 1: `huyen/config.py`**
+- [ ] **Step 1: `dosclaw_qwen/config.py`**
 ```python
 import os
 from dotenv import load_dotenv
@@ -273,10 +273,10 @@ DASHSCOPE_BASE_URL = os.environ.get("DASHSCOPE_BASE_URL", "https://dashscope-int
 QWEN_CHAT_MODEL = os.environ.get("QWEN_CHAT_MODEL", "qwen3.6-plus")
 QWEN_EMBED_MODEL = os.environ.get("QWEN_EMBED_MODEL", "text-embedding-v4")
 EMBED_DIM = int(os.environ.get("EMBED_DIM", "1024"))
-DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://huyen:huyen@localhost:5432/huyen")
+DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://dosclaw_qwen:dosclaw_qwen@localhost:5432/dosclaw_qwen")
 ```
 
-- [ ] **Step 2: `huyen/model.py`** (chat model factory + embeddings)
+- [ ] **Step 2: `dosclaw_qwen/model.py`** (chat model factory + embeddings)
 ```python
 """Qwen Cloud (DashScope) wiring: AgentScope chat model + OpenAI-compatible embeddings."""
 from openai import AsyncOpenAI
@@ -304,9 +304,9 @@ async def embed(text: str) -> list[float]:
 ```
 - [ ] **Step 3:** Verify imports against the installed package: `python -c "from agentscope.model import DashScopeChatModel; from agentscope.formatter import DashScopeChatFormatter"`. If a symbol differs in the installed 2.0.x, adjust to the real name (check `python -c "import agentscope.model as m; print(dir(m))"`). Commit.
 
-### Task 2.2: `huyen/store.py` - Postgres+pgvector access (asyncpg)
+### Task 2.2: `dosclaw_qwen/store.py` - Postgres+pgvector access (asyncpg)
 
-- [ ] **Step 1: Implement `huyen/store.py`** with an async pool and these functions (vectors passed as the pgvector string form `'[...]'`):
+- [ ] **Step 1: Implement `dosclaw_qwen/store.py`** with an async pool and these functions (vectors passed as the pgvector string form `'[...]'`):
 ```python
 import json
 import asyncpg
@@ -372,11 +372,11 @@ async def log_handoff(customer_id: str, reason: str) -> int:
 ```
 - [ ] **Step 2: Smoke test** against the local Docker DB (after `docker compose up -d db` + applying schema): a tiny script inserts a profile + episode and reads them back. Confirm pgvector `<=>` works. Commit.
 
-### Task 2.3: `huyen/memory.py` - `HuyenMemory(LongTermMemoryBase)`
+### Task 2.3: `dosclaw_qwen/memory.py` - `DOSClaw-QwenMemory(LongTermMemoryBase)`
 
 > AgentScope 2.0: subclass `agentscope.memory.LongTermMemoryBase`; implement `record(msgs)`, `retrieve(msg)->str`, and the agent-control tool methods `record_to_memory(content)->str`, `retrieve_from_memory(query)->str`. Attach via `ReActAgent(long_term_memory=..., long_term_memory_mode=...)`. Confirm the exact base-class method signatures against the installed package before finalizing.
 
-- [ ] **Step 1: Implement `huyen/memory.py`**
+- [ ] **Step 1: Implement `dosclaw_qwen/memory.py`**
 ```python
 """Per-customer hybrid memory: structured profile + decaying episodic, with semantic+recency
 recall and forgetting/consolidation. Implements AgentScope's LongTermMemoryBase."""
@@ -394,7 +394,7 @@ _EXTRACT_SYS = (
     "profile may be empty {} if nothing durable. Use null as a value to forget a fact."
 )
 
-class HuyenMemory(LongTermMemoryBase):
+class DOSClaw-QwenMemory(LongTermMemoryBase):
     def __init__(self, customer_id: str):
         super().__init__()
         self.customer_id = customer_id
@@ -459,7 +459,7 @@ class HuyenMemory(LongTermMemoryBase):
         return block or "No relevant memories."
 ```
 
-- [ ] **Step 2: Consolidation/forgetting helper** (append to `huyen/memory.py`): a method `consolidate()` that drops episodes whose `decay_score` is below a floor after summarizing the customer's durable takeaways into the profile. (Demo can call it via a `/api/consolidate` admin route or a button.)
+- [ ] **Step 2: Consolidation/forgetting helper** (append to `dosclaw_qwen/memory.py`): a method `consolidate()` that drops episodes whose `decay_score` is below a floor after summarizing the customer's durable takeaways into the profile. (Demo can call it via a `/api/consolidate` admin route or a button.)
 ```python
     async def consolidate(self, floor: float = 0.1) -> int:
         """Forget faded episodes (low decay score). Returns count removed."""
@@ -478,13 +478,13 @@ class HuyenMemory(LongTermMemoryBase):
 
 ### Task 2.4: Seed script for embeddings (FAQ + episodic for cust_a)
 
-- [ ] **Step 1: `huyen/seed_embeddings.py`** - a script that inserts shop FAQ rows (e.g. opening hours, return policy, menu, allergy info) and a couple of past episodes for `cust_a` (e.g. "Linh asked for dairy-free options on 2026-05") with real embeddings via `model.embed`. Run it after `schema.sql` + `seed.sql`. Commit.
+- [ ] **Step 1: `dosclaw_qwen/seed_embeddings.py`** - a script that inserts shop FAQ rows (e.g. opening hours, return policy, menu, allergy info) and a couple of past episodes for `cust_a` (e.g. "Linh asked for dairy-free options on 2026-05") with real embeddings via `model.embed`. Run it after `schema.sql` + `seed.sql`. Commit.
 
 ---
 
 ## Phase 3 - Tools + agent
 
-### Task 3.1: `huyen/tools.py` - knowledge_search + human_handoff
+### Task 3.1: `dosclaw_qwen/tools.py` - knowledge_search + human_handoff
 
 - [ ] **Step 1: Implement** (plain async functions with type hints + docstrings; registered via `Toolkit.register_tool_function`):
 ```python
@@ -519,7 +519,7 @@ def make_human_handoff(customer_id: str):
 ```
 - [ ] **Step 2: Commit.**
 
-### Task 3.2: `huyen/agent.py` - build the ReActAgent
+### Task 3.2: `dosclaw_qwen/agent.py` - build the ReActAgent
 
 - [ ] **Step 1: Implement**
 ```python
@@ -527,28 +527,28 @@ from agentscope.agent import ReActAgent
 from agentscope.memory import InMemoryMemory
 from agentscope.tool import Toolkit
 from . import model, tools
-from .memory import HuyenMemory
+from .memory import DOSClaw-QwenMemory
 
 SYS_PROMPT = (
-    "Ban la Huyen, tro ly cham soc khach hang cua mot shop. Tra loi bang dung ngon ngu khach "
+    "Ban la DOSClaw-Qwen, tro ly cham soc khach hang cua mot shop. Tra loi bang dung ngon ngu khach "
     "dung (tieng Viet thi co dau day du), ngan gon, than thien. Dung knowledge_search cho cau hoi "
     "ve san pham/chinh sach. Khi gap viec ngoai chinh sach (hoan tien, khieu nai phuc tap) PHAI "
     "goi human_handoff. Khi khach quay lai, dung bo nho da co de ca nhan hoa - dung hoi lai dieu "
     "da biet. Tuyet doi khong bia thong tin."
 )
 
-def build_huyen_agent(customer_id: str) -> ReActAgent:
+def build_agent(customer_id: str) -> ReActAgent:
     toolkit = Toolkit()
     toolkit.register_tool_function(tools.knowledge_search)
     toolkit.register_tool_function(tools.make_human_handoff(customer_id))
     return ReActAgent(
-        name="Huyen",
+        name="DOSClaw-Qwen",
         sys_prompt=SYS_PROMPT,
         model=model.make_chat_model(),
         formatter=model.make_formatter(),
         toolkit=toolkit,
         memory=InMemoryMemory(),                         # short-term, this session
-        long_term_memory=HuyenMemory(customer_id),       # per-customer persistent
+        long_term_memory=DOSClaw-QwenMemory(customer_id),       # per-customer persistent
         long_term_memory_mode="both",                    # agent can record/recall AND we retrieve
     )
 ```
@@ -558,15 +558,15 @@ def build_huyen_agent(customer_id: str) -> ReActAgent:
 
 ## Phase 4 - Web service + UI
 
-### Task 4.1: `huyen/app.py` - FastAPI chat service
+### Task 4.1: `dosclaw_qwen/app.py` - FastAPI chat service
 
-- [ ] **Step 1: Implement** `/api/chat` (streams the agent's reply + a recalled-memory block), `/api/customers`, `/api/consolidate`, static serving, and a simple login gate (reuse the cookie pattern from the bexly-coach app: a `/login` page that pre-fills demo creds, sets a cookie; gate `/` and `/api/*`). Drive the agent with `await agent(Msg(...))`; build a fresh agent per (customer_id) per request (memory is in the DB, so statelessness is fine). Stream NDJSON items `{kind:"memory"|"message", ...}`: first emit the recalled memory block (from `HuyenMemory.retrieve`) so the UI can show "what Huyen remembered", then the agent's final reply, then call `record` to persist the turn.
+- [ ] **Step 1: Implement** `/api/chat` (streams the agent's reply + a recalled-memory block), `/api/customers`, `/api/consolidate`, static serving, and a simple login gate (reuse the cookie pattern from the bexly-coach app: a `/login` page that pre-fills demo creds, sets a cookie; gate `/` and `/api/*`). Drive the agent with `await agent(Msg(...))`; build a fresh agent per (customer_id) per request (memory is in the DB, so statelessness is fine). Stream NDJSON items `{kind:"memory"|"message", ...}`: first emit the recalled memory block (from `DOSClaw-QwenMemory.retrieve`) so the UI can show "what DOSClaw-Qwen remembered", then the agent's final reply, then call `record` to persist the turn.
 ```python
 # Sketch of the core handler (full impl in the file):
-# memory = HuyenMemory(customer_id)
+# memory = DOSClaw-QwenMemory(customer_id)
 # recalled = await memory.retrieve(Msg(name="user", content=text, role="user"))
 # yield {"kind":"memory","text":recalled}
-# agent = build_huyen_agent(customer_id)
+# agent = build_agent(customer_id)
 # reply = await agent(Msg(name="user", content=text, role="user"))
 # yield {"kind":"message","text":reply.content}
 # await memory.record([Msg(name="user",content=text,role="user"), reply])
@@ -584,14 +584,14 @@ def build_huyen_agent(customer_id: str) -> ReActAgent:
 
 ### Task 5.1: Full local e2e against the live Qwen Cloud + local Postgres
 
-- [ ] **Step 1:** `docker compose up -d db`; apply `db/schema.sql` + `db/seed.sql`; run `python -m huyen.seed_embeddings`. Fill `.env` (DASHSCOPE_API_KEY from the hackathon coupon key). `uvicorn huyen.app:app --port 8092`.
+- [ ] **Step 1:** `docker compose up -d db`; apply `db/schema.sql` + `db/seed.sql`; run `python -m dosclaw_qwen.seed_embeddings`. Fill `.env` (DASHSCOPE_API_KEY from the hackathon coupon key). `uvicorn dosclaw_qwen.app:app --port 8092`.
 - [ ] **Step 2: Verify the memory demo** over `/api/chat`:
   1. Customer A: "I'm lactose intolerant, what can I drink?" -> knowledge_search -> answer + memory written.
-  2. New session, Customer A: "what do you recommend?" -> the memory block shows the lactose/oat-milk profile -> Huyen proactively recommends oat-milk drinks WITHOUT re-asking (cross-session recall).
+  2. New session, Customer A: "what do you recommend?" -> the memory block shows the lactose/oat-milk profile -> DOSClaw-Qwen proactively recommends oat-milk drinks WITHOUT re-asking (cross-session recall).
   3. Customer B: same question -> NO customer-A memory (isolation).
   4. A refund/complaint -> `human_handoff` -> confirms a ticket.
   5. (Optional) `/api/consolidate` for Customer A -> faded episodes pruned, profile retained.
-  Confirm Vietnamese replies have full diacritics; confirm tool-call activity is visible.
+  Confirm replies are in English for the demo; confirm tool-call activity is visible.
 
 ---
 
@@ -599,14 +599,14 @@ def build_huyen_agent(customer_id: str) -> ReActAgent:
 
 ### Task 6.1: Dockerfile + deploy on Alibaba ECS
 
-- [ ] **Step 1: `Dockerfile`** (python:3.11-slim, install requirements, `uvicorn huyen.app:app --host 0.0.0.0 --port 8092`).
+- [ ] **Step 1: `Dockerfile`** (python:3.11-slim, install requirements, `uvicorn dosclaw_qwen.app:app --host 0.0.0.0 --port 8092`).
 - [ ] **Step 2: Provision an Alibaba ECS** instance (the `aliyun` CLI / RAM user `joy` from memory). On it: `docker compose up -d` (the pgvector DB) + run the app container, env from a server-side `.env` (DASHSCOPE_API_KEY). Open the port / put a reverse proxy. This satisfies "backend running on Alibaba Cloud".
-- [ ] **Step 3: Proof of Alibaba** - the deployment proof is a code file in the repo that uses an Alibaba Cloud API: `huyen/model.py` calls DashScope (Alibaba's Qwen Cloud API). Record a short screen capture showing the app responding from the ECS public URL. Document the ECS + deploy steps in `infra/alibaba/README.md`.
+- [ ] **Step 3: Proof of Alibaba** - the deployment proof is a code file in the repo that uses an Alibaba Cloud API: `dosclaw_qwen/model.py` calls DashScope (Alibaba's Qwen Cloud API). Record a short screen capture showing the app responding from the ECS public URL. Document the ECS + deploy steps in `infra/alibaba/README.md`.
 
 ### Task 6.2: Public open-source repo + submission deliverables
 
-- [ ] **Step 1: README.md + ARCHITECTURE.md** in `apps/huyen-qwen/` (problem, architecture diagram, the memory design, how to run, the Qwen Cloud + Alibaba usage, license).
-- [ ] **Step 2: Extract a PUBLIC repo** (Apache-2.0), e.g. `JOY/Huyen-Agent`: copy `apps/huyen-qwen/*` (no secrets; `.env.example` only; grep for keys before pushing). License file visible. (Mirror the Bexly-Agent extraction process.)
+- [ ] **Step 1: README.md + ARCHITECTURE.md** in `apps/dosclaw_qwen-qwen/` (problem, architecture diagram, the memory design, how to run, the Qwen Cloud + Alibaba usage, license).
+- [ ] **Step 2: Extract a PUBLIC repo** (Apache-2.0), e.g. `JOY/DOSClaw-Qwen-Agent`: copy `apps/dosclaw_qwen-qwen/*` (no secrets; `.env.example` only; grep for keys before pushing). License file visible. (Mirror the Bexly-Agent extraction process.)
 - [ ] **Step 3: Submission assets** - architecture diagram (PNG), ~3-min demo video (the Task 5.2 memory demo), text description, the proof-of-Alibaba code-file link, testing access (URL + demo login). Identify track = MemoryAgent. Optional: a build-journey blog post for the Blog Post bonus prize.
 
 ---
@@ -614,6 +614,6 @@ def build_huyen_agent(customer_id: str) -> ReActAgent:
 ## Self-Review notes
 - Spec coverage: framework/runtime (AgentScope, Tasks 2-3), Qwen Cloud model+embeddings (Task 2.1), hybrid memory profile+episodic+recall+forgetting (Tasks 1, 2.2, 2.3), tools knowledge+handoff (Task 3.1), web UI with customer selector + new-session + memory panel (Task 4.2), Alibaba deploy + proof (Task 6.1), public repo + deliverables (Task 6.2). Covered.
 - Open items deferred to build (flagged): exact AgentScope 2.0 symbol/signature confirmation (`ReActAgent`/`DashScopeChatModel`/`LongTermMemoryBase` kwargs) against the installed package; the single ownership model for record/retrieve (recommended `static_control`, HTTP layer owns both, to avoid double-writes); the current Qwen chat model id (`qwen3.6-plus` recommended; confirm live) and embedding dim.
-- Type consistency: `embed()`, `store.*`, `rank_episodes`, `merge_profile`, `decay_score`, `HuyenMemory.record/retrieve/_write/_recall_block/consolidate` names are used consistently across tasks.
+- Type consistency: `embed()`, `store.*`, `rank_episodes`, `merge_profile`, `decay_score`, `DOSClaw-QwenMemory.record/retrieve/_write/_recall_block/consolidate` names are used consistently across tasks.
 - Prereqs: DASHSCOPE_API_KEY (hackathon $40 coupon) + an Alibaba ECS. Deadline 2026-07-09 (comfortable).
 ```

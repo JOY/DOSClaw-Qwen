@@ -1,9 +1,9 @@
 # Memory Stack Decision - AgentScope 2.0 + Mem0Middleware (PR #1775) + custom layer
 
-> Decided 2026-06-13. Huyen runs on AgentScope **2.0** and gets long-term memory from the
+> Decided 2026-06-13. DOSClaw-Qwen runs on AgentScope **2.0** and gets long-term memory from the
 > **`Mem0Middleware`** that is in-flight upstream as **PR #1775** (mem0-backed; routes mem0 through
 > OUR AgentScope Qwen model, so no OpenAI key). We add a thin custom layer on top and contribute a
-> Huyen example back upstream. This SUPERSEDES the earlier "hand-roll mem0 + pgvector" approach
+> DOSClaw-Qwen example back upstream. This SUPERSEDES the earlier "hand-roll mem0 + pgvector" approach
 > and §5 of AGENTSCOPE_API.md.
 
 ## Why this (the journey, with evidence)
@@ -21,7 +21,7 @@
   Rejected: honcho (AGPL-3.0), pin-1.0.21 (works but old + no contribution story), opening our own
   mem0 PR (would duplicate #1775).
 
-## How Huyen uses it
+## How DOSClaw-Qwen uses it
 
 1. Install AgentScope 2.0 with the middleware. Until PR #1775 merges, install from the PR branch:
    `pip install "agentscope[mem0] @ git+https://github.com/Osier-Yi/agentscope.git@mem0-dev"`
@@ -32,7 +32,7 @@
      `DashScopeChatModel(credential=DashScopeCredential(api_key=...), model=..., stream=True, formatter=DashScopeChatFormatter())`.
    - `Mem0Middleware(...)` configured via `build_mem0_config` so mem0's LLM + embeddings are the
      AgentScope DashScope model (NO OpenAI). Choose a vector store (pgvector or mem0's default local).
-   - `Agent(name="Huyen", system_prompt=..., model=..., toolkit=..., middlewares=[mem0_mw])` with the
+   - `Agent(name="DOSClaw-Qwen", system_prompt=..., model=..., toolkit=..., middlewares=[mem0_mw])` with the
      middleware's mode = one of `static_control` (auto search-before-reply + write-after),
      `agent_control` (`search_memory`/`add_memory` tools), or `both` (default).
    - Per-customer isolation: scope memory by `user_id = customer_id` (confirm how #1775 threads the
@@ -53,7 +53,7 @@
 ## Our upstream contribution (honest, NON-duplicate)
 
 Do NOT open a duplicate mem0 PR (#1775 already does it). Instead:
-- Contribute a **Huyen example** (VN SME multi-customer support agent, multi-`user_id`) to
+- Contribute a **DOSClaw-Qwen example** (VN SME multi-customer support agent, multi-`user_id`) to
   `examples/middleware/longterm_memory/` on top of #1775 - examples are welcome and non-duplicative.
 - Use #1775 in a real app and give feedback / review / small fixes on the PR (genuine engagement).
 - Align with the official port tracking issues (the unified RAG + long-term-memory abstraction:
@@ -108,7 +108,7 @@ chat = DashScopeChatModel(credential=DashScopeCredential(api_key=KEY), model="qw
 emb  = DashScopeEmbeddingModel(...)   # CONFIRM ctor: DashScope text-embedding-v4, dim 1024, int'l base url
 mw   = Mem0Middleware(user_id=customer_id, agent_id=tenant_id,
                       chat_model=chat, embedding_model=emb, mode="both")
-agent = Agent(name="Huyen", system_prompt=SYS, model=chat, toolkit=toolkit, middlewares=[mw])
+agent = Agent(name="DOSClaw-Qwen", system_prompt=SYS, model=chat, toolkit=toolkit, middlewares=[mw])
 
 async for ev in agent.reply_stream(inputs=UserMsg(name="user", content=text, role="user")):
     # ReplyStartEvent: middleware has ALREADY appended a name="memory" hint msg to agent.state.context

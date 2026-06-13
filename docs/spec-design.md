@@ -1,16 +1,16 @@
-# Huyen on Qwen Cloud - MemoryAgent - Design Spec
+# DOSClaw-Qwen on Qwen Cloud - MemoryAgent - Design Spec
 
 > Date: 2026-06-09
 > Author: JOY + agent
 > Status: Approved design (brainstorming output), pre-implementation
 > Competition: Global AI Hackathon Series with Qwen Cloud (Devpost) - **MemoryAgent track**
 > Deadline: 2026-07-09 14:00 PDT
-> Supersedes: `docs/superpowers/plans/2026-06-08-qwen-cloud-huyen-submission.md` (the earlier
+> Supersedes: `docs/superpowers/plans/2026-06-08-qwen-cloud-dosclaw_qwen-submission.md` (the earlier
 > OpenClaw/DOSClaw-based draft). This design uses **AgentScope** as the runtime instead.
 
 ## 1. Goal
 
-Ship "Huyen" - a Vietnamese SME customer-support agent with sophisticated, per-customer
+Ship "DOSClaw-Qwen" - an SME customer-support agent with sophisticated, per-customer
 persistent memory - as a Qwen Cloud hackathon entry in the MemoryAgent track. The agent
 remembers each customer across sessions (preferences, profile, past orders, complaints),
 recalls the right facts within a limited context window, forgets stale information, and
@@ -86,15 +86,15 @@ scoring) can change without touching the agent.
 
 ## 5. Components
 
-- `huyen/agent.py` - the AgentScope agent: Qwen Cloud model + system persona (Huyen, VN SME
+- `dosclaw_qwen/agent.py` - the AgentScope agent: Qwen Cloud model + system persona (DOSClaw-Qwen, VN SME
   support, multilingual) + tools, wired to `MemoryService`.
-- `huyen/memory_service.py` - the hybrid MemoryService (section 4), backed by Postgres+pgvector.
-- `huyen/tools/` - `knowledge_search` (shop FAQ via RAG over a small product/policy doc set) and
+- `dosclaw_qwen/memory_service.py` - the hybrid MemoryService (section 4), backed by Postgres+pgvector.
+- `dosclaw_qwen/tools/` - `knowledge_search` (shop FAQ via RAG over a small product/policy doc set) and
   `human_handoff` (escalates to a human queue; demo records the escalation + confirms only on
   success).
-- `huyen/server.py` - web API (chat endpoint, streaming) + serves the UI.
+- `dosclaw_qwen/server.py` - web API (chat endpoint, streaming) + serves the UI.
 - `web/` - single-page chat UI: a **customer selector (Customer A / B / ...)** and a **"new
-  session" control** so a judge can play a returning customer and watch Huyen recall their
+  session" control** so a judge can play a returning customer and watch DOSClaw-Qwen recall their
   profile; an optional side panel shows the memory currently recalled (great for the track).
 - `db/` - schema for `customers`, `customer_profile`, `episodic_memory` (pgvector), `knowledge`.
 - Deploy: Alibaba ECS running the app + UI + a Dockerized Postgres+pgvector (or Alibaba RDS).
@@ -110,12 +110,12 @@ scoring) can change without touching the agent.
 
 ## 7. Demo flow (for the video + judges)
 
-1. Customer A: "Do you have oat-milk lattes? I'm lactose intolerant." Huyen answers (knowledge),
+1. Customer A: "Do you have oat-milk lattes? I'm lactose intolerant." DOSClaw-Qwen answers (knowledge),
    and the writer stores profile facts (lactose intolerant; likes oat milk).
-2. New session, Customer A returns days later: "What do you recommend?" Huyen RECALLS the
+2. New session, Customer A returns days later: "What do you recommend?" DOSClaw-Qwen RECALLS the
    profile and proactively suggests oat-milk options - cross-session, per-customer recall.
 3. Customer B (different memory) asks something - shows multi-customer isolation.
-4. A complaint Huyen cannot resolve -> `human_handoff` -> confirms escalation.
+4. A complaint DOSClaw-Qwen cannot resolve -> `human_handoff` -> confirms escalation.
 5. (Optional) Show the consolidation/forgetting: an old trivial episode is summarized away while
    the durable preference persists.
 
@@ -129,7 +129,7 @@ scoring) can change without touching the agent.
 
 ## 9. Scope (MVP vs stretch)
 
-**MVP:** the hybrid MemoryService (profile + episodic + recall + basic forgetting), the Huyen
+**MVP:** the hybrid MemoryService (profile + episodic + recall + basic forgetting), the DOSClaw-Qwen
 agent on Qwen Cloud via AgentScope, `knowledge_search` + `human_handoff` tools, the web chat UI
 with customer selector + new-session, deployed on Alibaba Cloud with a seeded demo shop + 2-3
 demo customers.
