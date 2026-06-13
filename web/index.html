@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DOSClaw-Qwen</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #161616;
+        --muted: #666a73;
+        --line: #d9dde5;
+        --brand: #c8272d;
+        --brand-dark: #971c22;
+        --panel: #f7f8fa;
+        --surface: #ffffff;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: var(--surface);
+        color: var(--ink);
+      }
+      .app {
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 16px 22px;
+        border-bottom: 1px solid var(--line);
+      }
+      h1 {
+        margin: 0;
+        font-size: 20px;
+        letter-spacing: 0;
+      }
+      .controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      select, button, textarea {
+        font: inherit;
+      }
+      select, textarea {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: white;
+      }
+      select { padding: 8px 10px; min-width: 180px; }
+      button {
+        border: 0;
+        border-radius: 6px;
+        padding: 9px 12px;
+        background: var(--brand);
+        color: white;
+        cursor: pointer;
+      }
+      button.secondary {
+        background: #eceff3;
+        color: var(--ink);
+      }
+      main {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 360px;
+        min-height: 0;
+      }
+      .chat, .memory {
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .chat {
+        border-right: 1px solid var(--line);
+      }
+      .thread {
+        flex: 1;
+        overflow: auto;
+        padding: 18px 22px;
+        background: #fbfbfc;
+      }
+      .message {
+        max-width: 760px;
+        margin: 0 0 12px;
+        padding: 11px 13px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: white;
+        white-space: pre-wrap;
+        line-height: 1.45;
+      }
+      .message.user {
+        margin-left: auto;
+        border-color: #efc4c7;
+        background: #fff6f6;
+      }
+      .composer {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        padding: 14px;
+        border-top: 1px solid var(--line);
+      }
+      textarea {
+        min-height: 48px;
+        max-height: 120px;
+        resize: vertical;
+        padding: 10px;
+      }
+      .memory {
+        background: var(--panel);
+      }
+      .memory h2 {
+        margin: 0;
+        padding: 16px;
+        font-size: 15px;
+        border-bottom: 1px solid var(--line);
+      }
+      #memoryPanel {
+        padding: 14px 16px;
+        white-space: pre-wrap;
+        overflow: auto;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+      @media (max-width: 860px) {
+        header, .controls { align-items: stretch; flex-direction: column; }
+        main { grid-template-columns: 1fr; }
+        .chat { border-right: 0; }
+        .memory { min-height: 220px; border-top: 1px solid var(--line); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header>
+        <h1>DOSClaw-Qwen</h1>
+        <div class="controls">
+          <select id="customer"></select>
+          <button class="secondary" id="newSession" type="button">New session</button>
+        </div>
+      </header>
+      <main>
+        <section class="chat">
+          <div class="thread" id="thread"></div>
+          <form class="composer" id="composer">
+            <textarea id="message" placeholder="Ask as this customer..."></textarea>
+            <button type="submit">Send</button>
+          </form>
+        </section>
+        <aside class="memory">
+          <h2>Memory recalled</h2>
+          <div id="memoryPanel">No memory recalled yet.</div>
+        </aside>
+      </main>
+    </div>
+    <script>
+      const customer = document.querySelector("#customer");
+      const thread = document.querySelector("#thread");
+      const memoryPanel = document.querySelector("#memoryPanel");
+      const form = document.querySelector("#composer");
+      const message = document.querySelector("#message");
+      const newSession = document.querySelector("#newSession");
+
+      function addMessage(text, role) {
+        const node = document.createElement("div");
+        node.className = `message ${role}`;
+        node.textContent = text;
+        thread.appendChild(node);
+        thread.scrollTop = thread.scrollHeight;
+        return node;
+      }
+
+      async function loadCustomers() {
+        const response = await fetch("/api/customers");
+        const customers = await response.json();
+        customer.replaceChildren();
+        for (const item of customers) {
+          const option = document.createElement("option");
+          option.value = item.id;
+          option.textContent = item.name;
+          customer.appendChild(option);
+        }
+      }
+
+      newSession.addEventListener("click", () => {
+        thread.replaceChildren();
+        memoryPanel.textContent = "New visible session. Stored memory remains available.";
+      });
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const text = message.value.trim();
+        if (!text) return;
+        message.value = "";
+        addMessage(text, "user");
+        const reply = addMessage("", "assistant");
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ customer_id: customer.value, message: text }),
+        });
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop();
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            const event = JSON.parse(line);
+            if (event.kind === "memory") memoryPanel.textContent = event.text || "No relevant memory.";
+            if (event.kind === "message_delta") reply.textContent += event.text;
+            if (event.kind === "message" && !reply.textContent) reply.textContent = event.text;
+          }
+        }
+      });
+
+      loadCustomers().catch((error) => {
+        memoryPanel.textContent = `Failed to load customers: ${error.message}`;
+      });
+    </script>
+  </body>
+</html>

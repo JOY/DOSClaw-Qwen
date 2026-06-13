@@ -1,11 +1,11 @@
 param(
-    [string]$OutputPath = "docs/proof/huyen-submission-evidence.zip"
+    [string]$OutputPath = "docs/proof/dosclaw-qwen-submission-evidence.zip"
 )
 
 $ErrorActionPreference = "Stop"
 
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
-$staging = Join-Path ([System.IO.Path]::GetTempPath()) ("huyen-submission-" + [System.Guid]::NewGuid().ToString("N"))
+$staging = Join-Path ([System.IO.Path]::GetTempPath()) ("dosclaw-qwen-submission-" + [System.Guid]::NewGuid().ToString("N"))
 $outputFullPath = if ([System.IO.Path]::IsPathRooted($OutputPath)) {
     $OutputPath
 } else {
@@ -26,19 +26,18 @@ try {
 
     $docFiles = @(
         "README.md",
-        "docs/devpost-draft.md",
-        "docs/blog-post-draft.md",
-        "docs/social-post-draft.md",
-        "docs/demo-script.md",
-        "docs/video-recording-packet.md",
-        "docs/architecture.mmd",
-        "docs/deployment-proof.md",
-        "docs/judging-packet.md",
-        "docs/alibaba-cloud-deploy.md",
-        "docs/alibaba-ram-policy-huyen-deploy.json",
+        "ARCHITECTURE.md",
+        "HANDOFF.md",
+        "Dockerfile",
+        "docker-compose.yml",
+        "docs/MEMORY_STACK.md",
+        "docs/AGENTSCOPE_API.md",
+        "docs/hackathon-reference.md",
+        "infra/alibaba/README.md",
         "scripts/preflight-alibaba.ps1",
         "scripts/deploy-fc.ps1",
         "scripts/deploy-eci.ps1",
+        "scripts/deploy-acr.sh",
         "scripts/smoke-scenarios.ps1"
     )
 
@@ -62,16 +61,15 @@ try {
 
     $links = [ordered]@{
         generatedAt = (Get-Date).ToUniversalTime().ToString("o")
-        repository = "https://github.com/JOY/huyen-qwen-cloud"
-        ci = "https://github.com/JOY/huyen-qwen-cloud/actions"
-        permissionIssue = "https://github.com/JOY/huyen-qwen-cloud/issues/1"
-        liveQwenAdapter = "https://github.com/JOY/huyen-qwen-cloud/blob/main/src/lib/qwen.ts"
-        demoApi = "https://github.com/JOY/huyen-qwen-cloud/blob/main/src/app/api/demo/route.ts"
-        healthApi = "https://github.com/JOY/huyen-qwen-cloud/blob/main/src/app/api/health/route.ts"
-        smokeScript = "https://github.com/JOY/huyen-qwen-cloud/blob/main/scripts/smoke-scenarios.ps1"
-        preflightScript = "https://github.com/JOY/huyen-qwen-cloud/blob/main/scripts/preflight-alibaba.ps1"
-        functionComputeDeployScript = "https://github.com/JOY/huyen-qwen-cloud/blob/main/scripts/deploy-fc.ps1"
-        elasticContainerInstanceDeployScript = "https://github.com/JOY/huyen-qwen-cloud/blob/main/scripts/deploy-eci.ps1"
+        repository = "https://github.com/JOY/DOSClaw-Qwen"
+        ci = "https://github.com/JOY/DOSClaw-Qwen/actions"
+        liveQwenAdapter = "https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/model.py"
+        demoApi = "https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/app.py"
+        healthApi = "https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/app.py"
+        smokeScript = "https://github.com/JOY/DOSClaw-Qwen/blob/main/scripts/smoke-scenarios.ps1"
+        preflightScript = "https://github.com/JOY/DOSClaw-Qwen/blob/main/scripts/preflight-alibaba.ps1"
+        functionComputeDeployScript = "https://github.com/JOY/DOSClaw-Qwen/blob/main/scripts/deploy-fc.ps1"
+        elasticContainerInstanceDeployScript = "https://github.com/JOY/DOSClaw-Qwen/blob/main/scripts/deploy-eci.ps1"
     }
 
     $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
@@ -86,7 +84,7 @@ try {
     }
 
     Compress-Archive -Path (Join-Path $staging "*") -DestinationPath $outputFullPath -Force
-    Write-Host "Huyen submission evidence package written to $outputFullPath"
+    Write-Host "DOSClaw-Qwen submission evidence package written to $outputFullPath"
 } finally {
     if (Test-Path -LiteralPath $staging) {
         Remove-Item -LiteralPath $staging -Recurse -Force

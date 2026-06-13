@@ -3,10 +3,10 @@ param(
     [string]$Image,
 
     [string]$Region = "ap-southeast-1",
-    [string]$ServiceName = "huyen-qwen-cloud",
-    [string]$FunctionName = "huyen",
+    [string]$ServiceName = "dosclaw-qwen",
+    [string]$FunctionName = "dosclaw-qwen",
     [string]$TriggerName = "http-public",
-    [int]$Port = 3010
+    [int]$Port = 8092
 )
 
 $ErrorActionPreference = "Stop"
@@ -51,10 +51,10 @@ function ConvertTo-CompactJson {
 }
 
 if ([string]::IsNullOrWhiteSpace($Image)) {
-    throw "Image is required. Example: registry.ap-southeast-1.aliyuncs.com/<namespace>/huyen-qwen-cloud:hackathon-2026-06-08"
+    throw "Image is required. Example: registry.ap-southeast-1.aliyuncs.com/<namespace>/dosclaw-qwen:hackathon-2026-06-13"
 }
 
-Write-Host "Deploying Huyen Function Compute custom container..."
+Write-Host "Deploying DOSClaw-Qwen Function Compute custom container..."
 Write-Host "Region: $Region"
 Write-Host "Service: $ServiceName"
 Write-Host "Function: $FunctionName"
@@ -66,7 +66,7 @@ if ($serviceCheck.ok) {
 } else {
     $serviceBody = ConvertTo-CompactJson @{
         serviceName = $ServiceName
-        description = "Huyen Qwen Cloud hackathon demo service"
+        description = "DOSClaw-Qwen Qwen Cloud hackathon demo service"
         internetAccess = $true
     }
     Invoke-AliyunJson -Arguments @("fc-open", "CreateService", "--region", $Region, "--body", $serviceBody) | Out-Null
@@ -74,21 +74,18 @@ if ($serviceCheck.ok) {
 }
 
 $envVars = [ordered]@{
-    NODE_ENV = "production"
     PORT = "$Port"
-    NEXT_TELEMETRY_DISABLED = "1"
-    QWEN_CLOUD_BASE_URL = $env:QWEN_CLOUD_BASE_URL
-    QWEN_CLOUD_MODEL = if ($env:QWEN_CLOUD_MODEL) { $env:QWEN_CLOUD_MODEL } else { "qwen3.7-plus" }
+    DASHSCOPE_BASE_URL = $env:DASHSCOPE_BASE_URL
+    QWEN_CHAT_MODEL = if ($env:QWEN_CHAT_MODEL) { $env:QWEN_CHAT_MODEL } else { "qwen3.6-plus" }
+    QWEN_EMBED_MODEL = if ($env:QWEN_EMBED_MODEL) { $env:QWEN_EMBED_MODEL } else { "text-embedding-v4" }
 }
 
-if ($env:QWEN_CLOUD_API_KEY) {
-    $envVars.QWEN_CLOUD_API_KEY = $env:QWEN_CLOUD_API_KEY
-} elseif ($env:DASHSCOPE_API_KEY) {
+if ($env:DASHSCOPE_API_KEY) {
     $envVars.DASHSCOPE_API_KEY = $env:DASHSCOPE_API_KEY
 }
 
-if (!$envVars.QWEN_CLOUD_BASE_URL) {
-    $envVars.QWEN_CLOUD_BASE_URL = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+if (!$envVars.DASHSCOPE_BASE_URL) {
+    $envVars.DASHSCOPE_BASE_URL = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
 }
 
 $functionCheck = Invoke-AliyunJson -Arguments @("fc-open", "GetFunction", "--region", $Region, "--serviceName", $ServiceName, "--functionName", $FunctionName) -AllowFailure
@@ -98,7 +95,7 @@ if ($functionCheck.ok) {
 
 $functionBody = ConvertTo-CompactJson @{
     functionName = $FunctionName
-    description = "Huyen Qwen Cloud support autopilot demo"
+    description = "DOSClaw-Qwen Qwen Cloud support agent demo"
     runtime = "custom-container"
     handler = "index.handler"
     caPort = $Port
@@ -118,7 +115,7 @@ Write-Host "Created function: $ServiceName/$FunctionName"
 $triggerBody = ConvertTo-CompactJson @{
     triggerName = $TriggerName
     triggerType = "http"
-    description = "Public HTTP trigger for Huyen hackathon demo"
+    description = "Public HTTP trigger for DOSClaw-Qwen hackathon demo"
     triggerConfig = @{
         authType = "anonymous"
         methods = @("GET", "POST", "OPTIONS")
@@ -142,5 +139,5 @@ $trigger = Invoke-AliyunJson -Arguments @(
 Write-Host "Created HTTP trigger: $TriggerName"
 Write-Host $trigger.output
 Write-Host "After deployment, run:"
-Write-Host '$env:HUYEN_URL = "<trigger-url>"'
+Write-Host '$env:DOSCLAW_QWEN_URL = "<trigger-url>"'
 Write-Host "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/smoke-scenarios.ps1"

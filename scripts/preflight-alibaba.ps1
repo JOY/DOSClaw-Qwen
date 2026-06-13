@@ -69,7 +69,7 @@ foreach ($check in $checks) {
 }
 
 if ($failedRequired) {
-    throw "Alibaba Cloud preflight failed: Container Registry access is required before pushing the Huyen image."
+    throw "Alibaba Cloud preflight failed: Container Registry access is required before pushing the DOSClaw-Qwen image."
 }
 
 if (!$runtimeAvailable) {
