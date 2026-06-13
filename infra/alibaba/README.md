@@ -8,6 +8,22 @@ This app is designed for a small ECS deployment for the hackathon demo.
 - A Qwen Cloud / DashScope API key.
 - Port `8092` reachable from the judge testing URL, or a reverse proxy forwarding HTTPS to `8092`.
 
+## RAM Permissions
+
+Run the read-only preflight before deployment:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/preflight-alibaba.ps1
+```
+
+The deploy user needs, at minimum:
+
+- ACR read/write access for image push and repository lookup.
+- Either Function Compute permissions for `scripts/deploy-fc.ps1`, or Elastic Container Instance permissions for `scripts/deploy-eci.ps1`.
+- Network permissions for the chosen runtime path, such as VSwitch/Security Group references for ECI.
+
+The current scripts intentionally fail before mutation when these permissions are missing.
+
 ## Environment
 
 Create a server-side `.env` file. Do not commit it.
