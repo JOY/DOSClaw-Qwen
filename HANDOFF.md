@@ -22,10 +22,13 @@ Postgres, or RDS). Qwen Cloud is the model/embedding API; this is what makes the
 
 ## Read these, in order
 
-0. **`docs/MEMORY_STACK.md`** - the MEMORY architecture decision: use **mem0** (Apache-2.0) as the
-   substrate (configured to use DashScope for LLM + embeddings, self-hosted on pgvector) + a thin
-   custom layer (profile, recall composition, forgetting). This **overrides the hand-rolled
-   store/episodic design** in implementation-plan.md. Read it before Phase 2.
+0. **`docs/MEMORY_STACK.md`** - the MEMORY architecture decision (READ FIRST): Huyen runs on
+   **AgentScope 2.0** and gets long-term memory from the **`Mem0Middleware`** in upstream **PR #1775**
+   (mem0 routed through our DashScope/Qwen model - no OpenAI; until merged, install from
+   `git+https://github.com/Osier-Yi/agentscope.git@mem0-dev`). We add a custom layer (profile, recall
+   composition, UI) and contribute a Huyen **example** upstream (NOT a duplicate PR). This
+   **supersedes the hand-rolled store/episodic design** in implementation-plan.md AND §5 of
+   AGENTSCOPE_API.md. Read it before Phase 2.
 1. **`docs/AGENTSCOPE_API.md`** - the VERIFIED AgentScope 2.0.1 API (introspected from the
    installed package). **Authoritative.** The implementation-plan below was written before this
    verification and uses several wrong symbols (`ReActAgent`, `agentscope.memory`,

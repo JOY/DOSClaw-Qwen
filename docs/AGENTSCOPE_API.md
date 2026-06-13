@@ -8,6 +8,20 @@
 > The plan's *memory engine design* (profile + episodic pgvector + recall ranking + forgetting)
 > and *task breakdown* are still correct - only the AgentScope wiring layer changed.
 
+## MEMORY UPDATE 2026-06-13 (supersedes §5 below)
+
+AgentScope 2.0 adds long-term memory via a **middleware** (the installed 2.0.1 has a confirmed
+`agentscope.middleware` module; there is NO `agentscope.memory`). Use the **`Mem0Middleware`** from
+upstream **PR #1775** (mem0-backed; routes mem0 through our DashScope/Qwen model via
+`build_mem0_config` - no OpenAI key). See `MEMORY_STACK.md`. Sections §1-§4 below (verified 2.0 API:
+`Agent`, `DashScopeChatModel`, `FunctionTool`, `ToolResponse`, `reply`/`observe`) remain correct;
+**§5 (hand-rolled memory service) is SUPERSEDED by the middleware.**
+
+> DashScope international routing: AgentScope 1.0's chat model used
+> `base_http_api_url="https://dashscope-intl.aliyuncs.com/api/v1"` (native SDK), and that global
+> also routed embeddings. 2.0's `DashScopeChatModel` takes a `credential=` object instead - confirm
+> where the int'l base URL goes in 2.0 (credential / client_kwargs) when wiring DashScope.
+
 ## 0. Environment (verified)
 
 - Python **3.14.0** works. All deps install with cp314/pure-python wheels. Pinned/observed versions:

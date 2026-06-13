@@ -1,79 +1,70 @@
-# Memory Stack Decision - mem0 + a custom layer (READ THIS for the memory design)
+# Memory Stack Decision - AgentScope 2.0 + Mem0Middleware (PR #1775) + custom layer
 
-> Decided 2026-06-13. This **overrides the hand-rolled store/episodic design** in
-> `implementation-plan.md`: use **mem0** (mem0ai, Apache-2.0) as the memory substrate, wrapped by a
-> thin custom layer. The pure logic in `huyen/ranking.py`, the `customer_profile`/`knowledge`/
-> `handoffs` tables, and the AgentScope agent layer (`AGENTSCOPE_API.md`) are unchanged.
+> Decided 2026-06-13. Huyen runs on AgentScope **2.0** and gets long-term memory from the
+> **`Mem0Middleware`** that is in-flight upstream as **PR #1775** (mem0-backed; routes mem0 through
+> OUR AgentScope Qwen model, so no OpenAI key). We add a thin custom layer on top and contribute a
+> Huyen example back upstream. This SUPERSEDES the earlier "hand-roll mem0 + pgvector" approach
+> and §5 of AGENTSCOPE_API.md.
 
-## Why mem0 (and why not the others)
+## Why this (the journey, with evidence)
 
-- **mem0 - CHOSEN.** Apache-2.0. Plugs into **DashScope for BOTH the LLM and the embeddings** via
-  `openai_base_url` (verified in mem0 docs). Self-hosts on **pgvector only** (matches our scaffold,
-  no extra DB). Has built-in Ebbinghaus-style memory decay. ~48k stars, active.
-- **honcho - REJECTED.** AGPL-3.0 - copyleft that would force our **public** repo to AGPL.
-  Dealbreaker. (Also: custom-embedding support was still unconfirmed.)
-- **Graphiti (Zep) - STRETCH only.** Apache-2.0 and the strongest on *temporal* forgetting
-  (bi-temporal knowledge graph: facts get `valid_at`/`expired_at`, answers "what was their address
-  before they moved"). But it needs an extra graph DB (Neo4j/FalkorDB) on ECS and the docs warn
-  weaker models may emit invalid JSON for graph construction (test with Qwen first). Optional
-  Phase-7 enhancement, NOT the MVP.
-- **Hand-rolled (original plan)** = most custom but slowest/buggiest for a handoff build.
+- AgentScope 2.0 dropped 1.x's `Mem0LongTermMemory`. Per the official FAQ, RAG + long-term memory
+  are *"being ported from 1.0 to the 2.0 architecture and will land in upcoming releases"*
+  (https://docs.agentscope.io/v2/others/faq). So 2.0.x has no built-in long-term memory yet.
+- In 2.0 the idiomatic home for memory is a **middleware** (`Agent(middlewares=[...])`).
+- **PR #1775** "feat(middleware): add mem0-backed long-term memory middleware" (OPEN, MERGEABLE,
+  53 tests, author Osier-Yi, fork branch `mem0-dev`, base `main`) already implements exactly this.
+  Its `_agentscope_adapter.py` (`AgentScopeLLM` / `AgentScopeEmbedding` + `build_mem0_config`) makes
+  mem0 use OUR AgentScope chat + embedding model for extraction/embeddings - **mem0 runs on
+  Qwen/DashScope, no separate OpenAI key.** This is what makes the hackathon's Qwen-only rule work.
+- So we do NOT hand-roll memory and do NOT pin to 1.x.
+  Rejected: honcho (AGPL-3.0), pin-1.0.21 (works but old + no contribution story), opening our own
+  mem0 PR (would duplicate #1775).
 
-## mem0 + DashScope config (confirm exact field names against the installed mem0 version)
+## How Huyen uses it
 
-```python
-import os
-from mem0 import Memory
+1. Install AgentScope 2.0 with the middleware. Until PR #1775 merges, install from the PR branch:
+   `pip install "agentscope[mem0] @ git+https://github.com/Osier-Yi/agentscope.git@mem0-dev"`
+   (mem0ai>=2.0.0,<3.0.0). Switch to released `agentscope[mem0]` once #1775 merges.
+2. Build the agent following PR #1775's example `examples/middleware/longterm_memory/mem0/oss_demo.py`
+   + its README (READ THEM - they are the source of truth for the constructor):
+   - DashScope chat model per AGENTSCOPE_API.md §2/§3:
+     `DashScopeChatModel(credential=DashScopeCredential(api_key=...), model=..., stream=True, formatter=DashScopeChatFormatter())`.
+   - `Mem0Middleware(...)` configured via `build_mem0_config` so mem0's LLM + embeddings are the
+     AgentScope DashScope model (NO OpenAI). Choose a vector store (pgvector or mem0's default local).
+   - `Agent(name="Huyen", system_prompt=..., model=..., toolkit=..., middlewares=[mem0_mw])` with the
+     middleware's mode = one of `static_control` (auto search-before-reply + write-after),
+     `agent_control` (`search_memory`/`add_memory` tools), or `both` (default).
+   - Per-customer isolation: scope memory by `user_id = customer_id` (confirm how #1775 threads the
+     user/agent id - read `_middleware.py`).
+3. mem0 owns episodic storage. We keep a relational `customer_profile` / `knowledge` / `handoffs` in
+   Postgres for the structured profile + FAQ RAG + handoff log (NOT episodic - mem0 has that).
 
-config = {
-    "llm": {"provider": "openai", "config": {
-        "model": os.environ["QWEN_CHAT_MODEL"],            # e.g. qwen-plus / qwen3.6-plus
-        "api_key": os.environ["DASHSCOPE_API_KEY"],
-        "openai_base_url": os.environ["DASHSCOPE_BASE_URL"]}},
-    "embedder": {"provider": "openai", "config": {
-        "model": os.environ["QWEN_EMBED_MODEL"],           # text-embedding-v4
-        "api_key": os.environ["DASHSCOPE_API_KEY"],
-        "openai_base_url": os.environ["DASHSCOPE_BASE_URL"],
-        "embedding_dims": int(os.environ["EMBED_DIM"])}},   # CONFIRM key name (embedding_dims vs dimensions)
-    "vector_store": {"provider": "pgvector", "config": {     # CONFIRM pgvector config keys
-        "dbname": "huyen", "user": "huyen", "password": "huyen",
-        "host": "localhost", "port": 5432}},
-}
-m = Memory.from_config(config)
-m.add(messages, user_id=customer_id)               # per-customer episodic write
-hits = m.search(query, user_id=customer_id, limit=K)   # per-customer recall
-```
-Confirm against `docs.mem0.ai/components/llms/config`, `.../embedders/config`, and the pgvector
-vector-store config page for the installed version. Verify mem0 actually routes embeddings through
-DashScope (log one request) - this is the hackathon's hard requirement.
+## What stays custom (our Innovation / Technical-Depth on top of the middleware)
 
-## How it wires into AgentScope (agent layer unchanged - see AGENTSCOPE_API.md)
+1. Structured per-customer **profile** (conflict-overwrite) beyond mem0's flat facts - shown in a UI panel.
+2. **Recall composition in limited context**: combine the profile + mem0 search hits into a compact
+   block (static_control already injects mem0 hits; we add the profile + light ranking).
+3. Optional **persona layering** idea (L0 conversation -> L1 atom -> L2 scenario -> L3 persona)
+   borrowed as a design concept (inspiration only, no code copied).
+4. `knowledge_search` (shop FAQ RAG via DashScope `text-embedding-v4`) + `human_handoff` tools.
+5. The **memory side-panel** UI visualizing what was recalled each turn (strong for the demo).
 
-`huyen/memory_service.py` becomes a thin wrapper over mem0 PLUS our custom layer:
+## Our upstream contribution (honest, NON-duplicate)
 
-- `async recall(customer_id, query) -> str`: `m.search(query, user_id=customer_id, limit=K)` for
-  episodic memories, PLUS our structured **profile** (always included), composed into a compact
-  limited-context block. Reuse `ranking.py` (`rank_episodes` semantic+recency blend, `merge_profile`).
-  Inject the block via `await agent.observe(Msg(... role="system"))` before `agent.reply(...)`.
-- `async record(customer_id, user_text, assistant_text)`: `m.add(...)` for episodic; ALSO run our
-  durable-profile extractor (LLM -> facts, conflict-overwrite into `customer_profile`). We keep an
-  explicit profile table for the demo's profile panel and for deterministic recall.
-- `async consolidate(customer_id)`: our forgetting/pruning policy layered on mem0's decay.
+Do NOT open a duplicate mem0 PR (#1775 already does it). Instead:
+- Contribute a **Huyen example** (VN SME multi-customer support agent, multi-`user_id`) to
+  `examples/middleware/longterm_memory/` on top of #1775 - examples are welcome and non-duplicative.
+- Use #1775 in a real app and give feedback / review / small fixes on the PR (genuine engagement).
+- Align with the official port tracking issues (the unified RAG + long-term-memory abstraction:
+  IS #1663; related #1665 / #1747). Reference them in our writeup.
+This yields a truthful "contributed to AgentScope 2.0's memory effort" story without claiming to be first.
 
-**Schema note:** mem0's pgvector store creates and owns its OWN episodic table. So in `db/schema.sql`
-you can drop the hand-rolled `episodic_memory` table (let mem0 own episodic) and KEEP
-`customer_profile`, `knowledge`, `handoffs` as ours. Decide at build time; simplest = mem0 owns episodic.
+## Confirm before coding (read the PR, do not guess)
 
-## What stays custom (this is where the Innovation / Technical-Depth points come from)
-
-1. Structured per-customer **profile** with conflict-overwrite (richer than mem0's flat fact list).
-2. **Recall composition**: profile (always) + top-K mem0 episodic re-ranked by our semantic+recency
-   blend into a compact, limited-context block - directly targets the track's "recall in limited context".
-3. **Forgetting/consolidation** policy on top of mem0.
-4. The **memory side-panel** in the web UI showing exactly what was recalled each turn (great demo).
-5. **Qwen-native** wiring: DashScope drives mem0's LLM + embeddings AND the AgentScope agent.
-
-## Knowledge base stays separate
-
-mem0 is per-customer MEMORY, NOT the shop FAQ. Keep the `knowledge` table + pgvector RAG (DashScope
-`text-embedding-v4`) for the `knowledge_search` tool exactly as the plan describes.
+- Read PR #1775 files: `_middleware.py` (modes + how user_id/agent_id is threaded),
+  `_agentscope_adapter.py` (`build_mem0_config` exact signature), `_tools.py`, and
+  `examples/middleware/longterm_memory/mem0/oss_demo.py`.
+- Confirm the `Mem0Middleware` constructor (how to pass the AgentScope model + the vector store).
+- Confirm the per-customer key (`user_id`) flows through so Customer A and B stay isolated.
+- Confirm `mem0ai` version (PR pins `>=2.0.0,<3.0.0`).
