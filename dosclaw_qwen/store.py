@@ -33,6 +33,19 @@ def vector_literal(values: list[float]) -> str:
     return "[" + ",".join(str(float(value)) for value in values) + "]"
 
 
+def parse_json_object(value: Any) -> dict[str, Any]:
+    """Return a JSON object from asyncpg json/jsonb values."""
+    if isinstance(value, dict):
+        return value
+    if isinstance(value, str):
+        try:
+            parsed = json.loads(value)
+        except json.JSONDecodeError:
+            return {}
+        return parsed if isinstance(parsed, dict) else {}
+    return {}
+
+
 class Store:
     """Database facade used by the app and memory service."""
 
@@ -62,7 +75,7 @@ class Store:
         )
         if not row or not row["facts"]:
             return {}
-        return dict(row["facts"])
+        return parse_json_object(row["facts"])
 
     async def set_profile(
         self,

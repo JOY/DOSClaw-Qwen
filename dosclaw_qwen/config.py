@@ -21,6 +21,6 @@ DATABASE_URL = os.environ.get(
     "postgresql://dosclaw_qwen:dosclaw_qwen@localhost:5432/dosclaw_qwen",
 )
 DEFAULT_TENANT_ID = os.environ.get("DEFAULT_TENANT_ID", "tenant_demo")
+MEM0_QDRANT_PATH = os.environ.get("MEM0_QDRANT_PATH", ".mem0/qdrant")
 DEMO_LOGIN_USER = os.environ.get("DEMO_LOGIN_USER", "judge")
 DEMO_LOGIN_PASS = os.environ.get("DEMO_LOGIN_PASS", "")
-

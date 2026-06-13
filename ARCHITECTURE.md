@@ -15,10 +15,10 @@ flowchart LR
   Agent --> Tools[knowledge_search / human_handoff]
   Profile --> PG[(Postgres + pgvector)]
   Tools --> PG
-  Agent --> Qwen[Qwen Cloud DashScope chat]
-  Mem0 --> Qwen
-  Mem0 --> Embed[DashScope embeddings]
-  Tools --> Embed
+Agent --> Qwen[Qwen Cloud DashScope chat]
+Mem0 --> Qwen
+Mem0 --> Embed[Qwen Cloud compatible embeddings]
+Tools --> Embed
 ```
 
 ## Memory Model
@@ -27,6 +27,7 @@ flowchart LR
 - Postgres owns durable structured profile facts, tenant customers, FAQ knowledge vectors, and handoff tickets.
 - The UI receives a `memory` event before answer streaming so judges can see which profile and mem0 memories were recalled.
 - `MemoryService.record` extracts durable profile facts from each completed turn with Qwen JSON output and merges conflicts by letting newer facts win.
+- Embeddings use a small AgentScope `EmbeddingModelBase` adapter over DashScope's OpenAI-compatible endpoint. AgentScope's native `DashScopeEmbeddingModel` currently calls the native DashScope SDK path and does not honor the international compatible `base_url`, so the adapter keeps chat, FAQ vectors, and mem0 on the same Qwen Cloud key.
 
 ## Data Isolation
 
