@@ -53,7 +53,7 @@
 ## Our upstream contribution (honest, NON-duplicate)
 
 Do NOT open a duplicate mem0 PR (#1775 already does it). Instead:
-- Contribute a **DOSClaw-Qwen example** (VN SME multi-customer support agent, multi-`user_id`) to
+- Contribute a **DOSClaw-Qwen example** (multilingual SME multi-customer support agent, multi-`user_id`) to
   `examples/middleware/longterm_memory/` on top of #1775 - examples are welcome and non-duplicative.
 - Use #1775 in a real app and give feedback / review / small fixes on the PR (genuine engagement).
 - Align with the official port tracking issues (the unified RAG + long-term-memory abstraction:

@@ -83,7 +83,7 @@
 - Project gallery: /project-gallery · Updates: /updates · Forum: /forum_topics
 
 ## Our submission (decided)
-- Track: **MemoryAgent**. Project: **DOSClaw-Qwen** - VN SME customer-support agent with per-customer
+- Track: **MemoryAgent**. Project: **DOSClaw-Qwen** - multilingual SME customer-support agent with per-customer
   persistent memory. Runtime: **AgentScope** (QwenPaw as reference only, NOT forked). Model:
   Qwen Cloud (DashScope). Deploy: Alibaba ECS + Postgres/pgvector on Alibaba. Design spec:
   `docs/superpowers/specs/2026-06-09-dosclaw_qwen-qwen-memoryagent-design.md`.

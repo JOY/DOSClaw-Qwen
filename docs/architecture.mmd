@@ -1,0 +1,26 @@
+flowchart LR
+  Judge["Judge browser"]
+  UI["Static web UI\ncustomer picker, new session, memory panel"]
+  API["FastAPI app\n/api/chat NDJSON stream"]
+  Service["ChatService\nrecall -> AgentScope -> record"]
+  Profile["Structured profile memory\nPostgres JSONB"]
+  Agent["AgentScope 2.0 Agent"]
+  Mem0["Mem0Middleware\nuser_id=customer, agent_id=tenant"]
+  Tools["Tools\nknowledge_search, human_handoff"]
+  PG[("Postgres + pgvector\ntenants, customers, profile, knowledge, handoffs")]
+  QwenChat["Qwen Cloud / DashScope\nqwen3.6-plus chat"]
+  QwenEmbed["Qwen Cloud / DashScope\ntext-embedding-v4 embeddings"]
+
+  Judge --> UI
+  UI --> API
+  API --> Service
+  Service --> Profile
+  Service --> Agent
+  Profile --> PG
+  Agent --> Mem0
+  Agent --> Tools
+  Agent --> QwenChat
+  Mem0 --> QwenChat
+  Mem0 --> QwenEmbed
+  Tools --> PG
+  Tools --> QwenEmbed

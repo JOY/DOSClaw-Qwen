@@ -86,8 +86,8 @@ scoring) can change without touching the agent.
 
 ## 5. Components
 
-- `dosclaw_qwen/agent.py` - the AgentScope agent: Qwen Cloud model + system persona (DOSClaw-Qwen, VN SME
-  support, multilingual) + tools, wired to `MemoryService`.
+- `dosclaw_qwen/agent.py` - the AgentScope agent: Qwen Cloud model + system persona (DOSClaw-Qwen,
+  multilingual SME support, English demo) + tools, wired to `MemoryService`.
 - `dosclaw_qwen/memory_service.py` - the hybrid MemoryService (section 4), backed by Postgres+pgvector.
 - `dosclaw_qwen/tools/` - `knowledge_search` (shop FAQ via RAG over a small product/policy doc set) and
   `human_handoff` (escalates to a human queue; demo records the escalation + confirms only on

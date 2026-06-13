@@ -33,6 +33,13 @@ try {
         "docs/MEMORY_STACK.md",
         "docs/AGENTSCOPE_API.md",
         "docs/hackathon-reference.md",
+        "docs/devpost-draft.md",
+        "docs/demo-script.md",
+        "docs/video-recording-packet.md",
+        "docs/judging-packet.md",
+        "docs/deployment-proof.md",
+        "docs/architecture.mmd",
+        "docs/proof/README.md",
         "infra/alibaba/README.md",
         "scripts/preflight-alibaba.ps1",
         "scripts/deploy-fc.ps1",
@@ -67,6 +74,12 @@ try {
         liveQwenAdapter = "https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/model.py"
         demoApi = "https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/app.py"
         healthApi = "https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/app.py"
+        devpostDraft = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/devpost-draft.md"
+        judgingPacket = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/judging-packet.md"
+        demoScript = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/demo-script.md"
+        videoRecordingPacket = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/video-recording-packet.md"
+        deploymentProofNotes = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/deployment-proof.md"
+        architectureDiagram = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/architecture.mmd"
         smokeScript = "https://github.com/JOY/DOSClaw-Qwen/blob/main/scripts/smoke-scenarios.ps1"
         preflightScript = "https://github.com/JOY/DOSClaw-Qwen/blob/main/scripts/preflight-alibaba.ps1"
         functionComputeDeployScript = "https://github.com/JOY/DOSClaw-Qwen/blob/main/scripts/deploy-fc.ps1"

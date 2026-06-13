@@ -44,9 +44,11 @@ and embeddings. The proof-of-Alibaba code file is [`dosclaw_qwen/model.py`](dosc
 
 ## Status
 
-Under active construction. Phase 1 memory math, AgentScope/DashScope wiring, profile memory
-service, tools, FastAPI endpoints, and the web demo UI are in place. See **[HANDOFF.md](HANDOFF.md)** for the build brief and
-**[docs/implementation-plan.md](docs/implementation-plan.md)** for the task-by-task plan.
+Core MVP is built and locally verified with live Qwen Cloud: memory math, AgentScope/DashScope
+wiring, mem0-backed episodic memory, structured profile memory, tenant knowledge search, human
+handoff, FastAPI endpoints, and the web demo UI are in place. Public Alibaba deployment is pending
+RAM permissions or an ECS host with SSH access; see **[docs/deployment-proof.md](docs/deployment-proof.md)**
+and **[infra/alibaba/README.md](infra/alibaba/README.md)**.
 
 ## Run locally
 
@@ -68,6 +70,11 @@ uvicorn dosclaw_qwen.app:app --port 8092
 - [docs/implementation-plan.md](docs/implementation-plan.md) - task-by-task TDD plan
 - [docs/spec-design.md](docs/spec-design.md) - design rationale
 - [docs/hackathon-reference.md](docs/hackathon-reference.md) - hackathon rules and deliverables
+- [docs/devpost-draft.md](docs/devpost-draft.md) - submission description draft
+- [docs/demo-script.md](docs/demo-script.md) - live demo script
+- [docs/video-recording-packet.md](docs/video-recording-packet.md) - 3-minute video plan
+- [docs/judging-packet.md](docs/judging-packet.md) - judge-facing test notes
+- [docs/deployment-proof.md](docs/deployment-proof.md) - Alibaba proof and current deployment gate
 - [docs/legacy/](docs/legacy/) - assets from a prior, abandoned Next.js attempt (reference only)
 
 ## License
