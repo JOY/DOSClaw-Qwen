@@ -68,3 +68,62 @@ This yields a truthful "contributed to AgentScope 2.0's memory effort" story wit
 - Confirm the `Mem0Middleware` constructor (how to pass the AgentScope model + the vector store).
 - Confirm the per-customer key (`user_id`) flows through so Customer A and B stay isolated.
 - Confirm `mem0ai` version (PR pins `>=2.0.0,<3.0.0`).
+
+## Verified Mem0Middleware API + multi-tenant keying (read from PR #1775, 2026-06-13)
+
+**Constructor** (`_middleware.py`):
+```python
+Mem0Middleware(
+    user_id: str,                 # REQUIRED, mem0 namespacing -> use the CUSTOMER id
+    chat_model=...,               # AgentScope chat model mem0 uses for extraction (DashScope/Qwen)
+    embedding_model=...,          # AgentScope embedding model mem0 uses (DashScope)
+    mem0_config=None,             # optional full mem0 config (takes precedence; for a pgvector store)
+    mode="both",                  # "static_control" | "agent_control" | "both" (default "both")
+    agent_id: str | None = None,  # optional finer-grained scoping -> use the TENANT (shop) id
+)
+```
+
+**Multi-tenant + multi-customer = NATIVE (no custom keying code needed).** mem0 scopes memories by
+`(user_id, agent_id)`:
+- `user_id = customer_id`  -> per-customer isolation (Customer A vs Customer B).
+- `agent_id = tenant_id`   -> per-shop isolation (Shop X vs Shop Y).
+- Build one `Mem0Middleware(user_id=customer_id, agent_id=tenant_id, ...)` per (tenant, customer)
+  session. **Demo = ONE tenant + many customers; architecture already supports M tenants.**
+
+**Verified 2.0 wiring** (from `examples/middleware/longterm_memory/mem0/oss_demo.py`):
+```python
+from agentscope.agent import Agent
+from agentscope.credential import DashScopeCredential
+from agentscope.model import DashScopeChatModel
+from agentscope.embedding import DashScopeEmbeddingModel   # 2.0 NAME (NOT 1.0's DashScopeTextEmbedding)
+from agentscope.formatter import DashScopeChatFormatter
+from agentscope.middleware import Mem0Middleware
+from agentscope.tool import Toolkit
+from agentscope.message import UserMsg
+from agentscope.event import (ReplyStartEvent, TextBlockDeltaEvent,
+    ToolCallStartEvent, ToolCallDeltaEvent, ToolResultTextDeltaEvent, ToolResultEndEvent)
+
+chat = DashScopeChatModel(credential=DashScopeCredential(api_key=KEY), model="qwen-plus",
+                          stream=True, formatter=DashScopeChatFormatter())
+emb  = DashScopeEmbeddingModel(...)   # CONFIRM ctor: DashScope text-embedding-v4, dim 1024, int'l base url
+mw   = Mem0Middleware(user_id=customer_id, agent_id=tenant_id,
+                      chat_model=chat, embedding_model=emb, mode="both")
+agent = Agent(name="Huyen", system_prompt=SYS, model=chat, toolkit=toolkit, middlewares=[mw])
+
+async for ev in agent.reply_stream(inputs=UserMsg(name="user", content=text, role="user")):
+    # ReplyStartEvent: middleware has ALREADY appended a name="memory" hint msg to agent.state.context
+    #   (static_control) -> read it for the "memory recalled" UI panel.
+    # TextBlockDeltaEvent: stream the reply text to the browser (SSE).
+    # ToolCall*/ToolResult*: search_memory / add_memory activity (agent_control).
+    ...
+```
+- `static_control` searches mem0 before reply + appends a `name="memory"` hint msg to
+  `agent.state.context`, writes the exchange back after. `agent_control` exposes `search_memory` /
+  `add_memory` tools. `both` = both.
+- mem0 store: default Qdrant; for pgvector pass a `mem0_config`/`VectorStoreConfig`
+  (`mem0.configs.base.MemoryConfig`, `mem0.vector_stores.configs.VectorStoreConfig`).
+
+**Relational schema change (do this in `db/schema.sql`):** mem0 OWNS episodic memory now, so
+**drop the `episodic_memory` table**. Add a `tenants` table and a `tenant_id` column on `customers`,
+`customer_profile`, `knowledge` (per-tenant FAQ), `handoffs`. Seed ONE tenant (the demo shop) + 2-3
+customers under it. `knowledge_search` filters by `tenant_id`.
