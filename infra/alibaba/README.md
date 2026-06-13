@@ -22,6 +22,9 @@ For the managed-container scripts, the deploy user needs, at minimum:
 - Either Function Compute permissions for `scripts/deploy-fc.ps1`, or Elastic Container Instance permissions for `scripts/deploy-eci.ps1`.
 - Network permissions for the chosen runtime path, such as VSwitch/Security Group references for ECI.
 
+Use `infra/alibaba/ram-policy-dosclaw-qwen-deploy.json` as the deploy policy template. It covers
+the managed-container path plus ECS/VPC read-only checks used by preflight.
+
 The current managed-container scripts intentionally fail before mutation when these permissions are missing.
 
 If you already have an ECS host with SSH access, you can deploy without ACR/FC/ECI RAM permissions:

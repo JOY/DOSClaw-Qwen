@@ -41,6 +41,7 @@ try {
         "docs/architecture.mmd",
         "docs/proof/README.md",
         "infra/alibaba/README.md",
+        "infra/alibaba/ram-policy-dosclaw-qwen-deploy.json",
         "scripts/preflight-alibaba.ps1",
         "scripts/deploy-fc.ps1",
         "scripts/deploy-eci.ps1",
@@ -80,6 +81,7 @@ try {
         videoRecordingPacket = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/video-recording-packet.md"
         deploymentProofNotes = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/deployment-proof.md"
         architectureDiagram = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/architecture.mmd"
+        deployRamPolicy = "https://github.com/JOY/DOSClaw-Qwen/blob/main/infra/alibaba/ram-policy-dosclaw-qwen-deploy.json"
         smokeScript = "https://github.com/JOY/DOSClaw-Qwen/blob/main/scripts/smoke-scenarios.ps1"
         preflightScript = "https://github.com/JOY/DOSClaw-Qwen/blob/main/scripts/preflight-alibaba.ps1"
         functionComputeDeployScript = "https://github.com/JOY/DOSClaw-Qwen/blob/main/scripts/deploy-fc.ps1"
