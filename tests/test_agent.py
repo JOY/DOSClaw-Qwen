@@ -13,6 +13,12 @@ def test_make_mem0_config_uses_project_embedding_dimension():
     assert cfg.vector_store.config.collection_name == "dosclaw_qwen_1024"
 
 
+def test_make_mem0_config_can_scope_local_qdrant_path_by_identity():
+    cfg = make_mem0_config("tenant/demo", "cust:a")
+
+    assert cfg.vector_store.config.path.endswith("/tenant_demo/cust_a")
+
+
 def test_apply_demo_permission_rules_allows_demo_tools_only():
     state = AgentState()
 
@@ -32,7 +38,7 @@ def test_get_memory_middleware_reuses_qdrant_client_per_identity(monkeypatch):
     monkeypatch.setattr(agent_module, "Mem0Middleware", FakeMiddleware)
     monkeypatch.setattr(agent_module.model, "make_chat_model", lambda stream=False: f"chat:{stream}")
     monkeypatch.setattr(agent_module.model, "make_embedding_model", lambda: "embedding")
-    monkeypatch.setattr(agent_module, "make_mem0_config", lambda: "mem0-config")
+    monkeypatch.setattr(agent_module, "make_mem0_config", lambda *args: "mem0-config")
     get_memory_middleware.cache_clear()
 
     first = get_memory_middleware("tenant_demo", "cust_a", "both")

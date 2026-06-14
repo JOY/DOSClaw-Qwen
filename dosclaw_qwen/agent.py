@@ -63,15 +63,19 @@ def get_memory_middleware(tenant_id: str, customer_id: str, mode: str) -> Mem0Mi
         agent_id=tenant_id,
         chat_model=model.make_chat_model(stream=False),
         embedding_model=model.make_embedding_model(),
-        mem0_config=make_mem0_config(),
+        mem0_config=make_mem0_config(tenant_id, customer_id),
         mode=mode,
     )
 
 
-def make_mem0_config():
+def make_mem0_config(tenant_id: str | None = None, customer_id: str | None = None):
     """Build mem0 config with vector dimensions matching Qwen embeddings."""
     from mem0.configs.base import MemoryConfig
     from mem0.vector_stores.configs import VectorStoreConfig
+
+    path = config.MEM0_QDRANT_PATH
+    if tenant_id and customer_id:
+        path = f"{path}/{_path_segment(tenant_id)}/{_path_segment(customer_id)}"
 
     return MemoryConfig(
         vector_store=VectorStoreConfig(
@@ -79,10 +83,14 @@ def make_mem0_config():
             config={
                 "collection_name": f"dosclaw_qwen_{config.EMBED_DIM}",
                 "embedding_model_dims": config.EMBED_DIM,
-                "path": config.MEM0_QDRANT_PATH,
+                "path": path,
             },
         ),
     )
+
+
+def _path_segment(value: str) -> str:
+    return "".join(ch if ch.isalnum() or ch in ("-", "_") else "_" for ch in value)
 
 
 def apply_demo_permission_rules(state: AgentState) -> None:
