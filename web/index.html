@@ -346,10 +346,21 @@
         if (activeController) activeController.abort();
         thread.replaceChildren();
         memoryPanel.textContent = memoryText;
+        unlockComposer();
       }
 
       function sleep(ms) {
         return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      function lockComposer() {
+        message.disabled = true;
+        form.querySelector("button").disabled = true;
+      }
+
+      function unlockComposer() {
+        message.disabled = false;
+        form.querySelector("button").disabled = false;
       }
 
       function renderRuntime(runtime) {
@@ -449,8 +460,7 @@
         const text = message.value.trim();
         if (!text) return;
         message.value = "";
-        message.disabled = true;
-        form.querySelector("button").disabled = true;
+        lockComposer();
         addMessage(text, "user");
         const controller = new AbortController();
         activeController = controller;
@@ -474,8 +484,12 @@
           if (event.kind === "message_delta") {
             ensureReply().body.textContent += event.text;
           }
-          if (event.kind === "message" && !ensureReply().body.textContent) {
-            reply.body.textContent = event.text;
+          if (event.kind === "message") {
+            if (!ensureReply().body.textContent) {
+              reply.body.textContent = event.text;
+            }
+            unlockComposer();
+            message.focus();
           }
         };
         try {
@@ -502,8 +516,7 @@
           }
         } finally {
           if (activeController === controller) activeController = null;
-          message.disabled = false;
-          form.querySelector("button").disabled = false;
+          unlockComposer();
           message.focus();
         }
       });

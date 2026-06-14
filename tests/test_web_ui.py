@@ -12,3 +12,13 @@ def test_web_ui_includes_demo_guide_and_runtime_badge():
     assert "data-prompt=\"I'm JOY, 18 YO\"" in html
     assert "id=\"runtimeBadge\"" in html
     assert "id=\"runtimeDetail\"" in html
+
+
+def test_web_ui_unlocks_composer_when_final_reply_arrives():
+    html = WEB_INDEX.read_text(encoding="utf-8")
+
+    assert "function lockComposer()" in html
+    assert "function unlockComposer()" in html
+    assert 'if (event.kind === "message")' in html
+    message_handler = html.split('if (event.kind === "message")', 1)[1].split("};", 1)[0]
+    assert "unlockComposer();" in message_handler
