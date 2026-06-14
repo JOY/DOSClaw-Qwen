@@ -185,7 +185,7 @@ foreach ($entry in $appEnv.GetEnumerator()) {
     $envIndex += 1
 }
 
-Write-Host "Updating app container in $ContainerGroupName without touching DB/Qdrant or creating a new EIP..."
+Write-Host "Updating app container spec in $ContainerGroupName without creating a new EIP..."
 Invoke-AliyunEci -Arguments $argsList.ToArray() | Out-Null
 Write-Host "Waiting for containers to become ready..."
 
