@@ -34,12 +34,14 @@ try {
         "docs/AGENTSCOPE_API.md",
         "docs/hackathon-reference.md",
         "docs/devpost-draft.md",
+        "docs/devpost-submission-fields.md",
         "docs/demo-script.md",
         "docs/video-recording-packet.md",
         "docs/judging-packet.md",
         "docs/submission-status.md",
         "docs/deployment-proof.md",
         "docs/architecture.mmd",
+        "docs/architecture.svg",
         "docs/proof/README.md",
         "infra/alibaba/README.md",
         "infra/alibaba/ram-policy-dosclaw-qwen-deploy.json",
@@ -83,12 +85,14 @@ try {
         demoApi = "https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/app.py"
         healthApi = "https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/app.py"
         devpostDraft = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/devpost-draft.md"
+        devpostSubmissionFields = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/devpost-submission-fields.md"
         judgingPacket = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/judging-packet.md"
         demoScript = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/demo-script.md"
         videoRecordingPacket = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/video-recording-packet.md"
         submissionStatus = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/submission-status.md"
         deploymentProofNotes = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/deployment-proof.md"
         architectureDiagram = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/architecture.mmd"
+        architectureSvg = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/architecture.svg"
         deployRamPolicy = "https://github.com/JOY/DOSClaw-Qwen/blob/main/infra/alibaba/ram-policy-dosclaw-qwen-deploy.json"
         smokeScript = "https://github.com/JOY/DOSClaw-Qwen/blob/main/scripts/smoke-scenarios.ps1"
         preflightScript = "https://github.com/JOY/DOSClaw-Qwen/blob/main/scripts/preflight-alibaba.ps1"

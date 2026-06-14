@@ -1,6 +1,6 @@
 # DOSClaw-Qwen Video Recording Packet
 
-Target length: 2:45 to 3:00. The video must be public or unlisted-publicly-viewable.
+Target length: 2:45 to 3:00. Upload the final video to YouTube, Vimeo, or Youku and make it accessible to judges without login.
 
 ## Recording Setup
 
@@ -46,7 +46,7 @@ Target length: 2:45 to 3:00. The video must be public or unlisted-publicly-viewa
 ## Post-Recording Checklist
 
 - [ ] Optional local MP4 render is created with `scripts/render-demo-video.ps1` after collecting screenshots in `docs/proof/video-frames/`.
-- [ ] Video URL is public or unlisted-publicly-viewable.
+- [ ] Video URL is public or unlisted-publicly-viewable on YouTube, Vimeo, or Youku.
 - [ ] Video URL is added to `docs/devpost-draft.md`.
 - [ ] Video URL is added to `docs/judging-packet.md`.
 - [ ] Live URL and login are added to `docs/devpost-draft.md`.

@@ -30,6 +30,8 @@ Expected result: Customer A's profile appears in the memory panel and informs th
 - Demo API: https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/app.py
 - Deployment scripts: https://github.com/JOY/DOSClaw-Qwen/tree/main/scripts
 - Architecture: https://github.com/JOY/DOSClaw-Qwen/blob/main/ARCHITECTURE.md
+- Architecture diagram SVG: https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/architecture.svg
+- Devpost paste sheet: https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/devpost-submission-fields.md
 
 ## Current Deployment
 
@@ -51,5 +53,5 @@ The repo also includes:
 
 - Live demo URL: `http://8.219.211.170/`
 - Demo login: none required for the current public demo.
-- Video URL: add the public or unlisted recording URL after upload.
-- Alibaba proof: use the live URL, `docs/deployment-proof.md`, `scripts/deploy-eci-source.ps1`, and `dosclaw_qwen/model.py`. No separate public proof recording is required by the current hackathon reference.
+- Video URL: add the public or unlisted YouTube, Vimeo, or Youku URL after upload.
+- Alibaba proof: use the live URL, `docs/deployment-proof.md`, `scripts/deploy-eci-source.ps1`, and `dosclaw_qwen/model.py`. If the Devpost form asks for a separate runtime proof clip, record `/api/runtime`, the live app, the ECI console, and the code proof link.

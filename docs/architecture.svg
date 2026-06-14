@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="860" viewBox="0 0 1400 860" role="img" aria-labelledby="title desc">
+  <title id="title">DOSClaw-Qwen Architecture</title>
+  <desc id="desc">AgentScope 2.0 customer support agent using Qwen Cloud chat and embeddings, Mem0Middleware, Qdrant, Postgres pgvector, FastAPI, and Alibaba Cloud ECI.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#335c45"/>
+    </marker>
+    <style>
+      .bg { fill: #f7f9f6; }
+      .title { fill: #17211c; font: 700 34px Segoe UI, Arial, sans-serif; }
+      .subtitle { fill: #506159; font: 18px Segoe UI, Arial, sans-serif; }
+      .box { fill: #ffffff; stroke: #b8c8bd; stroke-width: 2; rx: 10; }
+      .cloud { fill: #eef7ff; stroke: #8db8d9; stroke-width: 2; rx: 10; }
+      .store { fill: #f8f0ff; stroke: #bda4d8; stroke-width: 2; rx: 10; }
+      .runtime { fill: #edf8ef; stroke: #83b88f; stroke-width: 2; rx: 10; }
+      .text { fill: #1b2721; font: 600 18px Segoe UI, Arial, sans-serif; }
+      .small { fill: #53615a; font: 14px Segoe UI, Arial, sans-serif; }
+      .label { fill: #385342; font: 13px Segoe UI, Arial, sans-serif; }
+      .line { stroke: #335c45; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+      .dash { stroke-dasharray: 7 6; }
+      .section { fill: none; stroke: #d6e0d9; stroke-width: 2; rx: 18; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1400" height="860"/>
+  <text class="title" x="60" y="62">DOSClaw-Qwen Architecture</text>
+  <text class="subtitle" x="60" y="94">AgentScope 2.0 + Qwen Cloud MemoryAgent for tenant-scoped SME customer support</text>
+
+  <rect class="section" x="40" y="125" width="390" height="650"/>
+  <text class="label" x="62" y="154">Judge-facing demo</text>
+
+  <rect class="section" x="470" y="125" width="440" height="650"/>
+  <text class="label" x="492" y="154">Alibaba Cloud ECI runtime</text>
+
+  <rect class="section" x="950" y="125" width="410" height="650"/>
+  <text class="label" x="972" y="154">Cloud model + durable memory services</text>
+
+  <rect class="box" x="90" y="195" width="270" height="90"/>
+  <text class="text" x="120" y="232">Judge Browser</text>
+  <text class="small" x="120" y="258">English demo flow</text>
+
+  <rect class="box" x="90" y="365" width="270" height="110"/>
+  <text class="text" x="120" y="402">Static Web UI</text>
+  <text class="small" x="120" y="428">Customer picker</text>
+  <text class="small" x="120" y="450">New session + memory panel</text>
+
+  <rect class="runtime" x="520" y="190" width="330" height="110"/>
+  <text class="text" x="550" y="228">FastAPI App</text>
+  <text class="small" x="550" y="254">/api/chat NDJSON stream</text>
+  <text class="small" x="550" y="276">/api/runtime proof endpoint</text>
+
+  <rect class="runtime" x="520" y="365" width="330" height="110"/>
+  <text class="text" x="550" y="402">ChatService</text>
+  <text class="small" x="550" y="428">Recall -> AgentScope -> record</text>
+  <text class="small" x="550" y="450">Streams memory, model, tool events</text>
+
+  <rect class="runtime" x="520" y="545" width="330" height="110"/>
+  <text class="text" x="550" y="582">AgentScope 2.0 Agent</text>
+  <text class="small" x="550" y="608">Qwen reasoning</text>
+  <text class="small" x="550" y="630">knowledge_search + human_handoff</text>
+
+  <rect class="store" x="985" y="185" width="330" height="120"/>
+  <text class="text" x="1015" y="224">Postgres + pgvector</text>
+  <text class="small" x="1015" y="250">Tenants, customers, profile</text>
+  <text class="small" x="1015" y="272">Knowledge rows + handoff tickets</text>
+
+  <rect class="store" x="985" y="365" width="330" height="110"/>
+  <text class="text" x="1015" y="402">Qdrant Vector Store</text>
+  <text class="small" x="1015" y="428">Mem0 episodic memory</text>
+  <text class="small" x="1015" y="450">Scoped by customer + tenant</text>
+
+  <rect class="cloud" x="985" y="545" width="330" height="110"/>
+  <text class="text" x="1015" y="582">Qwen Cloud / DashScope</text>
+  <text class="small" x="1015" y="608">qwen3.6-plus chat</text>
+  <text class="small" x="1015" y="630">text-embedding-v4 embeddings</text>
+
+  <rect class="box" x="520" y="700" width="330" height="70"/>
+  <text class="text" x="550" y="732">Mem0Middleware</text>
+  <text class="small" x="550" y="754">user_id=customer, agent_id=tenant</text>
+
+  <path class="line" d="M 225 285 L 225 365"/>
+  <path class="line" d="M 360 420 L 520 245"/>
+  <text class="label" x="385" y="320">HTTP</text>
+  <path class="line" d="M 685 300 L 685 365"/>
+  <path class="line" d="M 685 475 L 685 545"/>
+  <path class="line" d="M 850 420 L 985 245"/>
+  <text class="label" x="875" y="312">profile + FAQ + handoff</text>
+  <path class="line" d="M 850 600 L 985 600"/>
+  <text class="label" x="878" y="586">chat + tool grounding</text>
+  <path class="line" d="M 685 655 L 685 700"/>
+  <path class="line" d="M 850 735 L 985 420"/>
+  <text class="label" x="875" y="545">episodic vectors</text>
+  <path class="line dash" d="M 850 735 L 985 600"/>
+  <text class="label" x="878" y="685">memory extraction</text>
+  <path class="line dash" d="M 1145 545 L 1145 475"/>
+  <text class="label" x="1162" y="518">embeddings</text>
+
+  <rect class="runtime" x="90" y="585" width="270" height="100"/>
+  <text class="text" x="120" y="622">Visible Evidence</text>
+  <text class="small" x="120" y="648">Memory recalled panel</text>
+  <text class="small" x="120" y="670">Model + tool metadata</text>
+</svg>

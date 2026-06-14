@@ -51,4 +51,4 @@ That script clones the public repo on the ECS host, writes a server-side `.env`,
 - Runtime type: Elastic Container Instance source bootstrap with Python app, Postgres/pgvector sidecar, Qdrant sidecar, and nginx public proxy.
 - Demo login: none required for the current public demo.
 - Smoke evidence path: `docs/proof/eci-smoke-latest.json`
-- Video URL: add after recording and upload.
+- Video URL: add after recording and upload to YouTube, Vimeo, or Youku.

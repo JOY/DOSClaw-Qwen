@@ -84,11 +84,13 @@ flowchart LR
 - Qwen Cloud model adapter: https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/model.py
 - FastAPI demo surface: https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/app.py
 - Architecture: https://github.com/JOY/DOSClaw-Qwen/blob/main/ARCHITECTURE.md
+- Architecture diagram SVG: https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/architecture.svg
 - Alibaba deployment docs: https://github.com/JOY/DOSClaw-Qwen/blob/main/infra/alibaba/README.md
 
 ## Submission Fields
 
 - Live demo URL: http://8.219.211.170/
 - Demo login: none required for the current public demo.
-- Video URL: add the public or unlisted recording URL after upload.
+- Video URL: add the public or unlisted YouTube, Vimeo, or Youku URL after upload.
 - Alibaba runtime proof: `scripts/deploy-eci-source.ps1` and `docs/deployment-proof.md`.
+- Paste-ready submission fields: `docs/devpost-submission-fields.md`.
