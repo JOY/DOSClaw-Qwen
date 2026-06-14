@@ -4,6 +4,7 @@
     {
       "Effect": "Allow",
       "Action": [
+        "ram:CreateServiceLinkedRole",
         "sts:GetCallerIdentity"
       ],
       "Resource": "*"
