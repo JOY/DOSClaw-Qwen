@@ -18,6 +18,7 @@ Last refreshed: 2026-06-14.
 - Demo script: `docs/demo-script.md`.
 - Video recording packet: `docs/video-recording-packet.md`.
 - Evidence package generator: `scripts/package-submission.ps1`.
+- Optional local video renderer: `scripts/render-demo-video.ps1`.
 
 ## Verified Live Runtime
 
@@ -73,3 +74,4 @@ These cannot be completed inside the repository alone:
 - Paste the final video URL into Devpost and, optionally, into `docs/devpost-draft.md` and `docs/judging-packet.md`.
 - Submit the Devpost form with the live demo URL, repository URL, Qwen Cloud proof code link, architecture notes, and MemoryAgent track selection.
 
+The repository includes `scripts/render-demo-video.ps1` to turn captured UI screenshots into a local MP4, but the final Devpost requirement is still a public or unlisted video URL from an external video host.

@@ -49,7 +49,8 @@ try {
         "scripts/deploy-eci-source.ps1",
         "scripts/deploy-ecs-ssh.ps1",
         "scripts/deploy-acr.sh",
-        "scripts/smoke-scenarios.ps1"
+        "scripts/smoke-scenarios.ps1",
+        "scripts/render-demo-video.ps1"
     )
 
     foreach ($file in $docFiles) {
@@ -65,8 +66,10 @@ try {
         Copy-Item -LiteralPath $source -Destination $target -Force
     }
 
-    $smokeFiles = Get-ChildItem -LiteralPath (Join-Path $repoRoot "docs/proof") -Filter "*.json" -ErrorAction SilentlyContinue
-    foreach ($file in $smokeFiles) {
+    $proofFiles = @()
+    $proofFiles += @(Get-ChildItem -LiteralPath (Join-Path $repoRoot "docs/proof") -Filter "*.json" -ErrorAction SilentlyContinue)
+    $proofFiles += @(Get-ChildItem -LiteralPath (Join-Path $repoRoot "docs/proof") -Filter "*.mp4" -ErrorAction SilentlyContinue)
+    foreach ($file in $proofFiles) {
         Copy-Item -LiteralPath $file.FullName -Destination (Join-Path $proofOut $file.Name) -Force
     }
 
@@ -93,6 +96,7 @@ try {
         elasticContainerInstanceDeployScript = "https://github.com/JOY/DOSClaw-Qwen/blob/main/scripts/deploy-eci.ps1"
         elasticContainerInstanceSourceDeployScript = "https://github.com/JOY/DOSClaw-Qwen/blob/main/scripts/deploy-eci-source.ps1"
         ecsSshDeployScript = "https://github.com/JOY/DOSClaw-Qwen/blob/main/scripts/deploy-ecs-ssh.ps1"
+        demoVideoRenderScript = "https://github.com/JOY/DOSClaw-Qwen/blob/main/scripts/render-demo-video.ps1"
     }
 
     $utf8NoBom = New-Object System.Text.UTF8Encoding($false)

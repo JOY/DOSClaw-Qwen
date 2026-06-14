@@ -6,3 +6,6 @@ __pycache__/
 .mem0/
 docs/proof/*latest.json
 docs/proof/*.zip
+docs/proof/*.mp4
+docs/proof/*.png
+docs/proof/video-frames/
