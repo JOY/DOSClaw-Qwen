@@ -35,10 +35,19 @@
         padding: 16px 22px;
         border-bottom: 1px solid var(--line);
       }
+      .brand {
+        display: grid;
+        gap: 3px;
+      }
       h1 {
         margin: 0;
         font-size: 20px;
         letter-spacing: 0;
+      }
+      .tagline {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
       }
       .controls {
         display: flex;
@@ -78,6 +87,37 @@
       }
       .chat {
         border-right: 1px solid var(--line);
+      }
+      .demo-banner {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 14px;
+        align-items: center;
+        padding: 14px 22px;
+        border-bottom: 1px solid var(--line);
+        background: #fff;
+      }
+      .demo-title {
+        margin: 0 0 3px;
+        font-weight: 700;
+      }
+      .demo-copy {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.4;
+      }
+      .runtime-pill {
+        max-width: 420px;
+        padding: 7px 9px;
+        border: 1px solid #cfd8d3;
+        border-radius: 999px;
+        background: #f4faf6;
+        color: #27543a;
+        font-size: 12px;
+        line-height: 1.35;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .thread {
         flex: 1;
@@ -149,9 +189,54 @@
         overflow: auto;
         color: var(--muted);
         line-height: 1.45;
+        min-height: 145px;
+        border-bottom: 1px solid var(--line);
+      }
+      .guide {
+        padding: 14px 16px 16px;
+        border-bottom: 1px solid var(--line);
+        background: #fff;
+      }
+      .guide h2 {
+        padding: 0;
+        border: 0;
+      }
+      .guide-copy {
+        margin: 6px 0 12px;
+        color: var(--muted);
+        line-height: 1.4;
+      }
+      .prompt-list {
+        display: grid;
+        gap: 8px;
+      }
+      .prompt-chip {
+        width: 100%;
+        padding: 9px 10px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #fbfbfc;
+        color: var(--ink);
+        text-align: left;
+        line-height: 1.3;
+      }
+      .prompt-chip:hover {
+        border-color: #b7bec9;
+        background: #f2f4f7;
+      }
+      .runtime-detail {
+        padding: 14px 16px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+      .runtime-detail strong {
+        color: var(--ink);
       }
       @media (max-width: 860px) {
         header, .controls { align-items: stretch; flex-direction: column; }
+        .demo-banner { grid-template-columns: 1fr; }
+        .runtime-pill { max-width: none; white-space: normal; }
         main { grid-template-columns: 1fr; }
         .chat { border-right: 0; }
         .memory { min-height: 220px; border-top: 1px solid var(--line); }
@@ -161,7 +246,10 @@
   <body>
     <div class="app">
       <header>
-        <h1>DOSClaw-Qwen</h1>
+        <div class="brand">
+          <h1>DOSClaw-Qwen</h1>
+          <p class="tagline">MemoryAgent demo for multilingual SME customer support</p>
+        </div>
         <div class="controls">
           <select id="customer"></select>
           <button class="secondary" id="newSession" type="button">New session</button>
@@ -169,6 +257,13 @@
       </header>
       <main>
         <section class="chat">
+          <div class="demo-banner">
+            <div>
+              <p class="demo-title">Judge the memory, not a canned script.</p>
+              <p class="demo-copy">Use Customer B to teach a new fact, start a visible new session, then ask what the agent remembers.</p>
+            </div>
+            <div class="runtime-pill" id="runtimeBadge">Runtime loading...</div>
+          </div>
           <div class="thread" id="thread"></div>
           <form class="composer" id="composer">
             <textarea id="message" placeholder="Ask as this customer..."></textarea>
@@ -178,6 +273,19 @@
         <aside class="memory">
           <h2>Memory recalled</h2>
           <div id="memoryPanel">No memory recalled yet.</div>
+          <section class="guide">
+            <h2>Demo guide</h2>
+            <p class="guide-copy">Click a prompt to load it, then press Enter or Send.</p>
+            <div class="prompt-list">
+              <button class="prompt-chip" type="button" data-customer="cust_a" data-prompt="I'm lactose intolerant. What do you recommend?">Customer A: recall dietary preference</button>
+              <button class="prompt-chip" type="button" data-customer="cust_b" data-prompt="I'm JOY, 18 YO">Customer B: teach name and age</button>
+              <button class="prompt-chip" type="button" data-prompt="What do you remember about me?">Ask recalled memory</button>
+              <button class="prompt-chip" type="button" data-prompt="What is your refund policy?">Trigger shop knowledge search</button>
+            </div>
+          </section>
+          <div class="runtime-detail" id="runtimeDetail">
+            <strong>Runtime:</strong> loading live model and memory details...
+          </div>
         </aside>
       </main>
     </div>
@@ -185,9 +293,12 @@
       const customer = document.querySelector("#customer");
       const thread = document.querySelector("#thread");
       const memoryPanel = document.querySelector("#memoryPanel");
+      const runtimeBadge = document.querySelector("#runtimeBadge");
+      const runtimeDetail = document.querySelector("#runtimeDetail");
       const form = document.querySelector("#composer");
       const message = document.querySelector("#message");
       const newSession = document.querySelector("#newSession");
+      const promptButtons = document.querySelectorAll(".prompt-chip");
       let activeController = null;
 
       function addMessage(text, role) {
@@ -220,6 +331,29 @@
         memoryPanel.textContent = memoryText;
       }
 
+      function renderRuntime(runtime) {
+        const model = runtime.chat_model || "unknown model";
+        const memoryEngine = runtime.memory_engine || "memory";
+        const vectorStore = runtime.vector_store || "vector store";
+        runtimeBadge.textContent = `${model} | ${memoryEngine} | ${vectorStore}`;
+        setRuntimeDetail([
+          ["Runtime", `${runtime.agent_runtime || "AgentScope"} + ${memoryEngine}`],
+          ["Model", model],
+          ["Embeddings", `${runtime.embedding_model || "unknown"} (${runtime.embedding_dimensions || "?"}d)`],
+          ["Memory scope", runtime.memory_scope || "customer + tenant"],
+        ]);
+      }
+
+      function setRuntimeDetail(rows) {
+        runtimeDetail.replaceChildren();
+        rows.forEach(([label, value], index) => {
+          if (index > 0) runtimeDetail.appendChild(document.createElement("br"));
+          const labelNode = document.createElement("strong");
+          labelNode.textContent = `${label}:`;
+          runtimeDetail.append(labelNode, ` ${value}`);
+        });
+      }
+
       async function loadCustomers() {
         const response = await fetch("/api/customers");
         const customers = await response.json();
@@ -232,6 +366,12 @@
         }
       }
 
+      async function loadRuntime() {
+        const response = await fetch("/api/runtime");
+        if (!response.ok) throw new Error(`Runtime failed with HTTP ${response.status}`);
+        renderRuntime(await response.json());
+      }
+
       newSession.addEventListener("click", () => {
         clearVisibleSession("New visible session. Stored memory remains available.");
       });
@@ -240,6 +380,18 @@
         clearVisibleSession();
         message.focus();
       });
+
+      for (const button of promptButtons) {
+        button.addEventListener("click", () => {
+          const targetCustomer = button.dataset.customer;
+          if (targetCustomer && customer.value !== targetCustomer) {
+            customer.value = targetCustomer;
+            customer.dispatchEvent(new Event("change"));
+          }
+          message.value = button.dataset.prompt || "";
+          message.focus();
+        });
+      }
 
       message.addEventListener("keydown", (event) => {
         if (event.key === "Enter" && !event.shiftKey) {
@@ -316,6 +468,10 @@
 
       loadCustomers().catch((error) => {
         memoryPanel.textContent = `Failed to load customers: ${error.message}`;
+      });
+      loadRuntime().catch((error) => {
+        runtimeBadge.textContent = "Runtime unavailable";
+        setRuntimeDetail([["Runtime", error.message]]);
       });
     </script>
   </body>

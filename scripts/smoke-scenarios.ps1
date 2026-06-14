@@ -15,6 +15,7 @@ $results = [ordered]@{
     checkedAt = (Get-Date).ToUniversalTime().ToString("o")
     baseUrl = $BaseUrl
     health = $null
+    runtime = $null
     customers = @()
     chat = $null
 }
@@ -25,6 +26,12 @@ if (!$health.ok -or $health.service -ne "dosclaw-qwen") {
     throw "Unexpected health response: $($health | ConvertTo-Json -Depth 10)"
 }
 $results.health = $health
+
+$runtime = Invoke-RestMethod -Uri "$BaseUrl/api/runtime"
+if ($runtime.service -ne "dosclaw-qwen" -or !$runtime.chat_model -or $runtime.memory_engine -ne "Mem0Middleware") {
+    throw "Unexpected runtime response: $($runtime | ConvertTo-Json -Depth 10)"
+}
+$results.runtime = $runtime
 
 $customers = Invoke-RestMethod -Uri "$BaseUrl/api/customers"
 if (!$customers -or $customers.Count -lt 2) {
