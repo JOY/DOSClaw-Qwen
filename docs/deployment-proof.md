@@ -11,12 +11,11 @@ DOSClaw-Qwen has two proof layers:
 
 ## Current Runtime Status
 
-Local live Qwen Cloud verification has passed, but public Alibaba runtime creation is blocked by RAM permissions until the deploy user can either:
+The public Alibaba Cloud runtime is live on Elastic Container Instance in `ap-southeast-1`.
+It runs a Python app container, a Postgres/pgvector sidecar, and an nginx sidecar that exposes
+the app on public HTTP port `80`.
 
-- use ACR plus Function Compute or Elastic Container Instance; or
-- access an existing ECS host through SSH with inbound app traffic opened.
-
-Use the current preflight script to record the exact gate:
+Use the current preflight script to record Alibaba Cloud API access:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/preflight-alibaba.ps1 -Mode ManagedContainer -OutputPath docs/proof/alibaba-managed-preflight-latest.json
@@ -43,10 +42,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy-ecs-ssh.ps1 -
 
 That script clones the public repo on the ECS host, writes a server-side `.env`, starts Postgres, builds the app image on the host, seeds embeddings, and verifies `/api/health`.
 
-## Final Fields To Fill
+## Final Fields
 
-- Alibaba public URL: TODO
-- Runtime type: TODO
-- Demo login: TODO
-- Smoke evidence path: TODO
+- Alibaba public URL: `http://8.219.211.170/`
+- Runtime type: Elastic Container Instance source bootstrap with Python app, Postgres/pgvector sidecar, and nginx public proxy.
+- Demo login: none required for the current public demo.
+- Smoke evidence path: `docs/proof/eci-smoke-latest.json`
 - Video URL: TODO

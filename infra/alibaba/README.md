@@ -6,7 +6,7 @@ This app is designed for a small ECS deployment for the hackathon demo.
 
 - Alibaba Cloud ECS with Docker and Docker Compose.
 - A Qwen Cloud / DashScope API key.
-- Port `8092` reachable from the judge testing URL, or a reverse proxy forwarding HTTPS to `8092`.
+- Port `80` reachable from the judge testing URL. The ECI source-bootstrap path runs an nginx sidecar that proxies public HTTP to the app on internal port `8092`.
 
 ## RAM Permissions
 
@@ -21,11 +21,21 @@ For the managed-container scripts, the deploy user needs, at minimum:
 - ACR read/write access for image push and repository lookup.
 - Either Function Compute permissions for `scripts/deploy-fc.ps1`, or Elastic Container Instance permissions for `scripts/deploy-eci.ps1`.
 - Network permissions for the chosen runtime path, such as VSwitch/Security Group references for ECI.
+- ECI public deployments can use the default TCP `80` security-group rule through the nginx sidecar. If your account does not create that rule automatically, grant `ecs:AuthorizeSecurityGroup` so the deploy script can open the public port.
+- EIP describe/release permissions are useful for cleaning up auto-created test EIPs during deployment troubleshooting.
 
 Use `infra/alibaba/ram-policy-dosclaw-qwen-deploy.json` as the deploy policy template. It covers
 the managed-container path plus ECS/VPC read-only checks used by preflight.
 
 The current managed-container scripts intentionally fail before mutation when these permissions are missing.
+
+For the fastest no-registry hackathon path, deploy a source-bootstrapped ECI group. It runs a
+Postgres/pgvector sidecar, a Python app container that clones this public repo, and an nginx
+sidecar that exposes the app on public HTTP port `80`:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy-eci-source.ps1 -ReplaceExisting
+```
 
 If you already have an ECS host with SSH access, you can deploy without ACR/FC/ECI RAM permissions:
 
@@ -65,7 +75,7 @@ docker exec dosclaw-qwen python -m dosclaw_qwen.seed_embeddings
 ## Smoke Test
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/smoke-scenarios.ps1 -BaseUrl "http://<ecs-host>:8092"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/smoke-scenarios.ps1 -BaseUrl "http://<ecs-or-eci-host>"
 ```
 
 For a no-key container health check, add `-SkipLiveChat`.

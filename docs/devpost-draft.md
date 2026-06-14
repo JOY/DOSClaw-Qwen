@@ -36,7 +36,7 @@ Qwen Cloud powers both reasoning and embeddings:
 - Embedding model: `text-embedding-v4` through DashScope's OpenAI-compatible endpoint.
 - Proof code: `dosclaw_qwen/model.py`.
 
-The intended deployment target is Alibaba Cloud ECS running the Python app container and Postgres/pgvector. The repo includes managed-container scripts for ACR + Function Compute / Elastic Container Instance and an ECS SSH deployment path for a known host.
+The live deployment runs on Alibaba Cloud Elastic Container Instance with a Python app container, a Postgres/pgvector sidecar, and an nginx public proxy sidecar. The repo includes managed-container scripts for ACR + Function Compute / Elastic Container Instance, the source-bootstrapped ECI path used for the live demo, and an ECS SSH deployment path for a known host.
 
 ## Architecture
 
@@ -72,7 +72,7 @@ flowchart LR
 - FastAPI
 - Postgres + pgvector
 - Docker
-- Alibaba Cloud ECS deployment scripts
+- Alibaba Cloud ECI deployment scripts
 
 ## Links
 
@@ -82,9 +82,9 @@ flowchart LR
 - Architecture: https://github.com/JOY/DOSClaw-Qwen/blob/main/ARCHITECTURE.md
 - Alibaba deployment docs: https://github.com/JOY/DOSClaw-Qwen/blob/main/infra/alibaba/README.md
 
-## Submission Fields To Fill After Deployment
+## Submission Fields
 
-- Live demo URL: TODO after Alibaba runtime is available.
-- Demo login: TODO after live runtime is available.
+- Live demo URL: http://8.219.211.170/
+- Demo login: none required for the current public demo.
 - Video URL: TODO after recording.
-- Alibaba runtime proof: TODO after ECS/managed-container deployment.
+- Alibaba runtime proof: `scripts/deploy-eci-source.ps1` and `docs/deployment-proof.md`.

@@ -70,13 +70,17 @@
       "Action": [
         "ecs:DescribeInstances",
         "ecs:DescribeSecurityGroups",
-        "ecs:DescribeSecurityGroupAttribute"
+        "ecs:DescribeSecurityGroupAttribute",
+        "ecs:AuthorizeSecurityGroup",
+        "ecs:RevokeSecurityGroup"
       ],
       "Resource": "*"
     },
     {
       "Effect": "Allow",
       "Action": [
+        "vpc:DescribeEipAddresses",
+        "vpc:ReleaseEipAddress",
         "vpc:DescribeVpcs",
         "vpc:DescribeVSwitches"
       ],

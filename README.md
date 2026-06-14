@@ -44,10 +44,10 @@ and embeddings. The proof-of-Alibaba code file is [`dosclaw_qwen/model.py`](dosc
 
 ## Status
 
-Core MVP is built and locally verified with live Qwen Cloud: memory math, AgentScope/DashScope
-wiring, mem0-backed episodic memory, structured profile memory, tenant knowledge search, human
-handoff, FastAPI endpoints, and the web demo UI are in place. Public Alibaba deployment is pending
-RAM permissions or an ECS host with SSH access; see **[docs/deployment-proof.md](docs/deployment-proof.md)**
+Core MVP is built and verified with live Qwen Cloud: memory math, AgentScope/DashScope wiring,
+mem0-backed episodic memory, structured profile memory, tenant knowledge search, human handoff,
+FastAPI endpoints, and the web demo UI are in place. The public Alibaba Cloud ECI deployment is
+live at `http://8.219.211.170/`; see **[docs/deployment-proof.md](docs/deployment-proof.md)**
 and **[infra/alibaba/README.md](infra/alibaba/README.md)**.
 
 ## Run locally

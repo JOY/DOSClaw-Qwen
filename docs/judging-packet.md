@@ -30,18 +30,25 @@ Expected result: Customer A's profile appears in the memory panel and informs th
 - Deployment scripts: https://github.com/JOY/DOSClaw-Qwen/tree/main/scripts
 - Architecture: https://github.com/JOY/DOSClaw-Qwen/blob/main/ARCHITECTURE.md
 
-## Current Deployment Gate
+## Current Deployment
 
-The code is ready for Alibaba deployment, but the current RAM user must be granted deployment permissions or a known ECS host with SSH access. The repo includes:
+The public demo is live on Alibaba Cloud Elastic Container Instance:
+
+- Live demo URL: `http://8.219.211.170/`
+- Runtime: Python app container, Postgres/pgvector sidecar, and nginx public proxy sidecar.
+- Smoke evidence: `docs/proof/eci-smoke-latest.json`
+
+The repo also includes:
 
 - `scripts/preflight-alibaba.ps1` for ACR/FC/ECI or ECS read-only checks.
 - `scripts/deploy-fc.ps1` for Function Compute.
 - `scripts/deploy-eci.ps1` for Elastic Container Instance.
+- `scripts/deploy-eci-source.ps1` for the source-bootstrapped ECI path used for the live demo.
 - `scripts/deploy-ecs-ssh.ps1` for an existing ECS host.
 
 ## Final Submission Placeholders
 
-- Live demo URL: TODO
-- Demo login: TODO
+- Live demo URL: `http://8.219.211.170/`
+- Demo login: none required for the current public demo.
 - Video URL: TODO
 - Public Alibaba proof recording: TODO
