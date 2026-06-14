@@ -56,7 +56,7 @@ Prerequisites: Python 3.11+ (3.14 works), Docker, and a Qwen Cloud `DASHSCOPE_AP
 
 ```bash
 cp .env.example .env          # fill in DASHSCOPE_API_KEY
-docker compose up -d db       # Postgres + pgvector
+docker compose up -d db qdrant # Postgres + pgvector + Qdrant
 python -m venv .venv && . .venv/Scripts/activate   # (Windows: .venv\Scripts\activate)
 pip install -r requirements.txt
 # apply schema + seed, then run the seed-embeddings script and the app (see docs/implementation-plan.md)

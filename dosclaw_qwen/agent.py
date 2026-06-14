@@ -73,20 +73,36 @@ def make_mem0_config(tenant_id: str | None = None, customer_id: str | None = Non
     from mem0.configs.base import MemoryConfig
     from mem0.vector_stores.configs import VectorStoreConfig
 
-    path = config.MEM0_QDRANT_PATH
-    if tenant_id and customer_id:
-        path = f"{path}/{_path_segment(tenant_id)}/{_path_segment(customer_id)}"
+    qdrant_config: dict[str, object] = {
+        "collection_name": f"dosclaw_qwen_{config.EMBED_DIM}",
+        "embedding_model_dims": config.EMBED_DIM,
+    }
+    if config.MEM0_QDRANT_HOST and config.MEM0_QDRANT_PORT:
+        qdrant_config.update(
+            {
+                "host": config.MEM0_QDRANT_HOST,
+                "port": config.MEM0_QDRANT_PORT,
+            },
+        )
+    else:
+        path = config.MEM0_QDRANT_PATH
+        if tenant_id and customer_id:
+            path = f"{path}/{_path_segment(tenant_id)}/{_path_segment(customer_id)}"
+        qdrant_config["path"] = path
 
     return MemoryConfig(
         vector_store=VectorStoreConfig(
             provider="qdrant",
-            config={
-                "collection_name": f"dosclaw_qwen_{config.EMBED_DIM}",
-                "embedding_model_dims": config.EMBED_DIM,
-                "path": path,
-            },
+            config=qdrant_config,
         ),
     )
+
+
+def qdrant_backend_label() -> str:
+    """Return a non-secret label for the active mem0 vector store backend."""
+    if config.MEM0_QDRANT_HOST and config.MEM0_QDRANT_PORT:
+        return f"Qdrant server {config.MEM0_QDRANT_HOST}:{config.MEM0_QDRANT_PORT}"
+    return "Qdrant local path"
 
 
 def _path_segment(value: str) -> str:

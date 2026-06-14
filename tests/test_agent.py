@@ -2,7 +2,12 @@ from agentscope.permission import PermissionBehavior
 from agentscope.state import AgentState
 
 from dosclaw_qwen import agent as agent_module
-from dosclaw_qwen.agent import apply_demo_permission_rules, get_memory_middleware, make_mem0_config
+from dosclaw_qwen.agent import (
+    apply_demo_permission_rules,
+    get_memory_middleware,
+    make_mem0_config,
+    qdrant_backend_label,
+)
 
 
 def test_make_mem0_config_uses_project_embedding_dimension():
@@ -17,6 +22,17 @@ def test_make_mem0_config_can_scope_local_qdrant_path_by_identity():
     cfg = make_mem0_config("tenant/demo", "cust:a")
 
     assert cfg.vector_store.config.path.endswith("/tenant_demo/cust_a")
+
+
+def test_make_mem0_config_uses_qdrant_server_when_configured(monkeypatch):
+    monkeypatch.setattr(agent_module.config, "MEM0_QDRANT_HOST", "127.0.0.1")
+    monkeypatch.setattr(agent_module.config, "MEM0_QDRANT_PORT", 6333)
+
+    cfg = make_mem0_config("tenant/demo", "cust:a")
+
+    assert cfg.vector_store.config.host == "127.0.0.1"
+    assert cfg.vector_store.config.port == 6333
+    assert qdrant_backend_label() == "Qdrant server 127.0.0.1:6333"
 
 
 def test_apply_demo_permission_rules_allows_demo_tools_only():

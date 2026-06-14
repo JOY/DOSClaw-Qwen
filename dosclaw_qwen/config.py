@@ -16,11 +16,14 @@ DASHSCOPE_BASE_URL = os.environ.get(
 QWEN_CHAT_MODEL = os.environ.get("QWEN_CHAT_MODEL", "qwen3.6-plus")
 QWEN_EMBED_MODEL = os.environ.get("QWEN_EMBED_MODEL", "text-embedding-v4")
 EMBED_DIM = int(os.environ.get("EMBED_DIM", "1024"))
+APP_GIT_SHA = os.environ.get("APP_GIT_SHA", "unknown")
 DATABASE_URL = os.environ.get(
     "DATABASE_URL",
     "postgresql://dosclaw_qwen:dosclaw_qwen@localhost:5432/dosclaw_qwen",
 )
 DEFAULT_TENANT_ID = os.environ.get("DEFAULT_TENANT_ID", "tenant_demo")
 MEM0_QDRANT_PATH = os.environ.get("MEM0_QDRANT_PATH", ".mem0/qdrant")
+MEM0_QDRANT_HOST = os.environ.get("MEM0_QDRANT_HOST", "")
+MEM0_QDRANT_PORT = int(os.environ["MEM0_QDRANT_PORT"]) if os.environ.get("MEM0_QDRANT_PORT") else None
 DEMO_LOGIN_USER = os.environ.get("DEMO_LOGIN_USER", "judge")
 DEMO_LOGIN_PASS = os.environ.get("DEMO_LOGIN_PASS", "")

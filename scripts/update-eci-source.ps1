@@ -12,8 +12,7 @@ param(
     [double]$ProxyCpu = 0.1,
     [double]$ProxyMemory = 0.128,
     [double]$QdrantCpu = 0.2,
-    [double]$QdrantMemory = 0.5,
-    [switch]$ReplaceExisting
+    [double]$QdrantMemory = 0.5
 )
 
 $ErrorActionPreference = "Stop"
@@ -53,59 +52,6 @@ function Invoke-AliyunEci {
     return $combined
 }
 
-function Ensure-SecurityGroupPort {
-    param(
-        [string]$Region,
-        [string]$SecurityGroupId,
-        [int]$Port
-    )
-
-    if ([string]::IsNullOrWhiteSpace($SecurityGroupId)) {
-        Write-Warning "ECI did not return a SecurityGroupId; verify port $Port manually."
-        return
-    }
-
-    $ruleExists = $false
-    try {
-        $securityGroup = Invoke-AliyunEci -Arguments @(
-            "ecs", "DescribeSecurityGroupAttribute",
-            "--region", $Region,
-            "--SecurityGroupId", $SecurityGroupId
-        ) | ConvertFrom-Json
-        $ruleExists = @($securityGroup.Permissions.Permission) | Where-Object {
-            $_.Direction -eq "ingress" -and
-            $_.Policy -eq "Accept" -and
-            $_.IpProtocol -eq "TCP" -and
-            $_.PortRange -eq "$Port/$Port" -and
-            $_.SourceCidrIp -eq "0.0.0.0/0"
-        } | Select-Object -First 1
-    } catch {
-        Write-Warning "Could not inspect Security Group $SecurityGroupId. Open TCP $Port manually if the public URL times out. $($_.Exception.Message)"
-        return
-    }
-
-    if ($ruleExists) {
-        Write-Host "Security Group $SecurityGroupId already allows TCP $Port."
-        return
-    }
-
-    Write-Host "Opening Security Group $SecurityGroupId for TCP $Port..."
-    try {
-        Invoke-AliyunEci -Arguments @(
-            "ecs", "AuthorizeSecurityGroup",
-            "--region", $Region,
-            "--SecurityGroupId", $SecurityGroupId,
-            "--IpProtocol", "tcp",
-            "--PortRange", "$Port/$Port",
-            "--SourceCidrIp", "0.0.0.0/0",
-            "--Policy", "accept",
-            "--Priority", "100"
-        ) | Out-Null
-    } catch {
-        Write-Warning "Could not open Security Group $SecurityGroupId. Grant ecs:AuthorizeSecurityGroup or open TCP $Port manually. $($_.Exception.Message)"
-    }
-}
-
 function Add-EnvArgs {
     param(
         [System.Collections.Generic.List[string]]$TargetArgs,
@@ -125,7 +71,7 @@ function Add-EnvArgs {
 
 $dashscopeApiKey = Get-DotEnvValue "DASHSCOPE_API_KEY"
 if ([string]::IsNullOrWhiteSpace($dashscopeApiKey)) {
-    throw "Set DASHSCOPE_API_KEY in the environment or .env before deploying."
+    throw "Set DASHSCOPE_API_KEY in the environment or .env before updating ECI."
 }
 
 $dashscopeBaseUrl = Get-DotEnvValue "DASHSCOPE_BASE_URL" "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
@@ -134,27 +80,19 @@ $qwenEmbedModel = Get-DotEnvValue "QWEN_EMBED_MODEL" "text-embedding-v4"
 $embedDim = Get-DotEnvValue "EMBED_DIM" "1024"
 $tenantId = Get-DotEnvValue "DEFAULT_TENANT_ID" "tenant_demo"
 $demoLoginUser = Get-DotEnvValue "DEMO_LOGIN_USER" "judge"
-$demoLoginPass = Get-DotEnvValue "DEMO_LOGIN_PASS" "changeme-demo-pass"
+$demoLoginPass = Get-DotEnvValue "DEMO_LOGIN_PASS" ""
 
 $existing = aliyun eci DescribeContainerGroups --region $Region --ContainerGroupName $ContainerGroupName | ConvertFrom-Json
 $existingGroup = @($existing.ContainerGroups)[0]
-if ($existingGroup) {
-    if (!$ReplaceExisting) {
-        throw "Container group '$ContainerGroupName' already exists. Re-run with -ReplaceExisting to delete and recreate it."
-    }
-    Write-Host "Deleting existing container group $ContainerGroupName..."
-    Invoke-AliyunEci -Arguments @("eci", "DeleteContainerGroup", "--region", $Region, "--ContainerGroupId", $existingGroup.ContainerGroupId) | Out-Null
-    do {
-        Start-Sleep -Seconds 3
-        $current = aliyun eci DescribeContainerGroups --region $Region --ContainerGroupName $ContainerGroupName | ConvertFrom-Json
-    } while (@($current.ContainerGroups).Count -gt 0)
+if (!$existingGroup) {
+    throw "Container group '$ContainerGroupName' was not found in $Region."
 }
 
 $bootstrap = @"
 set -eu
 apt-get update
 apt-get install -y --no-install-recommends git ca-certificates
-rm -rf /var/lib/apt/lists/*
+rm -rf /var/lib/apt/lists/* /app
 git clone --depth 1 --branch "$Branch" "$RepoUrl" /app
 cd /app
 export APP_GIT_SHA="`$(git rev-parse --short HEAD)"
@@ -205,12 +143,11 @@ $proxyRunner = 'echo${IFS}' + $proxyB64 + '|base64${IFS}-d|sh'
 $argsList = [System.Collections.Generic.List[string]]::new()
 @(
     "eci",
-    "CreateContainerGroup",
-    "--region", $Region,
-    "--ContainerGroupName", $ContainerGroupName,
+    "UpdateContainerGroup",
+    "--RegionId", $Region,
+    "--ContainerGroupId", $existingGroup.ContainerGroupId,
+    "--UpdateType", "RenewUpdate",
     "--RestartPolicy", "Always",
-    "--AutoCreateEip", "true",
-    "--EipBandwidth", "5",
     "--Cpu", "$($AppCpu + $DbCpu + $ProxyCpu + $QdrantCpu)",
     "--Memory", "$($AppMemory + $DbMemory + $ProxyMemory + $QdrantMemory)",
     "--Container.1.Name", "app",
@@ -298,27 +235,24 @@ foreach ($entry in $dbEnv.GetEnumerator()) {
     $envIndex += 1
 }
 
-Write-Host "Deploying DOSClaw-Qwen source bootstrap to ECI..."
-$result = Invoke-AliyunEci -Arguments $argsList.ToArray()
-Write-Host $result
-Write-Host "Waiting for public endpoint..."
+Write-Host "Updating existing ECI container group $ContainerGroupName without creating a new EIP..."
+Invoke-AliyunEci -Arguments $argsList.ToArray() | Out-Null
+Write-Host "Waiting for containers to become ready..."
 
 for ($i = 0; $i -lt 120; $i++) {
     $status = aliyun eci DescribeContainerGroups --region $Region --ContainerGroupName $ContainerGroupName | ConvertFrom-Json
     $group = @($status.ContainerGroups)[0]
     if ($group) {
-        Write-Host "Status=$($group.Status) InternetIP=$($group.InternetIp)"
-        if ($group.InternetIp -and $group.Status -eq "Running") {
-            Ensure-SecurityGroupPort -Region $Region -SecurityGroupId $group.SecurityGroupId -Port $PublicPort
-            if ($PublicPort -eq 80) {
-                Write-Host "Public URL: http://$($group.InternetIp)"
-            } else {
-                Write-Host "Public URL: http://$($group.InternetIp):$PublicPort"
-            }
+        $readyCount = @($group.Containers | Where-Object { $_.Ready }).Count
+        Write-Host "Status=$($group.Status) Ready=$readyCount/$(@($group.Containers).Count) InternetIP=$($group.InternetIp)"
+        if ($group.InternetIp -and $group.Status -eq "Running" -and $readyCount -eq @($group.Containers).Count) {
+            $baseUrl = if ($PublicPort -eq 80) { "http://$($group.InternetIp)" } else { "http://$($group.InternetIp):$PublicPort" }
+            Invoke-RestMethod -Uri "$baseUrl/api/health" | Out-Null
+            Write-Host "Public URL: $baseUrl"
             exit 0
         }
     }
     Start-Sleep -Seconds 10
 }
 
-throw "Timed out waiting for ECI public endpoint."
+throw "Timed out waiting for ECI update."

@@ -34,6 +34,21 @@ def test_health_endpoint_identifies_service():
     assert response.json() == {"ok": True, "service": "dosclaw-qwen"}
 
 
+def test_runtime_endpoint_reports_non_secret_runtime_details():
+    client = TestClient(create_app(chat_service=FakeChatService(), require_login=False))
+
+    response = client.get("/api/runtime")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["service"] == "dosclaw-qwen"
+    assert body["chat_model"]
+    assert body["embedding_model"]
+    assert body["agent_runtime"] == "AgentScope 2.0"
+    assert body["memory_engine"] == "Mem0Middleware"
+    assert "key" not in response.text.lower()
+
+
 def test_chat_endpoint_streams_ndjson_events():
     client = TestClient(create_app(chat_service=FakeChatService(), require_login=False))
 

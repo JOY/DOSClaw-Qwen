@@ -80,5 +80,6 @@ def model_info_text() -> str:
     return (
         f"Qwen Cloud: {config.QWEN_CHAT_MODEL} | "
         f"Embeddings: {config.QWEN_EMBED_MODEL} ({config.EMBED_DIM}d) | "
-        "AgentScope 2.0 + Mem0 | Memory scoped by customer and tenant"
+        f"AgentScope 2.0 + Mem0 | {agent_module.qdrant_backend_label()} | "
+        "Memory scoped by customer and tenant"
     )

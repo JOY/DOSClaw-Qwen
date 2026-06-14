@@ -13,6 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from . import config
+from . import agent as agent_module
 from .chat_service import ChatService
 
 
@@ -83,6 +84,21 @@ def create_app(
     @app.get("/api/health")
     async def health():
         return {"ok": True, "service": "dosclaw-qwen"}
+
+    @app.get("/api/runtime")
+    async def runtime(session: str | None = Cookie(default=None)):
+        await guard(session)
+        return {
+            "service": "dosclaw-qwen",
+            "git_sha": config.APP_GIT_SHA,
+            "chat_model": config.QWEN_CHAT_MODEL,
+            "embedding_model": config.QWEN_EMBED_MODEL,
+            "embedding_dimensions": config.EMBED_DIM,
+            "agent_runtime": "AgentScope 2.0",
+            "memory_engine": "Mem0Middleware",
+            "vector_store": agent_module.qdrant_backend_label(),
+            "memory_scope": "tenant_id + customer_id",
+        }
 
     @app.post("/api/chat")
     async def chat(
