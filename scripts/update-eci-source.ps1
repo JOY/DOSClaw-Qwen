@@ -69,6 +69,24 @@ function Add-EnvArgs {
     $TargetArgs.Add("--Container.$ContainerIndex.EnvironmentVar.$Index.Value=$Value")
 }
 
+function Get-SourceRevision {
+    $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
+    $envRev = Get-DotEnvValue "APP_SOURCE_REV"
+    if (![string]::IsNullOrWhiteSpace($envRev)) {
+        return $envRev
+    }
+
+    try {
+        $gitRev = (& git -C $repoRoot rev-parse --short HEAD 2>$null | Select-Object -First 1).Trim()
+        if (![string]::IsNullOrWhiteSpace($gitRev)) {
+            return $gitRev
+        }
+    } catch {
+    }
+
+    return (Get-Date).ToUniversalTime().ToString("yyyyMMddHHmmss")
+}
+
 $dashscopeApiKey = Get-DotEnvValue "DASHSCOPE_API_KEY"
 if ([string]::IsNullOrWhiteSpace($dashscopeApiKey)) {
     throw "Set DASHSCOPE_API_KEY in the environment or .env before updating ECI."
@@ -81,6 +99,7 @@ $embedDim = Get-DotEnvValue "EMBED_DIM" "1024"
 $tenantId = Get-DotEnvValue "DEFAULT_TENANT_ID" "tenant_demo"
 $demoLoginUser = Get-DotEnvValue "DEMO_LOGIN_USER" "judge"
 $demoLoginPass = Get-DotEnvValue "DEMO_LOGIN_PASS" ""
+$sourceRev = Get-SourceRevision
 
 $existing = aliyun eci DescribeContainerGroups --region $Region --ContainerGroupName $ContainerGroupName | ConvertFrom-Json
 $existingGroup = @($existing.ContainerGroups)[0]
@@ -210,6 +229,7 @@ $appEnv = [ordered]@{
     "EMBED_DIM" = $embedDim
     "DATABASE_URL" = "postgresql://dosclaw_qwen:dosclaw_qwen@127.0.0.1:5432/dosclaw_qwen"
     "DEFAULT_TENANT_ID" = $tenantId
+    "APP_SOURCE_REV" = $sourceRev
     "MEM0_QDRANT_PATH" = "/tmp/dosclaw-qwen-mem0/qdrant"
     "MEM0_QDRANT_HOST" = "127.0.0.1"
     "MEM0_QDRANT_PORT" = "6333"
