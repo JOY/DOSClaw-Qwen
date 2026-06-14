@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from functools import lru_cache
+
 from agentscope.agent import Agent, ReActConfig
 from agentscope.middleware import Mem0Middleware
 from agentscope.permission import PermissionBehavior, PermissionRule
@@ -29,7 +31,6 @@ def build_agent(
 ) -> Agent:
     """Build a per-tenant, per-customer AgentScope agent with mem0 memory isolation."""
     chat_model = model.make_chat_model(stream=True)
-    embedding_model = model.make_embedding_model()
     db = store or Store()
     toolkit = Toolkit(
         tools=[
@@ -40,14 +41,7 @@ def build_agent(
             ),
         ],
     )
-    memory = Mem0Middleware(
-        user_id=customer_id,
-        agent_id=tenant_id,
-        chat_model=chat_model,
-        embedding_model=embedding_model,
-        mem0_config=make_mem0_config(),
-        mode=mode,
-    )
+    memory = get_memory_middleware(tenant_id, customer_id, mode)
     state = AgentState()
     apply_demo_permission_rules(state)
     return Agent(
@@ -58,6 +52,19 @@ def build_agent(
         middlewares=[memory],
         state=state,
         react_config=ReActConfig(max_iters=10),
+    )
+
+
+@lru_cache(maxsize=256)
+def get_memory_middleware(tenant_id: str, customer_id: str, mode: str) -> Mem0Middleware:
+    """Reuse mem0/Qdrant clients so local Qdrant storage is opened once per identity."""
+    return Mem0Middleware(
+        user_id=customer_id,
+        agent_id=tenant_id,
+        chat_model=model.make_chat_model(stream=False),
+        embedding_model=model.make_embedding_model(),
+        mem0_config=make_mem0_config(),
+        mode=mode,
     )
 
 
