@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from typing import Any
 
-from agentscope.event import ReplyStartEvent, TextBlockDeltaEvent
+from agentscope.event import ReplyStartEvent, TextBlockDeltaEvent, ToolCallStartEvent
 from agentscope.message import Msg, UserMsg
 
 from . import config
@@ -46,6 +46,8 @@ class ChatService:
                 if mem0_text:
                     combined = "\n\n".join(part for part in [recalled, mem0_text] if part)
                     yield {"kind": "memory", "text": combined}
+            elif isinstance(event, ToolCallStartEvent):
+                yield {"kind": "tool_info", "text": f"Tool: {event.tool_call_name}"}
             elif isinstance(event, TextBlockDeltaEvent):
                 reply_parts.append(event.delta)
                 yield {"kind": "message_delta", "text": event.delta}

@@ -15,7 +15,7 @@ Target length: 2:45 to 3:00. The video must be public or unlisted-publicly-viewa
 | Time | Screen | Narration |
 | --- | --- | --- |
 | 0:00-0:15 | Web UI | "DOSClaw-Qwen is a Qwen Cloud MemoryAgent for SME customer support. It remembers customers across sessions without mixing them together." |
-| 0:15-0:35 | Architecture | "The app uses AgentScope 2.0, Qwen Cloud chat and embeddings, Mem0Middleware, Postgres profile memory, FAQ search, and human handoff." |
+| 0:15-0:35 | Architecture | "The app uses AgentScope 2.0, Qwen Cloud chat and embeddings, Mem0Middleware with Qdrant, Postgres profile memory, FAQ search, and human handoff." |
 | 0:35-1:10 | Returning Customer A | "First, a returning customer asks for a recommendation. The memory panel shows lactose intolerance and oat milk preference before the answer." |
 | 1:10-1:35 | Customer B | "Now a different customer starts a new session. Customer A's memories do not leak into Customer B." |
 | 1:35-2:00 | Knowledge answer | "Policy questions are grounded through tenant knowledge search rather than guessed." |
@@ -40,6 +40,7 @@ Target length: 2:45 to 3:00. The video must be public or unlisted-publicly-viewa
 - "Qwen Cloud powers both chat and embeddings."
 - "Memories are scoped with `user_id=customer_id` and `agent_id=tenant_id`."
 - "The memory panel exposes recalled facts so judges can see the system is not just prompt theater."
+- "The assistant metadata exposes the active Qwen model, memory backend, and tool calls."
 - "The handoff flow is honest: a ticket is created before escalation is confirmed."
 
 ## Post-Recording Checklist

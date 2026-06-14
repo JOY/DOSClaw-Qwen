@@ -14,6 +14,7 @@ flowchart LR
   Agent --> Mem0[Mem0Middleware]
   Agent --> Tools[knowledge_search / human_handoff]
   Profile --> PG[(Postgres + pgvector)]
+  Mem0 --> Qdrant[(Qdrant vector store)]
   Tools --> PG
 Agent --> Qwen[Qwen Cloud DashScope chat]
 Mem0 --> Qwen
@@ -24,8 +25,10 @@ Tools --> Embed
 ## Memory Model
 
 - `Mem0Middleware` owns episodic long-term memory, scoped with `user_id=customer_id` and `agent_id=tenant_id`.
+- Qdrant stores mem0 episodic vectors in the deployed runtime. Local development can use either the Qdrant compose service or the local-path fallback.
 - Postgres owns durable structured profile facts, tenant customers, FAQ knowledge vectors, and handoff tickets.
 - The UI receives a `memory` event before answer streaming so judges can see which profile and mem0 memories were recalled.
+- The UI also renders runtime and tool metadata below assistant replies so judges can see the Qwen model, Mem0/Qdrant backend, and tool calls.
 - `MemoryService.record` extracts durable profile facts from each completed turn with Qwen JSON output and merges conflicts by letting newer facts win.
 - Embeddings use a small AgentScope `EmbeddingModelBase` adapter over DashScope's OpenAI-compatible endpoint. AgentScope's native `DashScopeEmbeddingModel` currently calls the native DashScope SDK path and does not honor the international compatible `base_url`, so the adapter keeps chat, FAQ vectors, and mem0 on the same Qwen Cloud key.
 
@@ -40,6 +43,7 @@ Tools --> Embed
 The simplest Alibaba deployment is one ECS host running:
 
 - `pgvector/pgvector:pg16` for Postgres.
+- `qdrant/qdrant` for mem0 episodic memory.
 - The Python app container from `Dockerfile`.
 - Environment variables from a server-side `.env`, never committed.
 

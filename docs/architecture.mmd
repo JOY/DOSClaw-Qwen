@@ -6,6 +6,7 @@ flowchart LR
   Profile["Structured profile memory\nPostgres JSONB"]
   Agent["AgentScope 2.0 Agent"]
   Mem0["Mem0Middleware\nuser_id=customer, agent_id=tenant"]
+  Qdrant[("Qdrant\nmem0 episodic vectors")]
   Tools["Tools\nknowledge_search, human_handoff"]
   PG[("Postgres + pgvector\ntenants, customers, profile, knowledge, handoffs")]
   QwenChat["Qwen Cloud / DashScope\nqwen3.6-plus chat"]
@@ -18,6 +19,7 @@ flowchart LR
   Service --> Agent
   Profile --> PG
   Agent --> Mem0
+  Mem0 --> Qdrant
   Agent --> Tools
   Agent --> QwenChat
   Mem0 --> QwenChat

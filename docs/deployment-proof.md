@@ -12,8 +12,11 @@ DOSClaw-Qwen has two proof layers:
 ## Current Runtime Status
 
 The public Alibaba Cloud runtime is live on Elastic Container Instance in `ap-southeast-1`.
-It runs a Python app container, a Postgres/pgvector sidecar, and an nginx sidecar that exposes
-the app on public HTTP port `80`.
+It runs a Python app container, a Postgres/pgvector sidecar, a Qdrant sidecar for mem0 episodic
+memory, and an nginx sidecar that exposes the app on public HTTP port `80`.
+
+Runtime metadata is exposed at `/api/runtime` and includes the current git SHA, Qwen chat model,
+Qwen embedding model, AgentScope runtime, Mem0Middleware, vector store backend, and memory scope.
 
 Use the current preflight script to record Alibaba Cloud API access:
 
@@ -45,7 +48,7 @@ That script clones the public repo on the ECS host, writes a server-side `.env`,
 ## Final Fields
 
 - Alibaba public URL: `http://8.219.211.170/`
-- Runtime type: Elastic Container Instance source bootstrap with Python app, Postgres/pgvector sidecar, and nginx public proxy.
+- Runtime type: Elastic Container Instance source bootstrap with Python app, Postgres/pgvector sidecar, Qdrant sidecar, and nginx public proxy.
 - Demo login: none required for the current public demo.
 - Smoke evidence path: `docs/proof/eci-smoke-latest.json`
 - Video URL: TODO

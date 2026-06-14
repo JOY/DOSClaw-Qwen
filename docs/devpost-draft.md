@@ -25,8 +25,10 @@ The MemoryAgent track rewards agents that accumulate experience, retrieve the ri
 - AgentScope 2.0 `Mem0Middleware` for episodic long-term memory.
 - Native customer and tenant scoping: `user_id=customer_id`, `agent_id=tenant_id`.
 - A structured Postgres profile layer for stable facts such as allergies, preferences, and last order.
+- Qdrant-backed episodic vector storage for mem0 in the live runtime.
 - Qwen Cloud embeddings for FAQ search and memory storage.
 - A visible memory side panel that shows what was recalled before each answer.
+- Runtime/tool metadata under every assistant reply so judges can see the model, memory backend, and tool calls.
 
 ## How Qwen Cloud And Alibaba Cloud Are Used
 
@@ -36,7 +38,7 @@ Qwen Cloud powers both reasoning and embeddings:
 - Embedding model: `text-embedding-v4` through DashScope's OpenAI-compatible endpoint.
 - Proof code: `dosclaw_qwen/model.py`.
 
-The live deployment runs on Alibaba Cloud Elastic Container Instance with a Python app container, a Postgres/pgvector sidecar, and an nginx public proxy sidecar. The repo includes managed-container scripts for ACR + Function Compute / Elastic Container Instance, the source-bootstrapped ECI path used for the live demo, and an ECS SSH deployment path for a known host.
+The live deployment runs on Alibaba Cloud Elastic Container Instance with a Python app container, a Postgres/pgvector sidecar, a Qdrant sidecar, and an nginx public proxy sidecar. The repo includes managed-container scripts for ACR + Function Compute / Elastic Container Instance, the source-bootstrapped ECI path used for the live demo, and an ECS SSH deployment path for a known host.
 
 ## Architecture
 
@@ -48,6 +50,7 @@ flowchart LR
   Service --> Agent["AgentScope Agent"]
   Service --> Profile["Structured profile memory"]
   Agent --> Mem0["Mem0Middleware"]
+  Mem0 --> Qdrant["Qdrant vector store"]
   Agent --> Tools["knowledge_search / human_handoff"]
   Profile --> PG[("Postgres + pgvector")]
   Tools --> PG
@@ -72,6 +75,7 @@ flowchart LR
 - FastAPI
 - Postgres + pgvector
 - Docker
+- Qdrant
 - Alibaba Cloud ECI deployment scripts
 
 ## Links

@@ -30,8 +30,8 @@ the managed-container path plus ECS/VPC read-only checks used by preflight.
 The current managed-container scripts intentionally fail before mutation when these permissions are missing.
 
 For the fastest no-registry hackathon path, deploy a source-bootstrapped ECI group. It runs a
-Postgres/pgvector sidecar, a Python app container that clones this public repo, and an nginx
-sidecar that exposes the app on public HTTP port `80`:
+Postgres/pgvector sidecar, a Qdrant sidecar for mem0 memory vectors, a Python app container that
+clones this public repo, and an nginx sidecar that exposes the app on public HTTP port `80`:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy-eci-source.ps1 -ReplaceExisting
@@ -57,6 +57,8 @@ QWEN_CHAT_MODEL=qwen3.6-plus
 QWEN_EMBED_MODEL=text-embedding-v4
 DATABASE_URL=postgresql://dosclaw_qwen:dosclaw_qwen@db:5432/dosclaw_qwen
 DEFAULT_TENANT_ID=tenant_demo
+MEM0_QDRANT_HOST=qdrant
+MEM0_QDRANT_PORT=6333
 DEMO_LOGIN_USER=judge
 DEMO_LOGIN_PASS=<demo-password>
 ```
@@ -64,7 +66,7 @@ DEMO_LOGIN_PASS=<demo-password>
 ## Run
 
 ```bash
-docker compose up -d db
+docker compose up -d db qdrant
 docker build -t dosclaw-qwen:latest .
 docker run -d --name dosclaw-qwen --env-file .env --network dosclaw-qwen_default -p 8092:8092 dosclaw-qwen:latest
 docker exec -i dosclaw-qwen-db-1 psql -U dosclaw_qwen -d dosclaw_qwen < db/schema.sql

@@ -327,6 +327,21 @@
         thread.scrollTop = thread.scrollHeight;
       }
 
+      function appendMessageMeta(messageNode, text) {
+        if (!text) return;
+        let meta = messageNode.node.querySelector(".message-meta");
+        if (!meta) {
+          setMessageMeta(messageNode, text);
+          return;
+        }
+        const lines = meta.textContent.split("\n").filter(Boolean);
+        if (!lines.includes(text)) {
+          lines.push(text);
+          meta.textContent = lines.join("\n");
+          thread.scrollTop = thread.scrollHeight;
+        }
+      }
+
       function clearVisibleSession(memoryText = "No relevant memory.") {
         if (activeController) activeController.abort();
         thread.replaceChildren();
@@ -452,6 +467,9 @@
           }
           if (event.kind === "model_info") {
             setMessageMeta(ensureReply(), event.text);
+          }
+          if (event.kind === "tool_info") {
+            appendMessageMeta(ensureReply(), event.text);
           }
           if (event.kind === "message_delta") {
             ensureReply().body.textContent += event.text;

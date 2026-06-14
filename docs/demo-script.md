@@ -17,7 +17,8 @@ Expected flow:
 1. The UI emits a `memory` block before the assistant answer.
 2. The profile block recalls that this customer is Linh, is lactose intolerant, and prefers oat milk lattes.
 3. AgentScope routes the reply through Qwen Cloud.
-4. The assistant recommends dairy-free options without asking the customer to repeat the preference.
+4. The assistant metadata shows the Qwen model, Mem0/Qdrant backend, and any tool activity.
+5. The assistant recommends dairy-free options without asking the customer to repeat the preference.
 
 Success line:
 
@@ -61,7 +62,8 @@ Expected flow:
 
 1. The agent can use `knowledge_search`.
 2. The answer is grounded in Bloom Cafe FAQ rows, not invented policy text.
-3. The answer remains concise and customer-support shaped.
+3. The assistant metadata shows `Tool: knowledge_search`.
+4. The answer remains concise and customer-support shaped.
 
 Success line:
 
@@ -81,7 +83,8 @@ Expected flow:
 
 1. The agent calls `human_handoff`.
 2. A row is created in `handoffs`.
-3. The assistant confirms escalation only after the tool succeeds.
+3. The assistant metadata shows `Tool: human_handoff`.
+4. The assistant confirms escalation only after the tool succeeds.
 
 Success line:
 

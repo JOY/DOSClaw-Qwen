@@ -13,7 +13,7 @@ Use the web demo and run the four-step flow in `docs/demo-script.md`:
 3. Switch to `New Customer B` and ask: `Do you remember my usual drink?`
 4. Ask a return-policy question, then a refund escalation question.
 
-Expected result: Customer A's profile appears in the memory panel and informs the answer; Customer B does not inherit Customer A's profile; knowledge search grounds business-policy answers; refund complaints create a handoff ticket.
+Expected result: Customer A's profile appears in the memory panel and informs the answer; Customer B does not inherit Customer A's profile; knowledge search grounds business-policy answers; refund complaints create a handoff ticket. Assistant reply metadata shows the active Qwen model, Mem0/Qdrant backend, and tool calls.
 
 ## Why This Is Not A Scripted Chatbot
 
@@ -21,6 +21,7 @@ Expected result: Customer A's profile appears in the memory panel and informs th
 - AgentScope streams real agent events through `/api/chat`.
 - Qwen Cloud is used for chat, structured profile extraction, FAQ embeddings, and mem0 memory extraction.
 - Handoffs are stored in Postgres and can be verified in the `handoffs` table.
+- Tool activity is streamed as `tool_info` events and displayed under the assistant reply.
 
 ## Required Links
 
@@ -35,7 +36,7 @@ Expected result: Customer A's profile appears in the memory panel and informs th
 The public demo is live on Alibaba Cloud Elastic Container Instance:
 
 - Live demo URL: `http://8.219.211.170/`
-- Runtime: Python app container, Postgres/pgvector sidecar, and nginx public proxy sidecar.
+- Runtime: Python app container, Postgres/pgvector sidecar, Qdrant sidecar, and nginx public proxy sidecar.
 - Smoke evidence: `docs/proof/eci-smoke-latest.json`
 
 The repo also includes:
