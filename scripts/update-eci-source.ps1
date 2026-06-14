@@ -138,37 +138,13 @@ $bootstrapBytes = [Text.Encoding]::UTF8.GetBytes($bootstrap.Replace("`r`n", "`n"
 $bootstrapB64 = [Convert]::ToBase64String($bootstrapBytes)
 $bootstrapRunner = 'echo${IFS}' + $bootstrapB64 + '|base64${IFS}-d|sh'
 
-$proxy = @"
-cat >/etc/nginx/conf.d/default.conf <<'EOF'
-server {
-    listen $PublicPort;
-    server_name _;
-    location / {
-        proxy_pass http://127.0.0.1:$Port;
-        proxy_http_version 1.1;
-        proxy_set_header Host `$host;
-        proxy_set_header X-Real-IP `$remote_addr;
-        proxy_set_header X-Forwarded-For `$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto `$scheme;
-    }
-}
-EOF
-nginx -g 'daemon off;'
-"@
-$proxyBytes = [Text.Encoding]::UTF8.GetBytes($proxy.Replace("`r`n", "`n"))
-$proxyB64 = [Convert]::ToBase64String($proxyBytes)
-$proxyRunner = 'echo${IFS}' + $proxyB64 + '|base64${IFS}-d|sh'
-
 $argsList = [System.Collections.Generic.List[string]]::new()
 @(
     "eci",
     "UpdateContainerGroup",
     "--RegionId", $Region,
     "--ContainerGroupId", $existingGroup.ContainerGroupId,
-    "--UpdateType", "RenewUpdate",
-    "--RestartPolicy", "Always",
-    "--Cpu", "$($AppCpu + $DbCpu + $ProxyCpu + $QdrantCpu)",
-    "--Memory", "$($AppMemory + $DbMemory + $ProxyMemory + $QdrantMemory)",
+    "--UpdateType", "IncrementalUpdate",
     "--Container.1.Name", "app",
     "--Container.1.Image", "python:3.11-slim",
     "--Container.1.ImagePullPolicy", "IfNotPresent",
@@ -183,41 +159,7 @@ $argsList = [System.Collections.Generic.List[string]]::new()
     "--Container.1.ReadinessProbe.HttpGet.Port", "$Port",
     "--Container.1.ReadinessProbe.InitialDelaySeconds", "120",
     "--Container.1.ReadinessProbe.PeriodSeconds", "10",
-    "--Container.1.ReadinessProbe.TimeoutSeconds", "5",
-    "--Container.2.Name", "db",
-    "--Container.2.Image", "pgvector/pgvector:pg16",
-    "--Container.2.ImagePullPolicy", "IfNotPresent",
-    "--Container.2.Cpu", "$DbCpu",
-    "--Container.2.Memory", "$DbMemory",
-    "--Container.2.Port.1.Port", "5432",
-    "--Container.2.Port.1.Protocol", "TCP",
-    "--Container.3.Name", "web-proxy",
-    "--Container.3.Image", "nginx:alpine",
-    "--Container.3.ImagePullPolicy", "IfNotPresent",
-    "--Container.3.Command.1", "/bin/sh",
-    "--Container.3.Arg.1=-lc",
-    "--Container.3.Arg.2=$proxyRunner",
-    "--Container.3.Cpu", "$ProxyCpu",
-    "--Container.3.Memory", "$ProxyMemory",
-    "--Container.3.Port.1.Port", "$PublicPort",
-    "--Container.3.Port.1.Protocol", "TCP",
-    "--Container.3.ReadinessProbe.HttpGet.Path", "/api/health",
-    "--Container.3.ReadinessProbe.HttpGet.Port", "$PublicPort",
-    "--Container.3.ReadinessProbe.InitialDelaySeconds", "150",
-    "--Container.3.ReadinessProbe.PeriodSeconds", "10",
-    "--Container.3.ReadinessProbe.TimeoutSeconds", "5",
-    "--Container.4.Name", "qdrant",
-    "--Container.4.Image", "qdrant/qdrant:latest",
-    "--Container.4.ImagePullPolicy", "IfNotPresent",
-    "--Container.4.Cpu", "$QdrantCpu",
-    "--Container.4.Memory", "$QdrantMemory",
-    "--Container.4.Port.1.Port", "6333",
-    "--Container.4.Port.1.Protocol", "TCP",
-    "--Container.4.ReadinessProbe.HttpGet.Path", "/",
-    "--Container.4.ReadinessProbe.HttpGet.Port", "6333",
-    "--Container.4.ReadinessProbe.InitialDelaySeconds", "20",
-    "--Container.4.ReadinessProbe.PeriodSeconds", "10",
-    "--Container.4.ReadinessProbe.TimeoutSeconds", "5"
+    "--Container.1.ReadinessProbe.TimeoutSeconds", "5"
 ) | ForEach-Object { $argsList.Add($_) }
 
 $appEnv = [ordered]@{
@@ -243,19 +185,7 @@ foreach ($entry in $appEnv.GetEnumerator()) {
     $envIndex += 1
 }
 
-$dbEnv = [ordered]@{
-    "POSTGRES_USER" = "dosclaw_qwen"
-    "POSTGRES_PASSWORD" = "dosclaw_qwen"
-    "POSTGRES_DB" = "dosclaw_qwen"
-}
-
-$envIndex = 1
-foreach ($entry in $dbEnv.GetEnumerator()) {
-    Add-EnvArgs -TargetArgs $argsList -ContainerIndex 2 -Index $envIndex -Key $entry.Key -Value $entry.Value
-    $envIndex += 1
-}
-
-Write-Host "Updating existing ECI container group $ContainerGroupName without creating a new EIP..."
+Write-Host "Updating app container in $ContainerGroupName without touching DB/Qdrant or creating a new EIP..."
 Invoke-AliyunEci -Arguments $argsList.ToArray() | Out-Null
 Write-Host "Waiting for containers to become ready..."
 
