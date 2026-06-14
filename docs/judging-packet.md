@@ -51,5 +51,5 @@ The repo also includes:
 
 - Live demo URL: `http://8.219.211.170/`
 - Demo login: none required for the current public demo.
-- Video URL: TODO
-- Public Alibaba proof recording: TODO
+- Video URL: add the public or unlisted recording URL after upload.
+- Alibaba proof: use the live URL, `docs/deployment-proof.md`, `scripts/deploy-eci-source.ps1`, and `dosclaw_qwen/model.py`. No separate public proof recording is required by the current hackathon reference.

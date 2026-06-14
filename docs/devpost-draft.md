@@ -90,5 +90,5 @@ flowchart LR
 
 - Live demo URL: http://8.219.211.170/
 - Demo login: none required for the current public demo.
-- Video URL: TODO after recording.
+- Video URL: add the public or unlisted recording URL after upload.
 - Alibaba runtime proof: `scripts/deploy-eci-source.ps1` and `docs/deployment-proof.md`.

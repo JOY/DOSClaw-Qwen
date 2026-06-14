@@ -37,6 +37,7 @@ try {
         "docs/demo-script.md",
         "docs/video-recording-packet.md",
         "docs/judging-packet.md",
+        "docs/submission-status.md",
         "docs/deployment-proof.md",
         "docs/architecture.mmd",
         "docs/proof/README.md",
@@ -73,6 +74,8 @@ try {
         generatedAt = (Get-Date).ToUniversalTime().ToString("o")
         repository = "https://github.com/JOY/DOSClaw-Qwen"
         ci = "https://github.com/JOY/DOSClaw-Qwen/actions"
+        liveDemo = "http://8.219.211.170/"
+        runtimeApi = "http://8.219.211.170/api/runtime"
         liveQwenAdapter = "https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/model.py"
         demoApi = "https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/app.py"
         healthApi = "https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/app.py"
@@ -80,6 +83,7 @@ try {
         judgingPacket = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/judging-packet.md"
         demoScript = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/demo-script.md"
         videoRecordingPacket = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/video-recording-packet.md"
+        submissionStatus = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/submission-status.md"
         deploymentProofNotes = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/deployment-proof.md"
         architectureDiagram = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/architecture.mmd"
         deployRamPolicy = "https://github.com/JOY/DOSClaw-Qwen/blob/main/infra/alibaba/ram-policy-dosclaw-qwen-deploy.json"
