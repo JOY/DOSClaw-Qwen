@@ -17,9 +17,10 @@ Extractor = Callable[[str, str], Awaitable[dict[str, Any]]]
 _EXTRACT_SYSTEM = (
     "Extract durable customer profile facts from one support turn. "
     "Return strict JSON only: {\"profile\": {...}}. "
-    "Use concise snake_case keys such as name, preferred_drink, lactose_intolerant, "
-    "preferred_milk, last_order, complaint_status. Include only stable facts worth "
-    "remembering for future support. Use null to forget a fact when the customer corrects it."
+    "Use concise snake_case keys such as name, age, preferred_drink, lactose_intolerant, "
+    "preferred_milk, last_order, complaint_status. If the customer states their name or "
+    "age directly, include it. Include only stable facts worth remembering for future "
+    "support. Use null to forget a fact when the customer corrects it."
 )
 
 
@@ -44,10 +45,7 @@ class MemoryService:
 
         lines: list[str] = []
         if profile:
-            lines.append(
-                "Customer profile: "
-                + json.dumps(profile, ensure_ascii=False, sort_keys=True),
-            )
+            lines.append(self.format_profile(profile))
         if ranked:
             lines.append("Relevant memories:")
             lines.extend(f"- {episode['summary']}" for episode in ranked)
@@ -71,16 +69,34 @@ class MemoryService:
         customer_id: str,
         user_text: str,
         assistant_text: str,
-    ) -> None:
+    ) -> dict[str, Any] | None:
         """Extract durable structured facts from a turn and merge them into the profile."""
         extracted = await self.extractor(user_text, assistant_text)
         facts = extracted.get("profile") or {}
         if facts:
-            await self.merge_profile(tenant_id, customer_id, facts)
+            return await self.merge_profile(tenant_id, customer_id, facts)
+        return None
 
     async def consolidate(self, tenant_id: str, customer_id: str, floor: float = 0.1) -> int:
         """Consolidate stale custom memories; mem0 currently owns episodic storage."""
         return 0
+
+    @staticmethod
+    def format_profile(profile: dict[str, Any]) -> str:
+        """Format structured profile facts for the judge-facing memory panel."""
+        if not profile:
+            return ""
+        lines = ["Customer profile:"]
+        preferred_order = ["name", "age"]
+        ordered_keys = [
+            *[key for key in preferred_order if key in profile],
+            *sorted(key for key in profile if key not in preferred_order),
+        ]
+        for key in ordered_keys:
+            value = profile[key]
+            label = key.replace("_", " ").capitalize()
+            lines.append(f"- {label}: {value}")
+        return "\n".join(lines)
 
 
 async def extract_profile_facts(user_text: str, assistant_text: str) -> dict[str, Any]:

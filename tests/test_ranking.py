@@ -33,3 +33,16 @@ def test_merge_profile_overrides_conflicts():
 
     assert merged == {"prefers": "oat milk", "size": "M"}
 
+
+def test_merge_profile_resets_identity_bound_facts_when_name_changes():
+    old = {
+        "name": "Linh",
+        "lactose_intolerant": True,
+        "last_order": "oat latte",
+        "prefers": "oat milk lattes",
+    }
+    new = {"name": "JOY", "age": 18}
+
+    merged = merge_profile(old, new)
+
+    assert merged == {"name": "JOY", "age": 18}

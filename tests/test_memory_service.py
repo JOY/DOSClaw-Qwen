@@ -48,7 +48,7 @@ async def test_recall_combines_profile_and_ranked_memories():
     )
 
     assert "Customer profile" in recalled
-    assert "lactose_intolerant" in recalled
+    assert "Lactose intolerant: True" in recalled
     assert "Relevant memories" in recalled
     assert "oat latte" in recalled
     assert "stale low-value" not in recalled
@@ -63,12 +63,19 @@ async def test_record_merges_extracted_profile_facts():
 
     service = MemoryService(store=store, mem0_factory=None, extractor=extractor)
 
-    await service.record(
+    updated = await service.record(
         tenant_id="tenant_demo",
         customer_id="cust_b",
         user_text="I'm lactose intolerant.",
         assistant_text="Oat milk is available.",
     )
 
+    assert updated == store.profile
     assert store.profile["lactose_intolerant"] is True
     assert store.profile["prefers"] == "oat milk"
+
+
+def test_format_profile_uses_readable_labels():
+    text = MemoryService.format_profile({"name": "JOY", "age": 18, "preferred_milk": "oat"})
+
+    assert text == "Customer profile:\n- Name: JOY\n- Age: 18\n- Preferred milk: oat"

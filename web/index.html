@@ -95,10 +95,27 @@
         white-space: pre-wrap;
         line-height: 1.45;
       }
+      .message-body:empty::after {
+        content: "Thinking...";
+        color: var(--muted);
+      }
       .message.user {
         margin-left: auto;
         border-color: #efc4c7;
         background: #fff6f6;
+      }
+      .message.error {
+        border-color: #efc4c7;
+        background: #fff6f6;
+        color: var(--brand-dark);
+      }
+      .message-meta {
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.35;
       }
       .composer {
         display: grid;
@@ -112,6 +129,10 @@
         max-height: 120px;
         resize: vertical;
         padding: 10px;
+      }
+      textarea:disabled, button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
       }
       .memory {
         background: var(--panel);
@@ -167,14 +188,36 @@
       const form = document.querySelector("#composer");
       const message = document.querySelector("#message");
       const newSession = document.querySelector("#newSession");
+      let activeController = null;
 
       function addMessage(text, role) {
         const node = document.createElement("div");
         node.className = `message ${role}`;
-        node.textContent = text;
+        const body = document.createElement("div");
+        body.className = "message-body";
+        body.textContent = text;
+        node.appendChild(body);
         thread.appendChild(node);
         thread.scrollTop = thread.scrollHeight;
-        return node;
+        return { node, body };
+      }
+
+      function setMessageMeta(messageNode, text) {
+        if (!text) return;
+        let meta = messageNode.node.querySelector(".message-meta");
+        if (!meta) {
+          meta = document.createElement("div");
+          meta.className = "message-meta";
+          messageNode.node.appendChild(meta);
+        }
+        meta.textContent = text;
+        thread.scrollTop = thread.scrollHeight;
+      }
+
+      function clearVisibleSession(memoryText = "No relevant memory.") {
+        if (activeController) activeController.abort();
+        thread.replaceChildren();
+        memoryPanel.textContent = memoryText;
       }
 
       async function loadCustomers() {
@@ -190,8 +233,19 @@
       }
 
       newSession.addEventListener("click", () => {
-        thread.replaceChildren();
-        memoryPanel.textContent = "New visible session. Stored memory remains available.";
+        clearVisibleSession("New visible session. Stored memory remains available.");
+      });
+
+      customer.addEventListener("change", () => {
+        clearVisibleSession();
+        message.focus();
+      });
+
+      message.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+          form.requestSubmit();
+        }
       });
 
       form.addEventListener("submit", async (event) => {
@@ -199,29 +253,64 @@
         const text = message.value.trim();
         if (!text) return;
         message.value = "";
+        message.disabled = true;
+        form.querySelector("button").disabled = true;
         addMessage(text, "user");
-        const reply = addMessage("", "assistant");
-        const response = await fetch("/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ customer_id: customer.value, message: text }),
-        });
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n");
-          buffer = lines.pop();
-          for (const line of lines) {
-            if (!line.trim()) continue;
-            const event = JSON.parse(line);
-            if (event.kind === "memory") memoryPanel.textContent = event.text || "No relevant memory.";
-            if (event.kind === "message_delta") reply.textContent += event.text;
-            if (event.kind === "message" && !reply.textContent) reply.textContent = event.text;
+        const controller = new AbortController();
+        activeController = controller;
+        let reply = null;
+        const ensureReply = () => {
+          if (!reply) reply = addMessage("", "assistant");
+          return reply;
+        };
+        const handleLine = (line) => {
+          if (!line.trim()) return;
+          const event = JSON.parse(line);
+          if (event.kind === "memory") {
+            memoryPanel.textContent = event.text || "No relevant memory.";
           }
+          if (event.kind === "model_info") {
+            setMessageMeta(ensureReply(), event.text);
+          }
+          if (event.kind === "message_delta") {
+            ensureReply().body.textContent += event.text;
+          }
+          if (event.kind === "message" && !ensureReply().body.textContent) {
+            reply.body.textContent = event.text;
+          }
+        };
+        try {
+          const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ customer_id: customer.value, message: text }),
+            signal: controller.signal,
+          });
+          if (!response.ok || !response.body) {
+            throw new Error(`Chat failed with HTTP ${response.status}`);
+          }
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = "";
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop();
+            for (const line of lines) handleLine(line);
+          }
+          if (buffer.trim()) handleLine(buffer);
+        } catch (error) {
+          if (error.name !== "AbortError") {
+            const errorNode = addMessage(`Chat error: ${error.message}`, "assistant error");
+            setMessageMeta(errorNode, "The app stayed online, but this request failed before a complete agent reply.");
+          }
+        } finally {
+          if (activeController === controller) activeController = null;
+          message.disabled = false;
+          form.querySelector("button").disabled = false;
+          message.focus();
         }
       });
 

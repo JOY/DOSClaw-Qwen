@@ -8,6 +8,7 @@ from typing import Any
 from agentscope.event import ReplyStartEvent, TextBlockDeltaEvent
 from agentscope.message import Msg, UserMsg
 
+from . import config
 from . import agent as agent_module
 from .memory_service import MemoryService
 from .store import Store
@@ -35,6 +36,7 @@ class ChatService:
     ) -> AsyncIterator[dict[str, str]]:
         recalled = await self.memory_service.recall(tenant_id, customer_id, message)
         yield {"kind": "memory", "text": recalled}
+        yield {"kind": "model_info", "text": model_info_text()}
 
         agent = agent_module.build_agent(tenant_id, customer_id, self.store)
         reply_parts: list[str] = []
@@ -56,7 +58,12 @@ class ChatService:
         reply = "".join(reply_parts)
         if reply:
             yield {"kind": "message", "text": reply}
-            await self.memory_service.record(tenant_id, customer_id, message, reply)
+            updated_profile = await self.memory_service.record(tenant_id, customer_id, message, reply)
+            if updated_profile:
+                yield {
+                    "kind": "memory",
+                    "text": self.memory_service.format_profile(updated_profile),
+                }
 
     async def consolidate(self, tenant_id: str, customer_id: str) -> int:
         return await self.memory_service.consolidate(tenant_id, customer_id)
@@ -67,3 +74,11 @@ def _latest_memory_context(context: list[Msg]) -> str:
         if msg.name == "memory":
             return msg.get_text_content()
     return ""
+
+
+def model_info_text() -> str:
+    return (
+        f"Qwen Cloud: {config.QWEN_CHAT_MODEL} | "
+        f"Embeddings: {config.QWEN_EMBED_MODEL} ({config.EMBED_DIM}d) | "
+        "AgentScope 2.0 + Mem0 | Memory scoped by customer and tenant"
+    )

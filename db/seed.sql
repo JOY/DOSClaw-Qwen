@@ -8,5 +8,5 @@ insert into customers (id, tenant_id, name) values
 
 insert into customer_profile (tenant_id, customer_id, facts) values
   ('tenant_demo', 'cust_a', '{"name":"Linh","lactose_intolerant":true,"prefers":"oat milk lattes","last_order":"oat latte + almond croissant"}')
-  on conflict (tenant_id, customer_id) do update set facts = excluded.facts, updated_at = now();
+  on conflict (tenant_id, customer_id) do nothing;
 -- Knowledge rows are inserted by the seed embeddings script because they need embeddings.

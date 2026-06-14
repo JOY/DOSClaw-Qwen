@@ -9,6 +9,7 @@ class FakeChatService:
 
     async def chat_events(self, tenant_id, customer_id, message):
         yield {"kind": "memory", "text": "Customer profile: oat milk"}
+        yield {"kind": "model_info", "text": "Qwen Cloud: qwen3.6-plus"}
         yield {"kind": "message", "text": "Try an oat latte."}
 
     async def consolidate(self, tenant_id, customer_id):
@@ -43,4 +44,5 @@ def test_chat_endpoint_streams_ndjson_events():
 
     assert response.status_code == 200
     assert '{"kind": "memory", "text": "Customer profile: oat milk"}' in response.text
+    assert '{"kind": "model_info", "text": "Qwen Cloud: qwen3.6-plus"}' in response.text
     assert '{"kind": "message", "text": "Try an oat latte."}' in response.text
