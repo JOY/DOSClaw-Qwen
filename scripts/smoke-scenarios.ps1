@@ -94,13 +94,13 @@ if (!(($tenants | ForEach-Object { $_.id }) -contains "tenant_demo") -or !(($ten
 $results.tenants = $tenants
 
 $customers = Invoke-RestMethod -Uri "$BaseUrl/api/customers"
-if (!$customers -or $customers.Count -lt 2) {
-    throw "Expected at least two demo customers: $($customers | ConvertTo-Json -Depth 10)"
+if (!$customers -or $customers.Count -lt 4) {
+    throw "Expected at least four Bloom Cafe demo customers: $($customers | ConvertTo-Json -Depth 10)"
 }
 $results.customers = $customers
 
 $skateCustomers = Invoke-RestMethod -Uri "$BaseUrl/api/customers?tenant_id=tenant_skate"
-if (!(($skateCustomers | ForEach-Object { $_.id }) -contains "skate_a")) {
+if ($skateCustomers.Count -lt 4 -or !(($skateCustomers | ForEach-Object { $_.id }) -contains "skate_a")) {
     throw "Expected tenant_skate customers: $($skateCustomers | ConvertTo-Json -Depth 10)"
 }
 $results.skateCustomers = $skateCustomers
