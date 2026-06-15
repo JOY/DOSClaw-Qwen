@@ -25,9 +25,11 @@
         overflow-x: hidden;
       }
       .app {
+        height: 100vh;
         min-height: 100vh;
         display: grid;
         grid-template-rows: auto 1fr;
+        overflow: hidden;
       }
       header {
         display: flex;
@@ -82,6 +84,7 @@
         display: grid;
         grid-template-columns: minmax(0, 1fr) 360px;
         min-height: 0;
+        overflow: hidden;
       }
       .chat, .memory {
         min-height: 0;
@@ -151,6 +154,7 @@
       }
       .thread {
         flex: 1;
+        min-height: 0;
         overflow: auto;
         padding: 18px 22px;
         background: #fbfbfc;
@@ -188,11 +192,15 @@
         line-height: 1.35;
       }
       .composer {
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
         display: grid;
         grid-template-columns: 1fr auto;
         gap: 10px;
         padding: 14px;
         border-top: 1px solid var(--line);
+        background: var(--surface);
       }
       textarea {
         min-height: 48px;
@@ -206,6 +214,7 @@
       }
       .memory {
         background: var(--panel);
+        overflow: auto;
       }
       .memory h2 {
         margin: 0;
@@ -346,13 +355,15 @@
         color: var(--ink);
       }
       @media (max-width: 860px) {
+        .app { height: auto; overflow: visible; }
         header, .controls { align-items: stretch; flex-direction: column; }
         select { width: 100%; min-width: 0; }
         .demo-banner { grid-template-columns: 1fr; }
         .runtime-pill { max-width: 100%; white-space: normal; }
         .stat-pill { flex: 1 1 calc(50% - 4px); min-width: 0; }
-        main { grid-template-columns: 1fr; }
+        main { grid-template-columns: 1fr; overflow: visible; }
         .chat { border-right: 0; }
+        .thread { min-height: 220px; max-height: 42vh; }
         .composer { grid-template-columns: 1fr; }
         .composer button { width: 100%; }
         .inline-row { grid-template-columns: 1fr; }

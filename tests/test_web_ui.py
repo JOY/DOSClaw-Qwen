@@ -39,3 +39,17 @@ def test_web_ui_unlocks_composer_when_final_reply_arrives():
     assert 'if (event.kind === "message")' in html
     message_handler = html.split('if (event.kind === "message")', 1)[1].split("};", 1)[0]
     assert "unlockComposer();" in message_handler
+
+
+def test_web_ui_keeps_chat_composer_pinned_to_viewport():
+    html = WEB_INDEX.read_text(encoding="utf-8")
+
+    app_rule = html.split(".app {", 1)[1].split("}", 1)[0]
+    main_rule = html.split("main {", 1)[1].split("}", 1)[0]
+    composer_rule = html.split(".composer {", 1)[1].split("}", 1)[0]
+
+    assert "height: 100vh;" in app_rule
+    assert "overflow: hidden;" in app_rule
+    assert "overflow: hidden;" in main_rule
+    assert "position: sticky;" in composer_rule
+    assert "bottom: 0;" in composer_rule
