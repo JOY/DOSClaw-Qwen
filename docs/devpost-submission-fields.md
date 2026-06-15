@@ -48,11 +48,21 @@ Suggested judge flow:
 
 ## Text Description
 
-DOSClaw-Qwen is a multilingual SME customer-support agent built around real per-customer persistent memory. The demo uses a cafe support scenario in English so judges can see cross-session recall clearly.
+Paste the story from:
 
-The agent remembers stable customer preferences, recalls the right facts before answering, keeps different customers isolated, answers policy questions through tenant-specific knowledge search, and escalates refund or complaint cases through a structured human handoff tool.
+```text
+docs/devpost-draft.md
+```
 
-It is built on AgentScope 2.0, Qwen Cloud, Mem0Middleware, Qdrant, Postgres/pgvector, and FastAPI. The visible memory panel shows what was recalled before each answer, and assistant reply metadata exposes the active Qwen model, embedding model, memory backend, memory scope, and tool calls.
+It is already formatted with the required Devpost headings:
+
+- Inspiration
+- What it does
+- How we built it
+- Challenges we ran into
+- Accomplishments that we're proud of
+- What we learned
+- What's next for DOSClaw
 
 ## MemoryAgent Fit
 
@@ -133,4 +143,3 @@ DOSClaw-Qwen was implemented as a new standalone Python AgentScope 2.0 project d
 ## Optional Blog Or Social Post
 
 No blog/social URL is required unless submitting for the optional blog post prize.
-

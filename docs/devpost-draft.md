@@ -1,96 +1,100 @@
-# Devpost Draft: DOSClaw-Qwen
+## Inspiration
 
-## Title
+Small businesses often need customer-support agents that remember the right things without becoming creepy, leaky, or scripted. A cafe should not have to ask a returning customer about the same allergy every time, but it also cannot let one customer's profile bleed into another customer's support session.
 
-DOSClaw-Qwen
+DOSClaw-Qwen was built for that narrow but very real problem: an SME support agent that remembers per-customer preferences, uses tenant knowledge, and escalates honestly when a human should review the case.
 
-## Tagline
+## What it does
 
-A Qwen Cloud customer-support agent that remembers each customer across sessions.
+DOSClaw-Qwen is a multilingual SME customer-support agent for the MemoryAgent track. The demo runs in English so judges can follow the memory behavior clearly.
 
-## Track
+The agent can:
 
-MemoryAgent
+- Recall stable customer facts across visible new sessions.
+- Keep Customer A and Customer B memory isolated.
+- Store and update structured profile facts such as name, age, allergies, preferences, last order, and complaint state.
+- Use Qwen Cloud embeddings and tenant FAQ rows for knowledge-grounded answers.
+- Create a human handoff ticket before claiming escalation.
+- Show the recalled memory block, active Qwen model, embedding model, memory backend, memory scope, and tool calls directly in the web UI.
 
-## What It Does
+The live demo is deployed at:
 
-DOSClaw-Qwen is a multilingual SME customer-support agent built around real per-customer persistent memory. The demo uses a cafe support scenario in English so judges can see cross-session recall clearly.
-
-The agent remembers stable customer preferences, recalls the right facts before answering, keeps different customers isolated, answers policy questions through tenant-specific knowledge search, and escalates refund or complaint cases through a structured human handoff tool.
-
-## Why It Fits MemoryAgent
-
-The MemoryAgent track rewards agents that accumulate experience, retrieve the right memories inside a limited context window, and forget or avoid stale context. DOSClaw-Qwen implements that with:
-
-- AgentScope 2.0 `Mem0Middleware` for episodic long-term memory.
-- Native customer and tenant scoping: `user_id=customer_id`, `agent_id=tenant_id`.
-- A structured Postgres profile layer for stable facts such as allergies, preferences, and last order.
-- Qdrant-backed episodic vector storage for mem0 in the live runtime.
-- Qwen Cloud embeddings for FAQ search and memory storage.
-- A visible memory side panel that shows what was recalled before each answer.
-- Runtime/tool metadata under every assistant reply so judges can see the model, memory backend, and tool calls.
-
-## How Qwen Cloud And Alibaba Cloud Are Used
-
-Qwen Cloud powers both reasoning and embeddings:
-
-- Chat model: `qwen3.6-plus` through DashScope.
-- Embedding model: `text-embedding-v4` through DashScope's OpenAI-compatible endpoint.
-- Proof code: `dosclaw_qwen/model.py`.
-
-The live deployment runs on Alibaba Cloud Elastic Container Instance with a Python app container, a Postgres/pgvector sidecar, a Qdrant sidecar, and an nginx public proxy sidecar. The repo includes managed-container scripts for ACR + Function Compute / Elastic Container Instance, the source-bootstrapped ECI path used for the live demo, and an ECS SSH deployment path for a known host.
-
-## Architecture
-
-```mermaid
-flowchart LR
-  Judge["Judge browser"] --> UI["Static web UI"]
-  UI --> API["FastAPI app"]
-  API --> Service["ChatService"]
-  Service --> Agent["AgentScope Agent"]
-  Service --> Profile["Structured profile memory"]
-  Agent --> Mem0["Mem0Middleware"]
-  Mem0 --> Qdrant["Qdrant vector store"]
-  Agent --> Tools["knowledge_search / human_handoff"]
-  Profile --> PG[("Postgres + pgvector")]
-  Tools --> PG
-  Agent --> Qwen["Qwen Cloud chat"]
-  Mem0 --> Qwen
-  Mem0 --> Embed["Qwen Cloud embeddings"]
-  Tools --> Embed
+```text
+http://8.219.211.170/
 ```
 
-## Demo Flow
+## How we built it
 
-1. Returning Customer A asks for a recommendation. DOSClaw-Qwen recalls lactose intolerance and oat milk preference.
-2. Customer B starts a new session. Customer A's facts are not leaked.
-3. A policy question triggers tenant knowledge search.
-4. A refund complaint triggers human handoff and creates a ticket.
+The project is a standalone Python AgentScope 2.0 app, not a scripted chat demo.
 
-## Built With
+Core runtime:
 
-- AgentScope 2.0
-- Mem0Middleware from the AgentScope long-term-memory middleware work
-- Qwen Cloud / DashScope
-- FastAPI
-- Postgres + pgvector
-- Docker
-- Qdrant
-- Alibaba Cloud ECI deployment scripts
+- FastAPI serves the chat API and static web UI.
+- AgentScope 2.0 runs the support agent and tool-calling loop.
+- Qwen Cloud / DashScope provides `qwen3.6-plus` for chat reasoning.
+- Qwen Cloud `text-embedding-v4` provides embeddings for FAQ search and memory storage.
+- AgentScope `Mem0Middleware` stores episodic long-term memory.
+- Qdrant stores mem0 episodic vectors in the deployed runtime.
+- Postgres + pgvector stores tenants, customers, structured profiles, knowledge rows, and handoff tickets.
+- The web UI streams NDJSON events so judges see memory recall, model metadata, tool metadata, and the final answer.
+- The live runtime runs on Alibaba Cloud Elastic Container Instance with app, Postgres/pgvector, Qdrant, and nginx sidecars.
 
-## Links
+The memory scope maps naturally to multi-tenant support:
 
-- Source code: https://github.com/JOY/DOSClaw-Qwen
-- Qwen Cloud model adapter: https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/model.py
+```text
+mem0 user_id = customer_id
+mem0 agent_id = tenant_id
+```
+
+Proof links:
+
+- Qwen Cloud adapter: https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/model.py
 - FastAPI demo surface: https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/app.py
-- Architecture: https://github.com/JOY/DOSClaw-Qwen/blob/main/ARCHITECTURE.md
-- Architecture diagram SVG: https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/architecture.svg
-- Alibaba deployment docs: https://github.com/JOY/DOSClaw-Qwen/blob/main/infra/alibaba/README.md
+- Architecture SVG: https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/architecture.svg
+- Deployment proof notes: https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/deployment-proof.md
 
-## Submission Fields
+## Challenges we ran into
 
-- Live demo URL: http://8.219.211.170/
-- Demo login: none required for the current public demo.
-- Video URL: add the public or unlisted YouTube, Vimeo, or Youku URL after upload.
-- Alibaba runtime proof: `scripts/deploy-eci-source.ps1` and `docs/deployment-proof.md`.
-- Paste-ready submission fields: `docs/devpost-submission-fields.md`.
+The hardest part was making the demo use real memory while still staying judge-friendly.
+
+Key challenges:
+
+- AgentScope 2.0 APIs are still moving, so we verified the installed API by introspection before wiring models, tools, and middleware.
+- Mem0 needed to be routed through the same DashScope/Qwen configuration instead of falling back to OpenAI.
+- The memory UI had to expose enough evidence for judges without dumping raw internals into every answer.
+- Customer isolation had to work across both structured profile memory and episodic mem0 memory.
+- Alibaba Cloud ECI updates restart the container group, so every deployment needs a smoke run that reseeds and verifies the live demo behavior.
+- The first UI stream implementation could leave the composer disabled while the HTTP stream stayed open; we fixed the UI to unlock when the final assistant message arrives.
+- The demo needed a clean submission packet: architecture, smoke evidence, paste-ready Devpost fields, and a local video artifact.
+
+## Accomplishments that we're proud of
+
+- The deployed app uses real Qwen Cloud chat and embeddings.
+- Memory is scoped by customer and tenant rather than a shared global chat history.
+- The web UI makes memory visible: judges can see what was recalled before each answer.
+- Tool metadata is visible under assistant replies, including `knowledge_search` and `human_handoff`.
+- Refund escalation creates an auditable ticket path instead of pretending a human was notified.
+- The project includes live smoke scenarios that verify returning memory, customer isolation, profile learning, recall, knowledge grounding, and handoff behavior.
+- The public repo includes a complete evidence package, architecture diagram, video recording packet, and paste-ready Devpost submission fields.
+
+## What we learned
+
+Memory agents are only convincing when the retrieval boundary is visible. If judges cannot see what the agent remembered and why, the demo looks like prompt theater.
+
+We also learned that customer support memory needs two layers:
+
+- Episodic memory for flexible past interactions.
+- Structured profile memory for durable facts that need deterministic display and conflict handling.
+
+AgentScope and Qwen Cloud made the agent path straightforward once the API surface was verified, but deployment taught us to treat live cloud state as part of the product. Smoke tests, runtime metadata, and repeatable proof packaging mattered as much as the app code.
+
+## What's next for DOSClaw
+
+The next step is turning DOSClaw-Qwen from a focused hackathon demo into a deployable support memory service:
+
+- Add a staff dashboard for handoff tickets and profile review.
+- Add explicit customer consent controls for remembering, editing, and forgetting profile facts.
+- Add multi-tenant admin setup for different SME shops.
+- Add richer memory consolidation so outdated preferences decay or require confirmation.
+- Add analytics for recall quality, handoff rate, and customer satisfaction.
+- Package the AgentScope + Mem0 + Qwen Cloud memory pattern as a reusable example for other builders.
