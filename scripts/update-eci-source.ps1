@@ -138,6 +138,32 @@ $bootstrapBytes = [Text.Encoding]::UTF8.GetBytes($bootstrap.Replace("`r`n", "`n"
 $bootstrapB64 = [Convert]::ToBase64String($bootstrapBytes)
 $bootstrapRunner = 'echo${IFS}' + $bootstrapB64 + '|base64${IFS}-d|sh'
 
+$proxy = @"
+cat >/etc/nginx/conf.d/default.conf <<'EOF'
+server {
+    listen $PublicPort;
+    server_name _;
+    location / {
+        proxy_pass http://127.0.0.1:$Port;
+        proxy_http_version 1.1;
+        proxy_read_timeout 300s;
+        proxy_send_timeout 300s;
+        proxy_buffering off;
+        proxy_request_buffering off;
+        proxy_set_header Host `$host;
+        proxy_set_header X-Real-IP `$remote_addr;
+        proxy_set_header X-Forwarded-For `$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto `$scheme;
+        add_header X-Accel-Buffering no;
+    }
+}
+EOF
+nginx -g 'daemon off;'
+"@
+$proxyBytes = [Text.Encoding]::UTF8.GetBytes($proxy.Replace("`r`n", "`n"))
+$proxyB64 = [Convert]::ToBase64String($proxyBytes)
+$proxyRunner = 'echo${IFS}' + $proxyB64 + '|base64${IFS}-d|sh'
+
 $argsList = [System.Collections.Generic.List[string]]::new()
 @(
     "eci",
@@ -159,7 +185,22 @@ $argsList = [System.Collections.Generic.List[string]]::new()
     "--Container.1.ReadinessProbe.HttpGet.Port", "$Port",
     "--Container.1.ReadinessProbe.InitialDelaySeconds", "120",
     "--Container.1.ReadinessProbe.PeriodSeconds", "10",
-    "--Container.1.ReadinessProbe.TimeoutSeconds", "5"
+    "--Container.1.ReadinessProbe.TimeoutSeconds", "5",
+    "--Container.2.Name", "web-proxy",
+    "--Container.2.Image", "nginx:alpine",
+    "--Container.2.ImagePullPolicy", "IfNotPresent",
+    "--Container.2.Command.1", "/bin/sh",
+    "--Container.2.Arg.1=-lc",
+    "--Container.2.Arg.2=$proxyRunner",
+    "--Container.2.Cpu", "$ProxyCpu",
+    "--Container.2.Memory", "$ProxyMemory",
+    "--Container.2.Port.1.Port", "$PublicPort",
+    "--Container.2.Port.1.Protocol", "TCP",
+    "--Container.2.ReadinessProbe.HttpGet.Path", "/api/health",
+    "--Container.2.ReadinessProbe.HttpGet.Port", "$PublicPort",
+    "--Container.2.ReadinessProbe.InitialDelaySeconds", "150",
+    "--Container.2.ReadinessProbe.PeriodSeconds", "10",
+    "--Container.2.ReadinessProbe.TimeoutSeconds", "5"
 ) | ForEach-Object { $argsList.Add($_) }
 
 $appEnv = [ordered]@{
