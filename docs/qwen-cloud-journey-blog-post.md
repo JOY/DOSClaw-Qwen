@@ -31,7 +31,7 @@ What I am most proud of is that the demo has real behavior behind the buttons. I
 
 The biggest lesson was that support memory needs two layers. Episodic memory is flexible and conversational, but structured profile memory is better for durable facts that must be displayed, updated, and audited. Qwen Cloud embeddings help the agent search across past interactions and FAQ rows, while the profile layer gives the UI a stable record of what the business thinks it knows about a customer.
 
-Next, I want to turn DOSClaw-Qwen into a deployable support memory service: add a staff dashboard for handoff tickets, add customer consent controls for remembering and forgetting facts, improve memory consolidation, and make multi-tenant setup easier for real SME teams.
+Next, I want to turn DOSClaw-Qwen into a deployable support memory service: improve memory consolidation, add staff assignment and SLA timers for handoff tickets, add richer recall-quality analytics, and make self-serve onboarding easier for real SME teams.
 
 Live demo: http://8.219.211.170/
 
@@ -70,7 +70,7 @@ Thách thức kỹ thuật lớn nhất là giữ hệ thống thật trong khi 
 
 Bài học lớn nhất là support memory cần hai lớp. Episodic memory linh hoạt và giống hội thoại, nhưng structured profile memory tốt hơn cho các fact bền vững cần hiển thị, cập nhật, và audit. Qwen Cloud embeddings giúp agent tìm lại tương tác cũ và FAQ rows, còn profile layer cho UI một bản ghi ổn định về những gì doanh nghiệp tin là mình biết về khách hàng.
 
-Bước tiếp theo là biến DOSClaw-Qwen thành một support memory service có thể triển khai thực tế: thêm staff dashboard cho handoff tickets, thêm consent controls để khách hàng cho phép nhớ và quên thông tin, cải thiện memory consolidation, và làm multi-tenant setup dễ dùng hơn cho các SME team thật.
+Bước tiếp theo là biến DOSClaw-Qwen thành một support memory service có thể triển khai thực tế: cải thiện memory consolidation, thêm phân công nhân viên và SLA timer cho handoff tickets, thêm analytics sâu hơn về chất lượng recall, và làm self-serve onboarding dễ dùng hơn cho các SME team thật.
 
 Live demo: http://8.219.211.170/
 

@@ -16,7 +16,13 @@ $results = [ordered]@{
     baseUrl = $BaseUrl
     health = $null
     runtime = $null
+    tenants = @()
     customers = @()
+    skateCustomers = @()
+    knowledge = @()
+    analytics = $null
+    consent = $null
+    handoffs = @()
     chat = $null
     scenarios = [ordered]@{}
 }
@@ -81,11 +87,47 @@ if ($runtime.service -ne "dosclaw-qwen" -or !$runtime.chat_model -or $runtime.me
 }
 $results.runtime = $runtime
 
+$tenants = Invoke-RestMethod -Uri "$BaseUrl/api/tenants"
+if (!(($tenants | ForEach-Object { $_.id }) -contains "tenant_demo") -or !(($tenants | ForEach-Object { $_.id }) -contains "tenant_skate")) {
+    throw "Expected Bloom Cafe and Deckhouse Skate Shop demo tenants: $($tenants | ConvertTo-Json -Depth 10)"
+}
+$results.tenants = $tenants
+
 $customers = Invoke-RestMethod -Uri "$BaseUrl/api/customers"
 if (!$customers -or $customers.Count -lt 2) {
     throw "Expected at least two demo customers: $($customers | ConvertTo-Json -Depth 10)"
 }
 $results.customers = $customers
+
+$skateCustomers = Invoke-RestMethod -Uri "$BaseUrl/api/customers?tenant_id=tenant_skate"
+if (!(($skateCustomers | ForEach-Object { $_.id }) -contains "skate_a")) {
+    throw "Expected tenant_skate customers: $($skateCustomers | ConvertTo-Json -Depth 10)"
+}
+$results.skateCustomers = $skateCustomers
+
+$skateKnowledge = Invoke-RestMethod -Uri "$BaseUrl/api/knowledge?tenant_id=tenant_skate"
+if (($skateKnowledge | ConvertTo-Json -Depth 10) -notmatch "Deckhouse|skate|deck") {
+    throw "Expected tenant_skate knowledge rows: $($skateKnowledge | ConvertTo-Json -Depth 10)"
+}
+$results.knowledge = $skateKnowledge
+
+$analytics = Invoke-RestMethod -Uri "$BaseUrl/api/analytics?tenant_id=tenant_demo&customer_id=cust_b"
+if ($analytics.customers -lt 2 -or $analytics.knowledge_rows -lt 3) {
+    throw "Unexpected analytics response: $($analytics | ConvertTo-Json -Depth 10)"
+}
+$results.analytics = $analytics
+
+$pauseBody = @{ tenant_id = "tenant_demo"; customer_id = "cust_b"; status = "paused" } | ConvertTo-Json
+$pausedConsent = Invoke-RestMethod -Uri "$BaseUrl/api/memory/consent" -Method Patch -ContentType "application/json" -Body $pauseBody
+if ($pausedConsent.status -ne "paused") {
+    throw "Memory consent did not pause: $($pausedConsent | ConvertTo-Json -Depth 10)"
+}
+$resumeBody = @{ tenant_id = "tenant_demo"; customer_id = "cust_b"; status = "active" } | ConvertTo-Json
+$activeConsent = Invoke-RestMethod -Uri "$BaseUrl/api/memory/consent" -Method Patch -ContentType "application/json" -Body $resumeBody
+if ($activeConsent.status -ne "active") {
+    throw "Memory consent did not resume: $($activeConsent | ConvertTo-Json -Depth 10)"
+}
+$results.consent = $activeConsent
 
 if (!$SkipLiveChat) {
     Write-Host "Checking live judge scenarios..."
@@ -126,6 +168,18 @@ if (!$SkipLiveChat) {
         throw "Handoff scenario did not create a visible ticket/tool event. Tools=$($handoff.tools -join ', ') Reply=$($handoff.reply)"
     }
     $results.scenarios.humanHandoff = $handoff
+
+    $ticketId = [regex]::Match($handoff.reply, "ticket #([0-9]+)").Groups[1].Value
+    $handoffs = Invoke-RestMethod -Uri "$BaseUrl/api/handoffs?tenant_id=tenant_demo"
+    if (!(($handoffs | ForEach-Object { $_.id }) -contains [int]$ticketId)) {
+        throw "Handoff dashboard did not list ticket #$ticketId: $($handoffs | ConvertTo-Json -Depth 10)"
+    }
+    $statusBody = @{ tenant_id = "tenant_demo"; status = "reviewing" } | ConvertTo-Json
+    $updatedHandoff = Invoke-RestMethod -Uri "$BaseUrl/api/handoffs/$ticketId" -Method Patch -ContentType "application/json" -Body $statusBody
+    if ($updatedHandoff.status -ne "reviewing") {
+        throw "Handoff dashboard did not update ticket status: $($updatedHandoff | ConvertTo-Json -Depth 10)"
+    }
+    $results.handoffs = $handoffs
 }
 
 $outputFullPath = if ([System.IO.Path]::IsPathRooted($OutputPath)) {

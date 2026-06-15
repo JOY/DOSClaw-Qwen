@@ -107,6 +107,31 @@
         color: var(--muted);
         line-height: 1.4;
       }
+      .demo-content {
+        display: grid;
+        gap: 8px;
+      }
+      .analytics-strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: stretch;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .stat-pill {
+        min-width: 112px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 7px 9px;
+        background: #fff;
+      }
+      .stat-pill strong {
+        display: block;
+        color: var(--ink);
+        font-size: 15px;
+        line-height: 1.1;
+      }
       .runtime-pill {
         max-width: 420px;
         padding: 7px 9px;
@@ -250,6 +275,27 @@
         flex-wrap: wrap;
         gap: 8px;
       }
+      .consent-bar {
+        display: grid;
+        gap: 8px;
+      }
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        width: fit-content;
+        border: 1px solid #cfd8d3;
+        border-radius: 999px;
+        padding: 5px 8px;
+        background: #f4faf6;
+        color: #27543a;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .status-pill.paused {
+        border-color: #efc4c7;
+        background: #fff6f6;
+        color: var(--brand-dark);
+      }
       .side-input, .side-textarea {
         width: 100%;
         border: 1px solid var(--line);
@@ -289,6 +335,9 @@
         font-size: 12px;
         margin-top: 5px;
       }
+      .list-item button {
+        margin-top: 8px;
+      }
       .runtime-detail strong {
         color: var(--ink);
       }
@@ -310,6 +359,7 @@
           <p class="tagline">MemoryAgent demo for multilingual SME customer support</p>
         </div>
         <div class="controls">
+          <select id="tenant" aria-label="Shop"></select>
           <select id="customer"></select>
           <button class="secondary" id="newSession" type="button">New session</button>
         </div>
@@ -317,9 +367,10 @@
       <main>
         <section class="chat">
           <div class="demo-banner">
-            <div>
+            <div class="demo-content">
               <p class="demo-title">Judge the memory, not a canned script.</p>
               <p class="demo-copy">Use Customer B to teach a new fact, start a visible new session, then ask what the agent remembers.</p>
+              <div class="analytics-strip" id="analyticsStrip">Support analytics loading...</div>
             </div>
             <div class="runtime-pill" id="runtimeBadge">Runtime loading...</div>
           </div>
@@ -332,6 +383,17 @@
         <aside class="memory">
           <h2>Memory recalled</h2>
           <div id="memoryPanel">No memory recalled yet.</div>
+          <section class="side-section">
+            <h2>Profile & consent</h2>
+            <div class="consent-bar">
+              <span class="status-pill" id="consentStatus">Memory consent loading...</span>
+              <div class="button-row">
+                <button class="secondary" id="resumeMemory" type="button">Resume memory</button>
+                <button class="secondary" id="pauseMemory" type="button">Pause memory</button>
+              </div>
+            </div>
+            <div class="item-list" id="profilePanel">No profile loaded.</div>
+          </section>
           <section class="side-section">
             <h2>Memory controls</h2>
             <div class="field-stack">
@@ -362,6 +424,19 @@
             </div>
             <div class="item-list" id="knowledgeList">Knowledge base loading...</div>
           </section>
+          <section class="side-section">
+            <h2>Staff handoffs</h2>
+            <div class="inline-row">
+              <select id="handoffStatus" aria-label="Handoff status">
+                <option value="open">Open</option>
+                <option value="reviewing">Reviewing</option>
+                <option value="resolved">Resolved</option>
+                <option value="">All</option>
+              </select>
+              <button class="secondary" id="refreshHandoffs" type="button">Refresh</button>
+            </div>
+            <div class="item-list" id="handoffList">No handoffs loaded.</div>
+          </section>
           <section class="guide">
             <h2>Demo guide</h2>
             <p class="guide-copy">Click a prompt to load it, then press Enter or Send.</p>
@@ -379,15 +454,21 @@
       </main>
     </div>
     <script>
+      const tenant = document.querySelector("#tenant");
       const customer = document.querySelector("#customer");
       const thread = document.querySelector("#thread");
       const memoryPanel = document.querySelector("#memoryPanel");
       const runtimeBadge = document.querySelector("#runtimeBadge");
       const runtimeDetail = document.querySelector("#runtimeDetail");
+      const analyticsStrip = document.querySelector("#analyticsStrip");
       const form = document.querySelector("#composer");
       const message = document.querySelector("#message");
       const newSession = document.querySelector("#newSession");
       const promptButtons = document.querySelectorAll(".prompt-chip");
+      const profilePanel = document.querySelector("#profilePanel");
+      const consentStatus = document.querySelector("#consentStatus");
+      const pauseMemory = document.querySelector("#pauseMemory");
+      const resumeMemory = document.querySelector("#resumeMemory");
       const memoryQuery = document.querySelector("#memoryQuery");
       const memoryNote = document.querySelector("#memoryNote");
       const memoryList = document.querySelector("#memoryList");
@@ -402,6 +483,9 @@
       const knowledgeList = document.querySelector("#knowledgeList");
       const refreshKnowledge = document.querySelector("#refreshKnowledge");
       const searchKnowledge = document.querySelector("#searchKnowledge");
+      const handoffStatus = document.querySelector("#handoffStatus");
+      const handoffList = document.querySelector("#handoffList");
+      const refreshHandoffs = document.querySelector("#refreshHandoffs");
       let activeController = null;
       let selectedMemoryId = null;
       const RETRYABLE_STATUS_CODES = new Set([502, 503, 504]);
@@ -489,8 +573,20 @@
         });
       }
 
+      async function loadTenants() {
+        const response = await fetch("/api/tenants");
+        const tenants = await response.json();
+        tenant.replaceChildren();
+        for (const item of tenants) {
+          const option = document.createElement("option");
+          option.value = item.id;
+          option.textContent = item.name;
+          tenant.appendChild(option);
+        }
+      }
+
       async function loadCustomers() {
-        const response = await fetch("/api/customers");
+        const response = await fetch(`/api/customers?${new URLSearchParams({ tenant_id: tenant.value })}`);
         const customers = await response.json();
         customer.replaceChildren();
         for (const item of customers) {
@@ -513,8 +609,13 @@
         return response.json();
       }
 
+      function currentTenantParams(extra = {}) {
+        const params = new URLSearchParams({ tenant_id: tenant.value, ...extra });
+        return params.toString();
+      }
+
       function currentCustomerParams(extra = {}) {
-        const params = new URLSearchParams({ customer_id: customer.value, ...extra });
+        const params = new URLSearchParams({ tenant_id: tenant.value, customer_id: customer.value, ...extra });
         return params.toString();
       }
 
@@ -529,6 +630,52 @@
       function memoryScore(item) {
         const score = item.score ?? item.similarity;
         return typeof score === "number" ? `score ${score.toFixed(2)}` : "";
+      }
+
+      function renderProfile(profile) {
+        profilePanel.replaceChildren();
+        const entries = Object.entries(profile || {});
+        if (entries.length === 0) {
+          profilePanel.textContent = "No structured profile facts for this customer.";
+          return;
+        }
+        for (const [key, value] of entries) {
+          const node = document.createElement("div");
+          node.className = "list-item";
+          const title = document.createElement("div");
+          title.className = "item-title";
+          title.textContent = key.replaceAll("_", " ");
+          const body = document.createElement("div");
+          body.textContent = typeof value === "object" ? JSON.stringify(value) : String(value);
+          node.append(title, body);
+          profilePanel.appendChild(node);
+        }
+      }
+
+      function renderConsent(status) {
+        const active = status !== "paused";
+        consentStatus.textContent = active ? "Memory consent: active" : "Memory consent: paused";
+        consentStatus.classList.toggle("paused", !active);
+      }
+
+      function renderAnalytics(stats) {
+        const rows = [
+          ["Support analytics", tenant.options[tenant.selectedIndex]?.textContent || tenant.value],
+          ["Customers", stats.customers ?? "-"],
+          ["Profiles", stats.profiles ?? "-"],
+          ["FAQ rows", stats.knowledge_rows ?? "-"],
+          ["Open handoffs", stats.handoffs_open ?? "-"],
+          ["Memories", stats.current_customer_memories ?? "-"],
+        ];
+        analyticsStrip.replaceChildren();
+        for (const [label, value] of rows) {
+          const node = document.createElement("div");
+          node.className = "stat-pill";
+          const valueNode = document.createElement("strong");
+          valueNode.textContent = value;
+          node.append(valueNode, label);
+          analyticsStrip.appendChild(node);
+        }
       }
 
       function renderMemoryItems(items, emptyText = "No saved mem0 memories for this customer.") {
@@ -588,10 +735,35 @@
         try {
           const data = await fetchJson(`/api/memory?${currentCustomerParams()}`);
           selectedMemoryId = null;
+          renderProfile(data.profile || {});
+          renderConsent((data.profile || {}).memory_consent || "active");
           renderMemoryItems(data.memories || []);
         } catch (error) {
           memoryList.textContent = `Memory controls unavailable: ${error.message}`;
+          profilePanel.textContent = `Profile unavailable: ${error.message}`;
         }
+      }
+
+      async function loadConsent() {
+        if (!customer.value) return;
+        try {
+          const data = await fetchJson(`/api/memory/consent?${currentCustomerParams()}`);
+          renderConsent(data.status);
+        } catch (error) {
+          consentStatus.textContent = `Memory consent unavailable: ${error.message}`;
+          consentStatus.classList.add("paused");
+        }
+      }
+
+      async function setConsent(status) {
+        if (!customer.value) return;
+        await fetchJson("/api/memory/consent", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tenant_id: tenant.value, customer_id: customer.value, status }),
+        });
+        await loadMemory();
+        await loadConsent();
       }
 
       async function searchCustomerMemory() {
@@ -646,7 +818,7 @@
 
       async function loadKnowledge() {
         try {
-          const rows = await fetchJson("/api/knowledge");
+          const rows = await fetchJson(`/api/knowledge?${currentTenantParams()}`);
           renderKnowledgeItems(rows);
         } catch (error) {
           knowledgeList.textContent = `Knowledge base unavailable: ${error.message}`;
@@ -660,10 +832,76 @@
           return;
         }
         try {
-          const rows = await fetchJson(`/api/knowledge/search?${new URLSearchParams({ query })}`);
+          const rows = await fetchJson(`/api/knowledge/search?${currentTenantParams({ query })}`);
           renderKnowledgeItems(rows, "No matching knowledge rows.");
         } catch (error) {
           knowledgeList.textContent = `Knowledge search failed: ${error.message}`;
+        }
+      }
+
+      function renderHandoffs(items, emptyText = "No handoff tickets for this status.") {
+        handoffList.replaceChildren();
+        if (!items || items.length === 0) {
+          handoffList.textContent = emptyText;
+          return;
+        }
+        for (const item of items) {
+          const node = document.createElement("div");
+          node.className = "list-item";
+          const title = document.createElement("div");
+          title.className = "item-title";
+          title.textContent = `#${item.id} ${item.customer_name || item.customer_id || "Customer"}`;
+          const body = document.createElement("div");
+          body.textContent = item.reason || "";
+          const meta = document.createElement("div");
+          meta.className = "item-meta";
+          meta.textContent = [item.status, item.created_at].filter(Boolean).join(" | ");
+          const actions = document.createElement("div");
+          actions.className = "button-row";
+          const reviewing = document.createElement("button");
+          reviewing.className = "secondary";
+          reviewing.type = "button";
+          reviewing.textContent = "Reviewing";
+          reviewing.addEventListener("click", () => updateHandoff(item.id, "reviewing"));
+          const resolved = document.createElement("button");
+          resolved.className = "secondary";
+          resolved.type = "button";
+          resolved.textContent = "Resolved";
+          resolved.addEventListener("click", () => updateHandoff(item.id, "resolved"));
+          actions.append(reviewing, resolved);
+          node.append(title, body, meta, actions);
+          handoffList.appendChild(node);
+        }
+      }
+
+      async function loadHandoffs() {
+        try {
+          const extra = handoffStatus.value ? { status: handoffStatus.value } : {};
+          const rows = await fetchJson(`/api/handoffs?${currentTenantParams(extra)}`);
+          renderHandoffs(rows);
+        } catch (error) {
+          handoffList.textContent = `Handoffs unavailable: ${error.message}`;
+        }
+      }
+
+      async function updateHandoff(id, status) {
+        await fetchJson(`/api/handoffs/${encodeURIComponent(id)}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tenant_id: tenant.value, status }),
+        });
+        await loadHandoffs();
+        await loadAnalytics();
+      }
+
+      async function loadAnalytics() {
+        if (!tenant.value) return;
+        try {
+          const extra = customer.value ? { customer_id: customer.value } : {};
+          const stats = await fetchJson(`/api/analytics?${currentTenantParams(extra)}`);
+          renderAnalytics(stats);
+        } catch (error) {
+          analyticsStrip.textContent = `Support analytics unavailable: ${error.message}`;
         }
       }
 
@@ -697,9 +935,24 @@
       customer.addEventListener("change", () => {
         clearVisibleSession();
         loadMemory();
+        loadConsent();
+        loadAnalytics();
         message.focus();
       });
 
+      tenant.addEventListener("change", async () => {
+        clearVisibleSession();
+        await loadCustomers();
+        await loadMemory();
+        await loadConsent();
+        await loadKnowledge();
+        await loadHandoffs();
+        await loadAnalytics();
+        message.focus();
+      });
+
+      pauseMemory.addEventListener("click", () => setConsent("paused"));
+      resumeMemory.addEventListener("click", () => setConsent("active"));
       refreshMemory.addEventListener("click", loadMemory);
       searchMemory.addEventListener("click", searchCustomerMemory);
       addMemory.addEventListener("click", () => saveMemory("POST", "/api/memory"));
@@ -712,6 +965,8 @@
       deleteAllMemory.addEventListener("click", removeAllCustomerMemory);
       refreshKnowledge.addEventListener("click", loadKnowledge);
       searchKnowledge.addEventListener("click", searchKnowledgeBase);
+      handoffStatus.addEventListener("change", loadHandoffs);
+      refreshHandoffs.addEventListener("click", loadHandoffs);
 
       for (const button of promptButtons) {
         button.addEventListener("click", () => {
@@ -758,6 +1013,9 @@
           if (event.kind === "tool_info") {
             appendMessageMeta(ensureReply(), event.text);
           }
+          if (event.kind === "memory_policy") {
+            appendMessageMeta(ensureReply(), event.text);
+          }
           if (event.kind === "message_delta") {
             ensureReply().body.textContent += event.text;
           }
@@ -771,6 +1029,7 @@
         };
         try {
           const response = await postChatWithRetry({
+            tenant_id: tenant.value,
             customer_id: customer.value,
             message: text,
           }, controller.signal);
@@ -794,17 +1053,24 @@
         } finally {
           if (activeController === controller) activeController = null;
           loadMemory();
+          loadConsent();
+          loadHandoffs();
+          loadAnalytics();
           unlockComposer();
           message.focus();
         }
       });
 
-      loadCustomers()
+      loadTenants()
+        .then(loadCustomers)
         .then(loadMemory)
+        .then(loadConsent)
+        .then(loadKnowledge)
+        .then(loadHandoffs)
+        .then(loadAnalytics)
         .catch((error) => {
           memoryPanel.textContent = `Failed to load customers: ${error.message}`;
         });
-      loadKnowledge();
       loadRuntime().catch((error) => {
         runtimeBadge.textContent = "Runtime unavailable";
         setRuntimeDetail([["Runtime", error.message]]);

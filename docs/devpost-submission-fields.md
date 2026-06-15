@@ -43,8 +43,10 @@ Suggested judge flow:
 8. Confirm the reply recalls JOY and the memory panel shows Customer B's profile.
 9. Send `What is your refund policy for coffee beans?`.
 10. Confirm the assistant metadata can show `Tool: knowledge_search`.
-11. Send `My order was wrong twice. I want a refund and a staff member to review this.`.
-12. Confirm the assistant creates a handoff ticket and metadata can show `Tool: human_handoff`.
+11. Use the Profile & consent panel to pause and resume automatic memory writes.
+12. Switch the shop selector to `Deckhouse Skate Shop` and confirm customers, FAQ rows, and analytics change.
+13. Switch back to `Bloom Cafe` and send `My order was wrong twice. I want a refund and a staff member to review this.`.
+14. Confirm the assistant creates a handoff ticket, metadata can show `Tool: human_handoff`, and the Staff handoffs panel can mark the ticket reviewing or resolved.
 
 ## Text Description
 
@@ -68,9 +70,13 @@ The agent can:
 - Store and update structured profile facts such as name, age, allergies, preferences, last order, and complaint state.
 - Let the agent use Mem0 `search_memory` and `add_memory` tools when memory should be searched or written during reasoning.
 - Expose Mem0 list, get, search, add, update, delete, delete-all, and history controls in the judge-facing UI.
+- Let customers pause/resume automatic structured profile recording, while still allowing explicit review, edit, and forget actions.
 - Use Qwen Cloud embeddings and tenant FAQ rows for knowledge-grounded answers.
 - Show the tenant knowledge base and knowledge search path separately from ordinary chat.
 - Create a human handoff ticket before claiming escalation.
+- Show a staff handoff dashboard with ticket status updates.
+- Show support analytics for customers, profiles, FAQ rows, handoffs, and current-customer memories.
+- Switch between two demo tenants, Bloom Cafe and Deckhouse Skate Shop, with isolated customers and knowledge rows.
 - Show the recalled memory block, active Qwen model, embedding model, memory backend, memory scope, and tool calls directly in the web UI.
 
 The live demo is deployed at:
@@ -94,7 +100,9 @@ Core runtime:
 - Qdrant stores mem0 episodic vectors in the deployed runtime.
 - Postgres + pgvector stores tenants, customers, structured profiles, knowledge rows, and handoff tickets.
 - FastAPI exposes scoped memory management endpoints for Mem0 list, get, search, add, update, delete, delete-all, and history.
+- FastAPI exposes tenant, consent, analytics, and handoff-dashboard endpoints for the product workflow around the agent.
 - The web UI streams NDJSON events so judges see memory recall, model metadata, tool metadata, and the final answer.
+- The web UI includes a tenant switcher, support analytics strip, Profile & consent panel, Staff handoffs panel, Memory controls, and Knowledge base panel.
 - The live runtime runs on Alibaba Cloud Elastic Container Instance with app, Postgres/pgvector, Qdrant, and nginx sidecars.
 
 The memory scope maps naturally to multi-tenant support:
@@ -121,6 +129,7 @@ Key challenges:
 - Mem0 needed to be routed through the same DashScope/Qwen configuration instead of falling back to OpenAI.
 - The memory UI had to expose enough evidence for judges without dumping raw internals into every answer.
 - Customer isolation had to work across both structured profile memory and episodic mem0 memory.
+- Consent controls needed a practical hackathon-sized policy: automatic structured profile writes can be paused per customer, while explicit review/edit/forget actions stay available.
 - Alibaba Cloud ECI updates restart the container group, so every deployment needs a smoke run that reseeds and verifies the live demo behavior.
 - The first UI stream implementation could leave the composer disabled while the HTTP stream stayed open; we fixed the UI to unlock when the final assistant message arrives.
 - The demo needed a clean submission packet: architecture, smoke evidence, paste-ready Devpost fields, and a local video artifact.
@@ -131,8 +140,9 @@ Key challenges:
 - Memory is scoped by customer and tenant rather than a shared global chat history.
 - The web UI makes memory visible: judges can see what was recalled before each answer.
 - Tool metadata is visible under assistant replies, including `knowledge_search`, `human_handoff`, `search_memory`, and `add_memory`.
-- The UI exposes memory management and knowledge-base panels so judges can inspect, search, add, edit, forget, and audit memory.
-- Refund escalation creates an auditable ticket path instead of pretending a human was notified.
+- The UI exposes profile consent, memory management, knowledge-base, analytics, and handoff panels so judges can inspect, search, add, edit, forget, audit, and operationalize the agent's memory.
+- Refund escalation creates an auditable ticket path instead of pretending a human was notified, and the Staff handoffs panel can mark tickets reviewing or resolved.
+- The tenant switcher proves the same runtime can serve multiple SME shops without mixing customers or knowledge bases.
 - The project includes live smoke scenarios that verify returning memory, customer isolation, profile learning, recall, knowledge grounding, and handoff behavior.
 - The public repo includes a complete evidence package, architecture diagram, video recording packet, and paste-ready Devpost submission fields.
 
@@ -151,11 +161,10 @@ AgentScope and Qwen Cloud made the agent path straightforward once the API surfa
 
 The next step is turning DOSClaw-Qwen from a focused hackathon demo into a deployable support memory service:
 
-- Add a staff dashboard for handoff tickets and profile review.
-- Add explicit customer consent controls for remembering, editing, and forgetting profile facts.
-- Add multi-tenant admin setup for different SME shops.
 - Add richer memory consolidation so outdated preferences decay or require confirmation.
-- Add analytics for recall quality, handoff rate, and customer satisfaction.
+- Add staff assignment, notes, and SLA timers to the handoff dashboard.
+- Add richer analytics for recall quality, handoff rate, and customer satisfaction.
+- Add self-serve tenant onboarding, role-based staff accounts, and import tools for real SME FAQ data.
 - Package the AgentScope + Mem0 + Qwen Cloud memory pattern as a reusable example for other builders.
 ````
 
@@ -168,9 +177,12 @@ DOSClaw-Qwen fits the MemoryAgent track because it demonstrates:
 - Agent-controlled memory through Mem0 `search_memory` and `add_memory` tools.
 - Direct Mem0 management through list, get, search, add, update, delete, delete-all, and history endpoints.
 - A structured Postgres profile layer for stable facts such as allergies, preferences, age, and complaint state.
+- Consent-aware profile recording that can pause automatic structured memory writes per customer.
 - Qdrant-backed episodic vector storage in the deployed runtime.
 - Qwen Cloud embeddings for FAQ search and memory storage.
 - A visible memory side panel that makes memory recall auditable.
+- Tenant-level isolation visible through the shop switcher, per-tenant FAQ rows, and per-tenant analytics.
+- A staff handoff queue that makes escalations auditable after the agent creates a ticket.
 - Active profile updates and consolidation behavior instead of scripted chat state.
 
 ## Qwen Cloud And Alibaba Cloud Proof

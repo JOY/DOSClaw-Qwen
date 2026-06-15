@@ -13,6 +13,10 @@ from .store import Store
 
 Mem0Factory = Callable[..., Any]
 Extractor = Callable[[str, str], Awaitable[dict[str, Any]]]
+MEMORY_CONSENT_KEY = "memory_consent"
+ACTIVE_MEMORY_CONSENT = "active"
+PAUSED_MEMORY_CONSENT = "paused"
+VALID_MEMORY_CONSENT = {ACTIVE_MEMORY_CONSENT, PAUSED_MEMORY_CONSENT}
 
 _EXTRACT_SYSTEM = (
     "Extract durable customer profile facts from one support turn. "
@@ -62,6 +66,25 @@ class MemoryService:
         merged = merge_profile(current, facts)
         await self.store.set_profile(tenant_id, customer_id, merged)
         return merged
+
+    async def get_consent(self, tenant_id: str, customer_id: str) -> dict[str, str]:
+        """Return the customer-facing memory consent state."""
+        profile = await self.store.get_profile(tenant_id, customer_id)
+        status = _normalize_consent(profile.get(MEMORY_CONSENT_KEY))
+        return {"customer_id": customer_id, "status": status}
+
+    async def set_consent(self, tenant_id: str, customer_id: str, status: str) -> dict[str, str]:
+        """Persist whether automatic profile memory writes are active or paused."""
+        normalized = _normalize_consent(status)
+        if normalized not in VALID_MEMORY_CONSENT:
+            raise ValueError(f"Unsupported memory consent status: {status}")
+        await self.merge_profile(tenant_id, customer_id, {MEMORY_CONSENT_KEY: normalized})
+        return {"customer_id": customer_id, "status": normalized}
+
+    async def can_record_profile(self, tenant_id: str, customer_id: str) -> bool:
+        """Return whether automatic structured profile writes are allowed."""
+        consent = await self.get_consent(tenant_id, customer_id)
+        return consent["status"] == ACTIVE_MEMORY_CONSENT
 
     async def record(
         self,
@@ -133,3 +156,10 @@ async def extract_profile_facts(user_text: str, assistant_text: str) -> dict[str
         return {"profile": {}}
     profile = parsed.get("profile")
     return {"profile": profile if isinstance(profile, dict) else {}}
+
+
+def _normalize_consent(value: Any) -> str:
+    if value is None or value == "":
+        return ACTIVE_MEMORY_CONSENT
+    status = str(value).strip().lower()
+    return status if status in VALID_MEMORY_CONSENT else status

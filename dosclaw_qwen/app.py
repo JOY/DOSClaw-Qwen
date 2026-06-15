@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import secrets
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from fastapi import Cookie, FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
@@ -38,6 +38,17 @@ class MemoryAddRequest(BaseModel):
 class MemoryUpdateRequest(BaseModel):
     customer_id: str = Field(min_length=1)
     text: str = Field(min_length=1)
+    tenant_id: str = config.DEFAULT_TENANT_ID
+
+
+class MemoryConsentRequest(BaseModel):
+    customer_id: str = Field(min_length=1)
+    status: Literal["active", "paused"]
+    tenant_id: str = config.DEFAULT_TENANT_ID
+
+
+class HandoffStatusRequest(BaseModel):
+    status: Literal["open", "reviewing", "resolved"]
     tenant_id: str = config.DEFAULT_TENANT_ID
 
 
@@ -93,6 +104,11 @@ def create_app(
     ):
         await guard(session)
         return await service.list_customers(tenant_id)
+
+    @app.get("/api/tenants")
+    async def tenants(session: str | None = Cookie(default=None)):
+        await guard(session)
+        return await service.list_tenants()
 
     @app.get("/api/health")
     async def health():
@@ -150,6 +166,23 @@ def create_app(
     ):
         await guard(session)
         return await service.search_memories(tenant_id, customer_id, query, top_k=top_k)
+
+    @app.get("/api/memory/consent")
+    async def get_memory_consent(
+        customer_id: str,
+        tenant_id: str = config.DEFAULT_TENANT_ID,
+        session: str | None = Cookie(default=None),
+    ):
+        await guard(session)
+        return await service.get_memory_consent(tenant_id, customer_id)
+
+    @app.patch("/api/memory/consent")
+    async def set_memory_consent(
+        request: MemoryConsentRequest,
+        session: str | None = Cookie(default=None),
+    ):
+        await guard(session)
+        return await service.set_memory_consent(request.tenant_id, request.customer_id, request.status)
 
     @app.post("/api/memory")
     async def add_memory(
@@ -257,6 +290,37 @@ def create_app(
     ):
         await guard(session)
         return await service.search_knowledge(tenant_id, query, limit=limit)
+
+    @app.get("/api/handoffs")
+    async def list_handoffs(
+        tenant_id: str = config.DEFAULT_TENANT_ID,
+        status: str | None = None,
+        limit: int = 20,
+        session: str | None = Cookie(default=None),
+    ):
+        await guard(session)
+        return await service.list_handoffs(tenant_id, status=status, limit=limit)
+
+    @app.patch("/api/handoffs/{handoff_id}")
+    async def update_handoff_status(
+        handoff_id: int,
+        request: HandoffStatusRequest,
+        session: str | None = Cookie(default=None),
+    ):
+        await guard(session)
+        try:
+            return await service.update_handoff_status(request.tenant_id, handoff_id, request.status)
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/api/analytics")
+    async def analytics(
+        tenant_id: str = config.DEFAULT_TENANT_ID,
+        customer_id: str | None = None,
+        session: str | None = Cookie(default=None),
+    ):
+        await guard(session)
+        return await service.support_analytics(tenant_id, customer_id=customer_id)
 
     @app.post("/api/consolidate")
     async def consolidate(

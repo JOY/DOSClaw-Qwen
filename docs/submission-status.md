@@ -34,6 +34,9 @@ Last refreshed: 2026-06-15.
 - Memory engine: Mem0Middleware plus the structured profile layer.
 - Memory scope: `tenant_id + customer_id`.
 - Memory controls: Mem0 list, get, search, add, update, delete, delete-all, and history endpoints.
+- Consent controls: active/paused automatic profile recording per customer.
+- Tenant controls: Bloom Cafe and Deckhouse Skate Shop demo tenants with isolated customers and FAQ rows.
+- Operations controls: support analytics plus staff handoff list and status updates.
 - Agent memory mode: automatic recall/write-back plus `search_memory` and `add_memory` tools.
 
 Fresh runtime details are available at:
@@ -51,6 +54,10 @@ http://8.219.211.170/api/runtime
 - Knowledge questions can invoke tenant FAQ search.
 - The Knowledge base panel exposes tenant FAQ rows and search results.
 - The Memory controls panel exposes scoped Mem0 management actions.
+- The Profile & consent panel shows durable profile facts and can pause/resume automatic profile writes.
+- The Staff handoffs panel lists escalation tickets and can mark them reviewing or resolved.
+- The Support analytics strip shows customer, profile, FAQ, handoff, and current-customer memory counts.
+- Switching tenants changes customers, FAQ rows, analytics, and memory scope.
 - Refund or complaint escalation can invoke `human_handoff` and return a ticket.
 - Assistant reply metadata exposes Qwen model, embeddings, AgentScope/Mem0/Qdrant, memory scope, and streamed tool calls.
 - Pressing Enter submits the chat message.

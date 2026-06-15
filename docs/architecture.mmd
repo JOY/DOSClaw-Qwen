@@ -1,9 +1,10 @@
 flowchart LR
   Judge["Judge browser"]
-  UI["Static web UI\ncustomer picker, new session, memory + knowledge controls"]
-  API["FastAPI app\n/api/chat + memory/knowledge APIs"]
-  Service["ChatService\nrecall -> AgentScope -> record"]
+  UI["Static web UI\ntenant/customer picker, analytics, consent, handoffs, memory + knowledge controls"]
+  API["FastAPI app\n/api/chat + tenant/memory/knowledge/handoff/analytics APIs"]
+  Service["ChatService\nrecall -> consent policy -> AgentScope -> record"]
   Profile["Structured profile memory\nPostgres JSONB"]
+  Ops["Support operations\ntenants, analytics, handoff status"]
   Agent["AgentScope 2.0 Agent"]
   Mem0["Mem0Middleware\nuser_id=customer, agent_id=tenant"]
   Qdrant[("Qdrant\nmem0 episodic vectors")]
@@ -19,7 +20,9 @@ flowchart LR
   Service --> Profile
   Service --> Agent
   Service --> Mem0Admin
+  Service --> Ops
   Profile --> PG
+  Ops --> PG
   Agent --> Mem0
   Mem0Admin --> Mem0
   Mem0 --> Qdrant

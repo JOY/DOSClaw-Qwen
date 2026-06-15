@@ -32,6 +32,9 @@ class ChatService:
     async def list_customers(self, tenant_id: str) -> list[dict[str, Any]]:
         return await self.store.list_customers(tenant_id)
 
+    async def list_tenants(self) -> list[dict[str, Any]]:
+        return await self.store.list_tenants()
+
     async def chat_events(
         self,
         tenant_id: str,
@@ -39,10 +42,15 @@ class ChatService:
         message: str,
     ) -> AsyncIterator[dict[str, str]]:
         recalled = await self.memory_service.recall(tenant_id, customer_id, message)
+        consent = await self.memory_service.get_consent(tenant_id, customer_id)
+        memory_writes_active = consent["status"] == "active"
+        memory_mode = "both" if memory_writes_active else "agent_control"
         yield {"kind": "memory", "text": recalled}
         yield {"kind": "model_info", "text": model_info_text()}
+        if not memory_writes_active:
+            yield {"kind": "memory_policy", "text": "Memory writes paused for this customer."}
 
-        agent = await agent_module.build_agent(tenant_id, customer_id, self.store)
+        agent = await agent_module.build_agent(tenant_id, customer_id, self.store, mode=memory_mode)
         reply_parts: list[str] = []
         async for event in agent.reply_stream(UserMsg(name="user", content=message)):
             if isinstance(event, ReplyStartEvent):
@@ -64,6 +72,8 @@ class ChatService:
         reply = "".join(reply_parts)
         if reply:
             yield {"kind": "message", "text": reply}
+            if not memory_writes_active:
+                return
             updated_profile = await self.memory_service.record(tenant_id, customer_id, message, reply)
             if updated_profile:
                 yield {
@@ -76,6 +86,12 @@ class ChatService:
 
     async def list_memories(self, tenant_id: str, customer_id: str, top_k: int = 20) -> dict[str, Any]:
         return await self.mem0_admin.list_memories(tenant_id, customer_id, top_k=top_k)
+
+    async def get_memory_consent(self, tenant_id: str, customer_id: str) -> dict[str, str]:
+        return await self.memory_service.get_consent(tenant_id, customer_id)
+
+    async def set_memory_consent(self, tenant_id: str, customer_id: str, status: str) -> dict[str, str]:
+        return await self.memory_service.set_consent(tenant_id, customer_id, status)
 
     async def search_memories(
         self,
@@ -142,6 +158,33 @@ class ChatService:
     ) -> list[dict[str, Any]]:
         embedding = await model.embed(query)
         return await self.store.search_knowledge(tenant_id, embedding, limit=limit)
+
+    async def list_handoffs(
+        self,
+        tenant_id: str,
+        status: str | None = None,
+        limit: int = 20,
+    ) -> list[dict[str, Any]]:
+        return await self.store.list_handoffs(tenant_id, status=status, limit=limit)
+
+    async def update_handoff_status(self, tenant_id: str, handoff_id: int, status: str) -> dict[str, Any]:
+        return await self.store.update_handoff_status(tenant_id, handoff_id, status)
+
+    async def support_analytics(
+        self,
+        tenant_id: str,
+        customer_id: str | None = None,
+    ) -> dict[str, Any]:
+        stats = await self.store.support_analytics(tenant_id)
+        stats["tenant_id"] = tenant_id
+        stats["customer_id"] = customer_id
+        if customer_id:
+            try:
+                memories = await self.list_memories(tenant_id, customer_id, top_k=100)
+                stats["current_customer_memories"] = len(memories.get("memories", []))
+            except Exception:  # noqa: BLE001
+                stats["current_customer_memories"] = None
+        return stats
 
 
 def _latest_memory_context(context: list[Msg]) -> str:

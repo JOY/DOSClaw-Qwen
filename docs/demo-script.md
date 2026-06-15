@@ -18,8 +18,9 @@ Expected flow:
 2. The profile block recalls that this customer is Linh, is lactose intolerant, and prefers oat milk lattes.
 3. AgentScope routes the reply through Qwen Cloud.
 4. The assistant metadata shows the Qwen model, Mem0/Qdrant backend, and any tool activity.
-5. The Memory controls panel can list, get, search, add, update, delete, delete all, and show history for scoped Mem0 memories.
-6. The assistant recommends dairy-free options without asking the customer to repeat the preference.
+5. The Profile & consent panel shows the durable profile facts and whether automatic memory writes are active.
+6. The Memory controls panel can list, get, search, add, update, delete all, and show history for scoped Mem0 memories.
+7. The assistant recommends dairy-free options without asking the customer to repeat the preference.
 
 Success line:
 
@@ -73,7 +74,24 @@ Success line:
 DOSClaw-Qwen combines persistent customer memory with tenant-specific knowledge lookup.
 ```
 
-## Scene 4: Honest Human Handoff
+## Scene 4: Tenant Isolation
+
+Screen: switch the shop selector from `Bloom Cafe` to `Deckhouse Skate Shop`.
+
+Expected flow:
+
+1. The customer selector changes to skater customers.
+2. The Knowledge base panel changes to skate-shop FAQ rows.
+3. The analytics strip updates for the selected tenant.
+4. Bloom Cafe customer memory does not appear in the skate-shop context.
+
+Success line:
+
+```text
+Tenant isolation is visible in the UI, not just hidden in backend IDs.
+```
+
+## Scene 5: Honest Human Handoff
 
 Customer message:
 
@@ -86,7 +104,8 @@ Expected flow:
 1. The agent calls `human_handoff`.
 2. A row is created in `handoffs`.
 3. The assistant metadata shows `Tool: human_handoff`.
-4. The assistant confirms escalation only after the tool succeeds.
+4. The Staff handoffs panel shows the ticket and lets staff mark it `reviewing` or `resolved`.
+5. The assistant confirms escalation only after the tool succeeds.
 
 Success line:
 
@@ -96,4 +115,4 @@ The handoff is honest: the assistant does not claim staff escalation until the t
 
 ## Closing
 
-DOSClaw-Qwen is a MemoryAgent-track customer-support system: AgentScope 2.0, Qwen Cloud chat and embeddings, mem0-backed episodic memory with agent-controlled `search_memory`/`add_memory`, a structured profile layer, tenant-scoped knowledge search, visible memory controls, and an auditable handoff path.
+DOSClaw-Qwen is a MemoryAgent-track customer-support system: AgentScope 2.0, Qwen Cloud chat and embeddings, mem0-backed episodic memory with agent-controlled `search_memory`/`add_memory`, a structured profile layer, tenant-scoped knowledge search, consent-aware memory controls, support analytics, and an auditable staff handoff path.

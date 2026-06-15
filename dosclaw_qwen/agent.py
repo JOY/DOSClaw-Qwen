@@ -22,6 +22,13 @@ SYSTEM_PROMPT = (
     "or anything outside policy. Be concise, warm, and never invent shop facts."
 )
 
+MANUAL_MEMORY_TOOL_INSTRUCTIONS = (
+    "## Long-term memory\n\n"
+    "Customer memory writes are in manual/consent-controlled mode for this turn. "
+    "You may use `search_memory` when the customer asks about prior context, but do not call "
+    "`add_memory` unless the customer explicitly asks you to remember a fact."
+)
+
 
 async def build_agent(
     tenant_id: str,
@@ -60,14 +67,17 @@ async def build_agent(
 @lru_cache(maxsize=256)
 def get_memory_middleware(tenant_id: str, customer_id: str, mode: str) -> Mem0Middleware:
     """Reuse mem0/Qdrant clients so local Qdrant storage is opened once per identity."""
-    return Mem0Middleware(
-        user_id=customer_id,
-        agent_id=tenant_id,
-        chat_model=model.make_chat_model(stream=False),
-        embedding_model=model.make_embedding_model(),
-        mem0_config=make_mem0_config(tenant_id, customer_id),
-        mode=mode,
-    )
+    middleware_kwargs = {
+        "user_id": customer_id,
+        "agent_id": tenant_id,
+        "chat_model": model.make_chat_model(stream=False),
+        "embedding_model": model.make_embedding_model(),
+        "mem0_config": make_mem0_config(tenant_id, customer_id),
+        "mode": mode,
+    }
+    if mode == "agent_control":
+        middleware_kwargs["tool_instructions"] = MANUAL_MEMORY_TOOL_INSTRUCTIONS
+    return Mem0Middleware(**middleware_kwargs)
 
 
 def make_mem0_config(tenant_id: str | None = None, customer_id: str | None = None):

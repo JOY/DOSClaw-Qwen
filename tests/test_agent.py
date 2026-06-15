@@ -71,6 +71,26 @@ def test_get_memory_middleware_reuses_qdrant_client_per_identity(monkeypatch):
     get_memory_middleware.cache_clear()
 
 
+def test_get_memory_middleware_uses_manual_memory_instructions_for_agent_control(monkeypatch):
+    created = []
+
+    class FakeMiddleware:
+        def __init__(self, **kwargs):
+            created.append(kwargs)
+
+    monkeypatch.setattr(agent_module, "Mem0Middleware", FakeMiddleware)
+    monkeypatch.setattr(agent_module.model, "make_chat_model", lambda stream=False: f"chat:{stream}")
+    monkeypatch.setattr(agent_module.model, "make_embedding_model", lambda: "embedding")
+    monkeypatch.setattr(agent_module, "make_mem0_config", lambda *args: "mem0-config")
+    get_memory_middleware.cache_clear()
+
+    get_memory_middleware("tenant_demo", "cust_a", "agent_control")
+
+    assert created[0]["mode"] == "agent_control"
+    assert "do not call `add_memory`" in created[0]["tool_instructions"]
+    get_memory_middleware.cache_clear()
+
+
 @pytest.mark.asyncio
 async def test_build_agent_exposes_agent_controlled_mem0_tools(monkeypatch):
     captured = {}
