@@ -343,10 +343,15 @@
       }
       @media (max-width: 860px) {
         header, .controls { align-items: stretch; flex-direction: column; }
+        select { width: 100%; min-width: 0; }
         .demo-banner { grid-template-columns: 1fr; }
         .runtime-pill { max-width: none; white-space: normal; }
+        .stat-pill { flex: 1 1 calc(50% - 4px); min-width: 0; }
         main { grid-template-columns: 1fr; }
         .chat { border-right: 0; }
+        .composer { grid-template-columns: 1fr; }
+        .composer button { width: 100%; }
+        .inline-row { grid-template-columns: 1fr; }
         .memory { min-height: 220px; border-top: 1px solid var(--line); }
       }
     </style>
