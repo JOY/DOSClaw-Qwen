@@ -28,6 +28,19 @@ class ConsolidateRequest(BaseModel):
     tenant_id: str = config.DEFAULT_TENANT_ID
 
 
+class MemoryAddRequest(BaseModel):
+    customer_id: str = Field(min_length=1)
+    text: str = Field(min_length=1)
+    tenant_id: str = config.DEFAULT_TENANT_ID
+    infer: bool = True
+
+
+class MemoryUpdateRequest(BaseModel):
+    customer_id: str = Field(min_length=1)
+    text: str = Field(min_length=1)
+    tenant_id: str = config.DEFAULT_TENANT_ID
+
+
 def _authorized(session: str | None) -> bool:
     if not config.DEMO_LOGIN_PASS:
         return True
@@ -116,6 +129,134 @@ def create_app(
                 yield json.dumps(event) + "\n"
 
         return StreamingResponse(stream(), media_type="application/x-ndjson")
+
+    @app.get("/api/memory")
+    async def list_memory(
+        customer_id: str,
+        tenant_id: str = config.DEFAULT_TENANT_ID,
+        top_k: int = 20,
+        session: str | None = Cookie(default=None),
+    ):
+        await guard(session)
+        return await service.list_memories(tenant_id, customer_id, top_k=top_k)
+
+    @app.get("/api/memory/search")
+    async def search_memory(
+        customer_id: str,
+        query: str,
+        tenant_id: str = config.DEFAULT_TENANT_ID,
+        top_k: int = 5,
+        session: str | None = Cookie(default=None),
+    ):
+        await guard(session)
+        return await service.search_memories(tenant_id, customer_id, query, top_k=top_k)
+
+    @app.post("/api/memory")
+    async def add_memory(
+        request: MemoryAddRequest,
+        session: str | None = Cookie(default=None),
+    ):
+        await guard(session)
+        try:
+            return await service.add_memory(
+                request.tenant_id,
+                request.customer_id,
+                request.text,
+                infer=request.infer,
+            )
+        except Exception as exc:  # noqa: BLE001
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @app.patch("/api/memory/{memory_id}")
+    async def update_memory(
+        memory_id: str,
+        request: MemoryUpdateRequest,
+        session: str | None = Cookie(default=None),
+    ):
+        await guard(session)
+        try:
+            return await service.update_memory(
+                request.tenant_id,
+                request.customer_id,
+                memory_id,
+                request.text,
+            )
+        except PermissionError as exc:
+            raise HTTPException(status_code=403, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/api/memory/{memory_id}")
+    async def get_memory(
+        memory_id: str,
+        customer_id: str,
+        tenant_id: str = config.DEFAULT_TENANT_ID,
+        session: str | None = Cookie(default=None),
+    ):
+        await guard(session)
+        try:
+            return await service.get_memory(tenant_id, customer_id, memory_id)
+        except PermissionError as exc:
+            raise HTTPException(status_code=403, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.delete("/api/memory/{memory_id}")
+    async def delete_memory(
+        memory_id: str,
+        customer_id: str,
+        tenant_id: str = config.DEFAULT_TENANT_ID,
+        session: str | None = Cookie(default=None),
+    ):
+        await guard(session)
+        try:
+            return await service.delete_memory(tenant_id, customer_id, memory_id)
+        except PermissionError as exc:
+            raise HTTPException(status_code=403, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.delete("/api/memory")
+    async def delete_all_memory(
+        customer_id: str,
+        tenant_id: str = config.DEFAULT_TENANT_ID,
+        session: str | None = Cookie(default=None),
+    ):
+        await guard(session)
+        return await service.delete_all_memories(tenant_id, customer_id)
+
+    @app.get("/api/memory/{memory_id}/history")
+    async def memory_history(
+        memory_id: str,
+        customer_id: str,
+        tenant_id: str = config.DEFAULT_TENANT_ID,
+        session: str | None = Cookie(default=None),
+    ):
+        await guard(session)
+        try:
+            return await service.memory_history(tenant_id, customer_id, memory_id)
+        except PermissionError as exc:
+            raise HTTPException(status_code=403, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/api/knowledge")
+    async def list_knowledge(
+        tenant_id: str = config.DEFAULT_TENANT_ID,
+        session: str | None = Cookie(default=None),
+    ):
+        await guard(session)
+        return await service.list_knowledge(tenant_id)
+
+    @app.get("/api/knowledge/search")
+    async def search_knowledge(
+        query: str,
+        tenant_id: str = config.DEFAULT_TENANT_ID,
+        limit: int = 3,
+        session: str | None = Cookie(default=None),
+    ):
+        await guard(session)
+        return await service.search_knowledge(tenant_id, query, limit=limit)
 
     @app.post("/api/consolidate")
     async def consolidate(

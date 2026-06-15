@@ -198,7 +198,7 @@
         border-bottom: 1px solid var(--line);
         background: #fff;
       }
-      .guide h2 {
+      .guide h2, .side-section h2 {
         padding: 0;
         border: 0;
       }
@@ -230,6 +230,64 @@
         color: var(--muted);
         font-size: 13px;
         line-height: 1.45;
+      }
+      .side-section {
+        padding: 14px 16px 16px;
+        border-bottom: 1px solid var(--line);
+        background: #fff;
+      }
+      .field-stack {
+        display: grid;
+        gap: 8px;
+      }
+      .inline-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px;
+      }
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .side-input, .side-textarea {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 9px 10px;
+      }
+      .side-textarea {
+        min-height: 72px;
+        resize: vertical;
+      }
+      .item-list {
+        display: grid;
+        gap: 8px;
+        margin-top: 10px;
+        max-height: 190px;
+        overflow: auto;
+      }
+      .list-item {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #fbfbfc;
+        padding: 9px 10px;
+        color: var(--ink);
+        font-size: 13px;
+        line-height: 1.35;
+      }
+      .list-item.selected {
+        border-color: #92b7a1;
+        background: #f4faf6;
+      }
+      .item-title {
+        font-weight: 700;
+        margin-bottom: 3px;
+      }
+      .item-meta {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 5px;
       }
       .runtime-detail strong {
         color: var(--ink);
@@ -274,6 +332,36 @@
         <aside class="memory">
           <h2>Memory recalled</h2>
           <div id="memoryPanel">No memory recalled yet.</div>
+          <section class="side-section">
+            <h2>Memory controls</h2>
+            <div class="field-stack">
+              <div class="inline-row">
+                <input class="side-input" id="memoryQuery" placeholder="Search customer memory..." />
+                <button class="secondary" id="searchMemory" type="button">Search</button>
+              </div>
+              <textarea class="side-textarea" id="memoryNote" placeholder="Add or update a durable memory note..."></textarea>
+              <div class="button-row">
+                <button class="secondary" id="refreshMemory" type="button">Refresh</button>
+                <button class="secondary" id="addMemory" type="button">Add</button>
+                <button class="secondary" id="updateMemory" type="button">Update</button>
+                <button class="secondary" id="memoryHistory" type="button">History</button>
+                <button class="secondary" id="deleteMemory" type="button">Forget</button>
+                <button class="secondary" id="deleteAllMemory" type="button">Forget all</button>
+              </div>
+            </div>
+            <div class="item-list" id="memoryList">No saved mem0 memories loaded.</div>
+          </section>
+          <section class="side-section">
+            <h2>Knowledge base</h2>
+            <div class="inline-row">
+              <input class="side-input" id="knowledgeQuery" placeholder="Search shop knowledge..." />
+              <button class="secondary" id="searchKnowledge" type="button">Search</button>
+            </div>
+            <div class="button-row" style="margin-top: 8px;">
+              <button class="secondary" id="refreshKnowledge" type="button">Reload</button>
+            </div>
+            <div class="item-list" id="knowledgeList">Knowledge base loading...</div>
+          </section>
           <section class="guide">
             <h2>Demo guide</h2>
             <p class="guide-copy">Click a prompt to load it, then press Enter or Send.</p>
@@ -300,7 +388,22 @@
       const message = document.querySelector("#message");
       const newSession = document.querySelector("#newSession");
       const promptButtons = document.querySelectorAll(".prompt-chip");
+      const memoryQuery = document.querySelector("#memoryQuery");
+      const memoryNote = document.querySelector("#memoryNote");
+      const memoryList = document.querySelector("#memoryList");
+      const refreshMemory = document.querySelector("#refreshMemory");
+      const searchMemory = document.querySelector("#searchMemory");
+      const addMemory = document.querySelector("#addMemory");
+      const updateMemory = document.querySelector("#updateMemory");
+      const memoryHistory = document.querySelector("#memoryHistory");
+      const deleteMemory = document.querySelector("#deleteMemory");
+      const deleteAllMemory = document.querySelector("#deleteAllMemory");
+      const knowledgeQuery = document.querySelector("#knowledgeQuery");
+      const knowledgeList = document.querySelector("#knowledgeList");
+      const refreshKnowledge = document.querySelector("#refreshKnowledge");
+      const searchKnowledge = document.querySelector("#searchKnowledge");
       let activeController = null;
+      let selectedMemoryId = null;
       const RETRYABLE_STATUS_CODES = new Set([502, 503, 504]);
 
       function addMessage(text, role) {
@@ -404,6 +507,166 @@
         renderRuntime(await response.json());
       }
 
+      async function fetchJson(url, options = {}) {
+        const response = await fetch(url, options);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+      }
+
+      function currentCustomerParams(extra = {}) {
+        const params = new URLSearchParams({ customer_id: customer.value, ...extra });
+        return params.toString();
+      }
+
+      function memoryId(item) {
+        return item.id || item.memory_id || item.uuid || "";
+      }
+
+      function memoryText(item) {
+        return item.memory || item.data || item.text || item.value || JSON.stringify(item);
+      }
+
+      function memoryScore(item) {
+        const score = item.score ?? item.similarity;
+        return typeof score === "number" ? `score ${score.toFixed(2)}` : "";
+      }
+
+      function renderMemoryItems(items, emptyText = "No saved mem0 memories for this customer.") {
+        memoryList.replaceChildren();
+        if (!items || items.length === 0) {
+          memoryList.textContent = emptyText;
+          selectedMemoryId = null;
+          return;
+        }
+        for (const item of items) {
+          const id = memoryId(item);
+          const node = document.createElement("button");
+          node.type = "button";
+          node.className = `list-item${id === selectedMemoryId ? " selected" : ""}`;
+          node.dataset.memoryId = id;
+          const title = document.createElement("div");
+          title.className = "item-title";
+          title.textContent = memoryText(item);
+          const meta = document.createElement("div");
+          meta.className = "item-meta";
+          meta.textContent = [id, memoryScore(item)].filter(Boolean).join(" | ");
+          node.append(title, meta);
+          node.addEventListener("click", () => {
+            selectedMemoryId = id;
+            memoryNote.value = memoryText(item);
+            for (const row of memoryList.querySelectorAll(".list-item")) row.classList.remove("selected");
+            node.classList.add("selected");
+          });
+          memoryList.appendChild(node);
+        }
+      }
+
+      function renderKnowledgeItems(items, emptyText = "No knowledge rows loaded.") {
+        knowledgeList.replaceChildren();
+        if (!items || items.length === 0) {
+          knowledgeList.textContent = emptyText;
+          return;
+        }
+        for (const item of items) {
+          const node = document.createElement("div");
+          node.className = "list-item";
+          const title = document.createElement("div");
+          title.className = "item-title";
+          title.textContent = item.title || "Knowledge row";
+          const body = document.createElement("div");
+          body.textContent = item.content || "";
+          const meta = document.createElement("div");
+          meta.className = "item-meta";
+          if (typeof item.similarity === "number") meta.textContent = `similarity ${item.similarity.toFixed(2)}`;
+          node.append(title, body, meta);
+          knowledgeList.appendChild(node);
+        }
+      }
+
+      async function loadMemory() {
+        if (!customer.value) return;
+        try {
+          const data = await fetchJson(`/api/memory?${currentCustomerParams()}`);
+          selectedMemoryId = null;
+          renderMemoryItems(data.memories || []);
+        } catch (error) {
+          memoryList.textContent = `Memory controls unavailable: ${error.message}`;
+        }
+      }
+
+      async function searchCustomerMemory() {
+        const query = memoryQuery.value.trim();
+        if (!query) {
+          await loadMemory();
+          return;
+        }
+        try {
+          const data = await fetchJson(`/api/memory/search?${currentCustomerParams({ query })}`);
+          renderMemoryItems(data.results || [], "No matching mem0 memories.");
+        } catch (error) {
+          memoryList.textContent = `Memory search failed: ${error.message}`;
+        }
+      }
+
+      async function saveMemory(method, url) {
+        const text = memoryNote.value.trim();
+        if (!text) return;
+        await fetchJson(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ customer_id: customer.value, text }),
+        });
+        await loadMemory();
+      }
+
+      async function showMemoryHistory() {
+        if (!selectedMemoryId) return;
+        try {
+          const data = await fetchJson(`/api/memory/${encodeURIComponent(selectedMemoryId)}/history?${currentCustomerParams()}`);
+          renderMemoryItems(data, "No history for this memory.");
+        } catch (error) {
+          memoryList.textContent = `Memory history failed: ${error.message}`;
+        }
+      }
+
+      async function removeSelectedMemory() {
+        if (!selectedMemoryId) return;
+        if (!confirm("Forget this selected mem0 memory?")) return;
+        await fetchJson(`/api/memory/${encodeURIComponent(selectedMemoryId)}?${currentCustomerParams()}`, { method: "DELETE" });
+        await loadMemory();
+      }
+
+      async function removeAllCustomerMemory() {
+        if (!confirm("Forget all mem0 and structured profile memory for this customer?")) return;
+        await fetchJson(`/api/memory?${currentCustomerParams()}`, { method: "DELETE" });
+        memoryPanel.textContent = "Customer memory cleared.";
+        memoryNote.value = "";
+        await loadMemory();
+      }
+
+      async function loadKnowledge() {
+        try {
+          const rows = await fetchJson("/api/knowledge");
+          renderKnowledgeItems(rows);
+        } catch (error) {
+          knowledgeList.textContent = `Knowledge base unavailable: ${error.message}`;
+        }
+      }
+
+      async function searchKnowledgeBase() {
+        const query = knowledgeQuery.value.trim();
+        if (!query) {
+          await loadKnowledge();
+          return;
+        }
+        try {
+          const rows = await fetchJson(`/api/knowledge/search?${new URLSearchParams({ query })}`);
+          renderKnowledgeItems(rows, "No matching knowledge rows.");
+        } catch (error) {
+          knowledgeList.textContent = `Knowledge search failed: ${error.message}`;
+        }
+      }
+
       async function postChatWithRetry(payload, signal) {
         for (let attempt = 1; attempt <= 3; attempt += 1) {
           try {
@@ -433,8 +696,22 @@
 
       customer.addEventListener("change", () => {
         clearVisibleSession();
+        loadMemory();
         message.focus();
       });
+
+      refreshMemory.addEventListener("click", loadMemory);
+      searchMemory.addEventListener("click", searchCustomerMemory);
+      addMemory.addEventListener("click", () => saveMemory("POST", "/api/memory"));
+      updateMemory.addEventListener("click", () => {
+        if (!selectedMemoryId) return;
+        saveMemory("PATCH", `/api/memory/${encodeURIComponent(selectedMemoryId)}`);
+      });
+      memoryHistory.addEventListener("click", showMemoryHistory);
+      deleteMemory.addEventListener("click", removeSelectedMemory);
+      deleteAllMemory.addEventListener("click", removeAllCustomerMemory);
+      refreshKnowledge.addEventListener("click", loadKnowledge);
+      searchKnowledge.addEventListener("click", searchKnowledgeBase);
 
       for (const button of promptButtons) {
         button.addEventListener("click", () => {
@@ -516,14 +793,18 @@
           }
         } finally {
           if (activeController === controller) activeController = null;
+          loadMemory();
           unlockComposer();
           message.focus();
         }
       });
 
-      loadCustomers().catch((error) => {
-        memoryPanel.textContent = `Failed to load customers: ${error.message}`;
-      });
+      loadCustomers()
+        .then(loadMemory)
+        .catch((error) => {
+          memoryPanel.textContent = `Failed to load customers: ${error.message}`;
+        });
+      loadKnowledge();
       loadRuntime().catch((error) => {
         runtimeBadge.textContent = "Runtime unavailable";
         setRuntimeDetail([["Runtime", error.message]]);

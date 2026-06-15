@@ -10,6 +10,8 @@ from agentscope.message import Msg, UserMsg
 
 from . import config
 from . import agent as agent_module
+from . import model
+from .mem0_admin import Mem0Admin
 from .memory_service import MemoryService
 from .store import Store
 
@@ -21,9 +23,11 @@ class ChatService:
         self,
         store: Store | Any | None = None,
         memory_service: MemoryService | None = None,
+        mem0_admin: Mem0Admin | None = None,
     ) -> None:
         self.store = store or Store()
         self.memory_service = memory_service or MemoryService(store=self.store)
+        self.mem0_admin = mem0_admin or Mem0Admin(store=self.store)
 
     async def list_customers(self, tenant_id: str) -> list[dict[str, Any]]:
         return await self.store.list_customers(tenant_id)
@@ -38,7 +42,7 @@ class ChatService:
         yield {"kind": "memory", "text": recalled}
         yield {"kind": "model_info", "text": model_info_text()}
 
-        agent = agent_module.build_agent(tenant_id, customer_id, self.store)
+        agent = await agent_module.build_agent(tenant_id, customer_id, self.store)
         reply_parts: list[str] = []
         async for event in agent.reply_stream(UserMsg(name="user", content=message)):
             if isinstance(event, ReplyStartEvent):
@@ -69,6 +73,75 @@ class ChatService:
 
     async def consolidate(self, tenant_id: str, customer_id: str) -> int:
         return await self.memory_service.consolidate(tenant_id, customer_id)
+
+    async def list_memories(self, tenant_id: str, customer_id: str, top_k: int = 20) -> dict[str, Any]:
+        return await self.mem0_admin.list_memories(tenant_id, customer_id, top_k=top_k)
+
+    async def search_memories(
+        self,
+        tenant_id: str,
+        customer_id: str,
+        query: str,
+        top_k: int = 5,
+    ) -> dict[str, Any]:
+        return await self.mem0_admin.search_memories(tenant_id, customer_id, query, top_k=top_k)
+
+    async def add_memory(
+        self,
+        tenant_id: str,
+        customer_id: str,
+        text: str,
+        infer: bool = True,
+    ) -> dict[str, Any] | None:
+        return await self.mem0_admin.add_memory(tenant_id, customer_id, text, infer=infer)
+
+    async def update_memory(
+        self,
+        tenant_id: str,
+        customer_id: str,
+        memory_id: str,
+        text: str,
+    ) -> dict[str, Any] | None:
+        return await self.mem0_admin.update_memory(tenant_id, customer_id, memory_id, text)
+
+    async def get_memory(
+        self,
+        tenant_id: str,
+        customer_id: str,
+        memory_id: str,
+    ) -> dict[str, Any]:
+        return await self.mem0_admin.get_memory(tenant_id, customer_id, memory_id)
+
+    async def delete_memory(
+        self,
+        tenant_id: str,
+        customer_id: str,
+        memory_id: str,
+    ) -> dict[str, Any] | None:
+        return await self.mem0_admin.delete_memory(tenant_id, customer_id, memory_id)
+
+    async def delete_all_memories(self, tenant_id: str, customer_id: str) -> dict[str, Any]:
+        return await self.mem0_admin.delete_all_memories(tenant_id, customer_id)
+
+    async def memory_history(
+        self,
+        tenant_id: str,
+        customer_id: str,
+        memory_id: str,
+    ) -> list[dict[str, Any]]:
+        return await self.mem0_admin.memory_history(tenant_id, customer_id, memory_id)
+
+    async def list_knowledge(self, tenant_id: str) -> list[dict[str, Any]]:
+        return await self.store.list_knowledge(tenant_id)
+
+    async def search_knowledge(
+        self,
+        tenant_id: str,
+        query: str,
+        limit: int = 3,
+    ) -> list[dict[str, Any]]:
+        embedding = await model.embed(query)
+        return await self.store.search_knowledge(tenant_id, embedding, limit=limit)
 
 
 def _latest_memory_context(context: list[Msg]) -> str:

@@ -66,7 +66,10 @@ The agent can:
 - Recall stable customer facts across visible new sessions.
 - Keep Customer A and Customer B memory isolated.
 - Store and update structured profile facts such as name, age, allergies, preferences, last order, and complaint state.
+- Let the agent use Mem0 `search_memory` and `add_memory` tools when memory should be searched or written during reasoning.
+- Expose Mem0 list, get, search, add, update, delete, delete-all, and history controls in the judge-facing UI.
 - Use Qwen Cloud embeddings and tenant FAQ rows for knowledge-grounded answers.
+- Show the tenant knowledge base and knowledge search path separately from ordinary chat.
 - Create a human handoff ticket before claiming escalation.
 - Show the recalled memory block, active Qwen model, embedding model, memory backend, memory scope, and tool calls directly in the web UI.
 
@@ -87,8 +90,10 @@ Core runtime:
 - Qwen Cloud / DashScope provides `qwen3.6-plus` for chat reasoning.
 - Qwen Cloud `text-embedding-v4` provides embeddings for FAQ search and memory storage.
 - AgentScope `Mem0Middleware` stores episodic long-term memory.
+- AgentScope exposes Mem0 `search_memory` and `add_memory` tools to the agent in `both` mode.
 - Qdrant stores mem0 episodic vectors in the deployed runtime.
 - Postgres + pgvector stores tenants, customers, structured profiles, knowledge rows, and handoff tickets.
+- FastAPI exposes scoped memory management endpoints for Mem0 list, get, search, add, update, delete, delete-all, and history.
 - The web UI streams NDJSON events so judges see memory recall, model metadata, tool metadata, and the final answer.
 - The live runtime runs on Alibaba Cloud Elastic Container Instance with app, Postgres/pgvector, Qdrant, and nginx sidecars.
 
@@ -125,7 +130,8 @@ Key challenges:
 - The deployed app uses real Qwen Cloud chat and embeddings.
 - Memory is scoped by customer and tenant rather than a shared global chat history.
 - The web UI makes memory visible: judges can see what was recalled before each answer.
-- Tool metadata is visible under assistant replies, including `knowledge_search` and `human_handoff`.
+- Tool metadata is visible under assistant replies, including `knowledge_search`, `human_handoff`, `search_memory`, and `add_memory`.
+- The UI exposes memory management and knowledge-base panels so judges can inspect, search, add, edit, forget, and audit memory.
 - Refund escalation creates an auditable ticket path instead of pretending a human was notified.
 - The project includes live smoke scenarios that verify returning memory, customer isolation, profile learning, recall, knowledge grounding, and handoff behavior.
 - The public repo includes a complete evidence package, architecture diagram, video recording packet, and paste-ready Devpost submission fields.
@@ -159,6 +165,8 @@ DOSClaw-Qwen fits the MemoryAgent track because it demonstrates:
 
 - Persistent cross-session memory through AgentScope 2.0 `Mem0Middleware`.
 - Native customer and tenant scoping with `user_id=customer_id` and `agent_id=tenant_id`.
+- Agent-controlled memory through Mem0 `search_memory` and `add_memory` tools.
+- Direct Mem0 management through list, get, search, add, update, delete, delete-all, and history endpoints.
 - A structured Postgres profile layer for stable facts such as allergies, preferences, age, and complaint state.
 - Qdrant-backed episodic vector storage in the deployed runtime.
 - Qwen Cloud embeddings for FAQ search and memory storage.

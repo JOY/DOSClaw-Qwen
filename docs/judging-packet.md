@@ -15,11 +15,14 @@ Use the web demo and run the four-step flow in `docs/demo-script.md`:
 
 Expected result: Customer A's profile appears in the memory panel and informs the answer; Customer B does not inherit Customer A's profile; knowledge search grounds business-policy answers; refund complaints create a handoff ticket. Assistant reply metadata shows the active Qwen model, Mem0/Qdrant backend, and tool calls.
 
+The sidebar also exposes direct demo evidence: Mem0 memory list/get/search/add/update/delete/delete-all/history controls and a tenant knowledge-base panel.
+
 ## Why This Is Not A Scripted Chatbot
 
 - Customer memory is persisted and scoped by `user_id=customer_id` and `agent_id=tenant_id`.
 - AgentScope streams real agent events through `/api/chat`.
 - Qwen Cloud is used for chat, structured profile extraction, FAQ embeddings, and mem0 memory extraction.
+- Mem0 runs in `both` mode: automatic recall/write-back plus `search_memory` and `add_memory` tools available to the agent.
 - Handoffs are stored in Postgres and can be verified in the `handoffs` table.
 - Tool activity is streamed as `tool_info` events and displayed under the assistant reply.
 

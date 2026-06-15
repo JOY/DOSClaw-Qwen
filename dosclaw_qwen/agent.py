@@ -23,7 +23,7 @@ SYSTEM_PROMPT = (
 )
 
 
-def build_agent(
+async def build_agent(
     tenant_id: str,
     customer_id: str,
     store: Store | None = None,
@@ -32,6 +32,8 @@ def build_agent(
     """Build a per-tenant, per-customer AgentScope agent with mem0 memory isolation."""
     chat_model = model.make_chat_model(stream=True)
     db = store or Store()
+    memory = get_memory_middleware(tenant_id, customer_id, mode)
+    memory_tools = await memory.list_tools()
     toolkit = Toolkit(
         tools=[
             FunctionTool(tools.make_knowledge_search(tenant_id, db), name="knowledge_search"),
@@ -39,9 +41,9 @@ def build_agent(
                 tools.make_human_handoff(tenant_id, customer_id, db),
                 name="human_handoff",
             ),
+            *memory_tools,
         ],
     )
-    memory = get_memory_middleware(tenant_id, customer_id, mode)
     state = AgentState()
     apply_demo_permission_rules(state)
     return Agent(

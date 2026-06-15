@@ -15,10 +15,10 @@ Target length: 2:45 to 3:00. Upload the final video to YouTube, Vimeo, or Youku 
 | Time | Screen | Narration |
 | --- | --- | --- |
 | 0:00-0:15 | Web UI | "DOSClaw-Qwen is a Qwen Cloud MemoryAgent for SME customer support. It remembers customers across sessions without mixing them together." |
-| 0:15-0:35 | Architecture | "The app uses AgentScope 2.0, Qwen Cloud chat and embeddings, Mem0Middleware with Qdrant, Postgres profile memory, FAQ search, and human handoff." |
+| 0:15-0:35 | Architecture | "The app uses AgentScope 2.0, Qwen Cloud chat and embeddings, Mem0Middleware with Qdrant, Postgres profile memory, FAQ search, human handoff, and visible memory controls." |
 | 0:35-1:10 | Returning Customer A | "First, a returning customer asks for a recommendation. The memory panel shows lactose intolerance and oat milk preference before the answer." |
 | 1:10-1:35 | Customer B | "Now a different customer starts a new session. Customer A's memories do not leak into Customer B." |
-| 1:35-2:00 | Knowledge answer | "Policy questions are grounded through tenant knowledge search rather than guessed." |
+| 1:35-2:00 | Knowledge answer | "Policy questions are grounded through tenant knowledge search rather than guessed, and the knowledge base is visible in the UI." |
 | 2:00-2:25 | Handoff | "Refund or complaint cases create a real handoff ticket before the assistant confirms escalation." |
 | 2:25-2:45 | Code proof | "Qwen Cloud is called from `dosclaw_qwen/model.py`; the backend is containerized for Alibaba Cloud." |
 | 2:45-3:00 | Closing | "The result is a focused MemoryAgent: persistent memory, scoped retrieval, timely context, and auditable escalation." |
@@ -40,6 +40,7 @@ Target length: 2:45 to 3:00. Upload the final video to YouTube, Vimeo, or Youku 
 - "Qwen Cloud powers both chat and embeddings."
 - "Memories are scoped with `user_id=customer_id` and `agent_id=tenant_id`."
 - "The memory panel exposes recalled facts so judges can see the system is not just prompt theater."
+- "The Mem0 controls expose list, get, search, add, update, delete, delete-all, and history for scoped customer memory."
 - "The assistant metadata exposes the active Qwen model, memory backend, and tool calls."
 - "The handoff flow is honest: a ticket is created before escalation is confirmed."
 

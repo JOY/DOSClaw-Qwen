@@ -42,12 +42,12 @@
   <rect class="box" x="90" y="365" width="270" height="110"/>
   <text class="text" x="120" y="402">Static Web UI</text>
   <text class="small" x="120" y="428">Customer picker</text>
-  <text class="small" x="120" y="450">New session + memory panel</text>
+  <text class="small" x="120" y="450">Memory + knowledge controls</text>
 
   <rect class="runtime" x="520" y="190" width="330" height="110"/>
   <text class="text" x="550" y="228">FastAPI App</text>
   <text class="small" x="550" y="254">/api/chat NDJSON stream</text>
-  <text class="small" x="550" y="276">/api/runtime proof endpoint</text>
+  <text class="small" x="550" y="276">/api/memory + /api/knowledge</text>
 
   <rect class="runtime" x="520" y="365" width="330" height="110"/>
   <text class="text" x="550" y="402">ChatService</text>
@@ -57,7 +57,7 @@
   <rect class="runtime" x="520" y="545" width="330" height="110"/>
   <text class="text" x="550" y="582">AgentScope 2.0 Agent</text>
   <text class="small" x="550" y="608">Qwen reasoning</text>
-  <text class="small" x="550" y="630">knowledge_search + human_handoff</text>
+  <text class="small" x="550" y="630">knowledge, handoff, memory tools</text>
 
   <rect class="store" x="985" y="185" width="330" height="120"/>
   <text class="text" x="1015" y="224">Postgres + pgvector</text>
@@ -76,7 +76,7 @@
 
   <rect class="box" x="520" y="700" width="330" height="70"/>
   <text class="text" x="550" y="732">Mem0Middleware</text>
-  <text class="small" x="550" y="754">user_id=customer, agent_id=tenant</text>
+  <text class="small" x="550" y="754">auto recall/write + search/add tools</text>
 
   <path class="line" d="M 225 285 L 225 365"/>
   <path class="line" d="M 360 420 L 520 245"/>
@@ -97,6 +97,6 @@
 
   <rect class="runtime" x="90" y="585" width="270" height="100"/>
   <text class="text" x="120" y="622">Visible Evidence</text>
-  <text class="small" x="120" y="648">Memory recalled panel</text>
-  <text class="small" x="120" y="670">Model + tool metadata</text>
+  <text class="small" x="120" y="648">Memory recalled + controls</text>
+  <text class="small" x="120" y="670">Model, KB + tool metadata</text>
 </svg>

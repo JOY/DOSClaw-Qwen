@@ -117,6 +117,19 @@ class Store:
         )
         return [dict(row) for row in rows]
 
+    async def list_knowledge(self, tenant_id: str) -> list[dict[str, Any]]:
+        db = await pool()
+        rows = await db.fetch(
+            """
+            select id, title, content
+            from knowledge
+            where tenant_id=$1
+            order by title
+            """,
+            tenant_id,
+        )
+        return [dict(row) for row in rows]
+
     async def add_knowledge(
         self,
         tenant_id: str,

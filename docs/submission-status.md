@@ -1,6 +1,6 @@
 # DOSClaw-Qwen Submission Status
 
-Last refreshed: 2026-06-14.
+Last refreshed: 2026-06-15.
 
 ## Ready For Devpost
 
@@ -33,6 +33,8 @@ Last refreshed: 2026-06-14.
 - Agent runtime: AgentScope 2.0.
 - Memory engine: Mem0Middleware plus the structured profile layer.
 - Memory scope: `tenant_id + customer_id`.
+- Memory controls: Mem0 list, get, search, add, update, delete, delete-all, and history endpoints.
+- Agent memory mode: automatic recall/write-back plus `search_memory` and `add_memory` tools.
 
 Fresh runtime details are available at:
 
@@ -47,6 +49,8 @@ http://8.219.211.170/api/runtime
 - Customer B can teach a profile fact such as name and age.
 - A later Customer B session recalls the profile.
 - Knowledge questions can invoke tenant FAQ search.
+- The Knowledge base panel exposes tenant FAQ rows and search results.
+- The Memory controls panel exposes scoped Mem0 management actions.
 - Refund or complaint escalation can invoke `human_handoff` and return a ticket.
 - Assistant reply metadata exposes Qwen model, embeddings, AgentScope/Mem0/Qdrant, memory scope, and streamed tool calls.
 - Pressing Enter submits the chat message.

@@ -30,11 +30,12 @@ four with AgentScope 2.0's mem0-backed middleware plus a custom structured profi
 ![DOSClaw-Qwen architecture](docs/architecture.svg)
 
 ```
-Web chat UI (customer selector + new-session + "memory recalled" panel)
+Web chat UI (customer selector + new-session + memory and knowledge controls)
         |  HTTP / SSE
 FastAPI  --  AgentScope Agent + Mem0Middleware (Qwen qwen3.6-plus via DashScope)
-        |        |  tools: knowledge_search (FAQ RAG), human_handoff, search_memory
+        |        |  tools: knowledge_search (FAQ RAG), human_handoff, search_memory, add_memory
         |   MemoryService  --  profile recall / consolidate
+        |   Mem0Admin      --  list/search/add/update/delete/history
         |        |
    Postgres + pgvector  (tenants, profile, knowledge, handoffs)           [on Alibaba Cloud]
         |
@@ -47,9 +48,10 @@ and embeddings. The proof-of-Alibaba code file is [`dosclaw_qwen/model.py`](dosc
 ## Status
 
 Core MVP is built and verified with live Qwen Cloud: memory math, AgentScope/DashScope wiring,
-mem0-backed episodic memory, structured profile memory, tenant knowledge search, human handoff,
-FastAPI endpoints, and the web demo UI are in place. The public Alibaba Cloud ECI deployment is
-live at `http://8.219.211.170/`; see **[docs/deployment-proof.md](docs/deployment-proof.md)**
+mem0-backed episodic memory, agent-controlled memory tools, structured profile memory, tenant
+knowledge search, human handoff, FastAPI endpoints, and the web demo UI are in place. The public
+Alibaba Cloud ECI deployment is live at `http://8.219.211.170/`; see
+**[docs/deployment-proof.md](docs/deployment-proof.md)**
 and **[infra/alibaba/README.md](infra/alibaba/README.md)**.
 
 ## Run locally

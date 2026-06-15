@@ -9,9 +9,15 @@ def test_web_ui_includes_demo_guide_and_runtime_badge():
 
     assert "Judge the memory, not a canned script." in html
     assert "Demo guide" in html
+    assert "Memory controls" in html
+    assert "Knowledge base" in html
     assert "data-prompt=\"I'm JOY, 18 YO\"" in html
     assert "id=\"runtimeBadge\"" in html
     assert "id=\"runtimeDetail\"" in html
+    assert "id=\"memoryList\"" in html
+    assert "id=\"knowledgeList\"" in html
+    assert "/api/memory" in html
+    assert "/api/knowledge" in html
 
 
 def test_web_ui_unlocks_composer_when_final_reply_arrives():

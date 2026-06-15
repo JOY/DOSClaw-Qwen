@@ -1,13 +1,14 @@
 flowchart LR
   Judge["Judge browser"]
-  UI["Static web UI\ncustomer picker, new session, memory panel"]
-  API["FastAPI app\n/api/chat NDJSON stream"]
+  UI["Static web UI\ncustomer picker, new session, memory + knowledge controls"]
+  API["FastAPI app\n/api/chat + memory/knowledge APIs"]
   Service["ChatService\nrecall -> AgentScope -> record"]
   Profile["Structured profile memory\nPostgres JSONB"]
   Agent["AgentScope 2.0 Agent"]
   Mem0["Mem0Middleware\nuser_id=customer, agent_id=tenant"]
   Qdrant[("Qdrant\nmem0 episodic vectors")]
-  Tools["Tools\nknowledge_search, human_handoff"]
+  Mem0Admin["Mem0Admin\nlist, get, search, add, update, delete-all, history"]
+  Tools["Tools\nknowledge_search, human_handoff, search_memory, add_memory"]
   PG[("Postgres + pgvector\ntenants, customers, profile, knowledge, handoffs")]
   QwenChat["Qwen Cloud / DashScope\nqwen3.6-plus chat"]
   QwenEmbed["Qwen Cloud / DashScope\ntext-embedding-v4 embeddings"]
@@ -17,8 +18,10 @@ flowchart LR
   API --> Service
   Service --> Profile
   Service --> Agent
+  Service --> Mem0Admin
   Profile --> PG
   Agent --> Mem0
+  Mem0Admin --> Mem0
   Mem0 --> Qdrant
   Agent --> Tools
   Agent --> QwenChat

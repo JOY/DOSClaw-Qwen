@@ -18,7 +18,8 @@ Expected flow:
 2. The profile block recalls that this customer is Linh, is lactose intolerant, and prefers oat milk lattes.
 3. AgentScope routes the reply through Qwen Cloud.
 4. The assistant metadata shows the Qwen model, Mem0/Qdrant backend, and any tool activity.
-5. The assistant recommends dairy-free options without asking the customer to repeat the preference.
+5. The Memory controls panel can list, get, search, add, update, delete, delete all, and show history for scoped Mem0 memories.
+6. The assistant recommends dairy-free options without asking the customer to repeat the preference.
 
 Success line:
 
@@ -63,7 +64,8 @@ Expected flow:
 1. The agent can use `knowledge_search`.
 2. The answer is grounded in Bloom Cafe FAQ rows, not invented policy text.
 3. The assistant metadata shows `Tool: knowledge_search`.
-4. The answer remains concise and customer-support shaped.
+4. The Knowledge base panel shows the same tenant FAQ rows that ground the answer.
+5. The answer remains concise and customer-support shaped.
 
 Success line:
 
@@ -94,4 +96,4 @@ The handoff is honest: the assistant does not claim staff escalation until the t
 
 ## Closing
 
-DOSClaw-Qwen is a MemoryAgent-track customer-support system: AgentScope 2.0, Qwen Cloud chat and embeddings, mem0-backed episodic memory, a structured profile layer, tenant-scoped knowledge search, and an auditable handoff path.
+DOSClaw-Qwen is a MemoryAgent-track customer-support system: AgentScope 2.0, Qwen Cloud chat and embeddings, mem0-backed episodic memory with agent-controlled `search_memory`/`add_memory`, a structured profile layer, tenant-scoped knowledge search, visible memory controls, and an auditable handoff path.

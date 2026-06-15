@@ -30,6 +30,14 @@ try {
         "HANDOFF.md",
         "Dockerfile",
         "docker-compose.yml",
+        "dosclaw_qwen/agent.py",
+        "dosclaw_qwen/app.py",
+        "dosclaw_qwen/chat_service.py",
+        "dosclaw_qwen/mem0_admin.py",
+        "dosclaw_qwen/model.py",
+        "dosclaw_qwen/store.py",
+        "dosclaw_qwen/tools.py",
+        "web/index.html",
         "docs/MEMORY_STACK.md",
         "docs/AGENTSCOPE_API.md",
         "docs/hackathon-reference.md",
@@ -86,6 +94,9 @@ try {
         liveQwenAdapter = "https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/model.py"
         demoApi = "https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/app.py"
         healthApi = "https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/app.py"
+        agentRuntime = "https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/agent.py"
+        mem0Admin = "https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/mem0_admin.py"
+        webUi = "https://github.com/JOY/DOSClaw-Qwen/blob/main/web/index.html"
         devpostSubmissionFields = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/devpost-submission-fields.md"
         publishedJourneyBlogPost = "https://joy.vn/p/hanh-trinh-xay-dung-dosclaw-qwen"
         qwenCloudJourneyBlogPost = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/qwen-cloud-journey-blog-post.md"
