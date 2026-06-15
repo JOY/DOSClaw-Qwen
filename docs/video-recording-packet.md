@@ -47,8 +47,8 @@ Target length: 2:45 to 3:00. Upload the final video to YouTube, Vimeo, or Youku 
 
 - [ ] Optional local MP4 render is created with `scripts/render-demo-video.ps1` after collecting screenshots in `docs/proof/video-frames/`.
 - [ ] Video URL is public or unlisted-publicly-viewable on YouTube, Vimeo, or Youku.
-- [ ] Video URL is added to `docs/devpost-draft.md`.
+- [ ] Video URL is added to `docs/devpost-submission-fields.md`.
 - [ ] Video URL is added to `docs/judging-packet.md`.
-- [ ] Live URL and login are added to `docs/devpost-draft.md`.
+- [ ] Live URL and login are added to `docs/devpost-submission-fields.md`.
 - [ ] `scripts/smoke-scenarios.ps1` evidence is captured for the live URL.
 - [ ] `scripts/package-submission.ps1` is rerun.

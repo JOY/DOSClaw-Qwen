@@ -30,6 +30,7 @@ Expected result: Customer A's profile appears in the memory panel and informs th
 - Demo API: https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/app.py
 - Deployment scripts: https://github.com/JOY/DOSClaw-Qwen/tree/main/scripts
 - Architecture: https://github.com/JOY/DOSClaw-Qwen/blob/main/ARCHITECTURE.md
+- Architecture diagram PNG: https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/architecture.png
 - Architecture diagram SVG: https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/architecture.svg
 - Devpost paste sheet: https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/devpost-submission-fields.md
 

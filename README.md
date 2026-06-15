@@ -27,6 +27,8 @@ four with AgentScope 2.0's mem0-backed middleware plus a custom structured profi
 
 ## Architecture
 
+![DOSClaw-Qwen architecture](docs/architecture.svg)
+
 ```
 Web chat UI (customer selector + new-session + "memory recalled" panel)
         |  HTTP / SSE
@@ -70,7 +72,7 @@ uvicorn dosclaw_qwen.app:app --port 8092
 - [docs/implementation-plan.md](docs/implementation-plan.md) - task-by-task TDD plan
 - [docs/spec-design.md](docs/spec-design.md) - design rationale
 - [docs/hackathon-reference.md](docs/hackathon-reference.md) - hackathon rules and deliverables
-- [docs/devpost-draft.md](docs/devpost-draft.md) - submission description draft
+- [docs/devpost-submission-fields.md](docs/devpost-submission-fields.md) - paste-ready submission fields
 - [docs/demo-script.md](docs/demo-script.md) - live demo script
 - [docs/video-recording-packet.md](docs/video-recording-packet.md) - 3-minute video plan
 - [docs/judging-packet.md](docs/judging-packet.md) - judge-facing test notes

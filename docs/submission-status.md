@@ -13,8 +13,8 @@ Last refreshed: 2026-06-14.
 - FastAPI demo surface: `dosclaw_qwen/app.py`.
 - Alibaba runtime proof notes: `docs/deployment-proof.md`.
 - Architecture diagram: `docs/architecture.mmd`.
+- Architecture PNG for Devpost upload: `docs/architecture.png`.
 - Architecture SVG for Devpost: `docs/architecture.svg`.
-- Devpost copy draft: `docs/devpost-draft.md`.
 - Paste-ready Devpost fields: `docs/devpost-submission-fields.md`.
 - Judging packet: `docs/judging-packet.md`.
 - Demo script: `docs/demo-script.md`.
@@ -73,7 +73,7 @@ docs/proof/dosclaw-qwen-submission-evidence.zip
 These cannot be completed inside the repository alone:
 
 - Record and upload a public or unlisted demo video under 3 minutes to YouTube, Vimeo, or Youku.
-- Paste the final video URL into Devpost and, optionally, into `docs/devpost-draft.md` and `docs/judging-packet.md`.
+- Paste the final video URL into Devpost and, optionally, into `docs/devpost-submission-fields.md` and `docs/judging-packet.md`.
 - Submit the Devpost form with the live demo URL, repository URL, Qwen Cloud proof code link, architecture notes, and MemoryAgent track selection.
 
 The repository includes `scripts/render-demo-video.ps1` to turn captured UI screenshots into a local MP4, but the final Devpost requirement is still a public or unlisted video URL from an external video host.
