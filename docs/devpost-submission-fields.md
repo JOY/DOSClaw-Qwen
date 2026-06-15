@@ -240,7 +240,15 @@ DOSClaw-Qwen was implemented as a new standalone Python AgentScope 2.0 project d
 
 ## Optional Blog Or Social Post
 
-Leave this blank unless submitting for the optional blog post prize.
+Publish the bilingual draft below, then paste the resulting public URL into the Devpost field:
+
+```text
+https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/qwen-cloud-journey-blog-post.md
+```
+
+Devpost asks for a published blog or social post URL. A LinkedIn, Dev.to, Medium, or Hashnode URL is preferable for the prize field.
+
+Until the post is published, use:
 
 ```text
 N/A

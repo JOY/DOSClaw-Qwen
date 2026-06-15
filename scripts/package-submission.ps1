@@ -34,6 +34,7 @@ try {
         "docs/AGENTSCOPE_API.md",
         "docs/hackathon-reference.md",
         "docs/devpost-submission-fields.md",
+        "docs/qwen-cloud-journey-blog-post.md",
         "docs/demo-script.md",
         "docs/video-recording-packet.md",
         "docs/judging-packet.md",
@@ -85,6 +86,7 @@ try {
         demoApi = "https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/app.py"
         healthApi = "https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/app.py"
         devpostSubmissionFields = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/devpost-submission-fields.md"
+        qwenCloudJourneyBlogPost = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/qwen-cloud-journey-blog-post.md"
         judgingPacket = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/judging-packet.md"
         demoScript = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/demo-script.md"
         videoRecordingPacket = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/video-recording-packet.md"
