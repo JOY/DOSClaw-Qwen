@@ -172,7 +172,7 @@ if (!$SkipLiveChat) {
     $ticketId = [regex]::Match($handoff.reply, "ticket #([0-9]+)").Groups[1].Value
     $handoffs = Invoke-RestMethod -Uri "$BaseUrl/api/handoffs?tenant_id=tenant_demo"
     if (!(($handoffs | ForEach-Object { $_.id }) -contains [int]$ticketId)) {
-        throw "Handoff dashboard did not list ticket #$ticketId: $($handoffs | ConvertTo-Json -Depth 10)"
+        throw "Handoff dashboard did not list ticket #${ticketId}: $($handoffs | ConvertTo-Json -Depth 10)"
     }
     $statusBody = @{ tenant_id = "tenant_demo"; status = "reviewing" } | ConvertTo-Json
     $updatedHandoff = Invoke-RestMethod -Uri "$BaseUrl/api/handoffs/$ticketId" -Method Patch -ContentType "application/json" -Body $statusBody
