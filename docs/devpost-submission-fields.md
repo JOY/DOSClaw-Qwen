@@ -240,7 +240,13 @@ DOSClaw-Qwen was implemented as a new standalone Python AgentScope 2.0 project d
 
 ## Optional Blog Or Social Post
 
-Publish the bilingual draft below, then paste the resulting public URL into the Devpost field:
+Paste this published Substack URL into the Devpost field:
+
+```text
+https://joy.vn/p/hanh-trinh-xay-dung-dosclaw-qwen
+```
+
+Source draft:
 
 ```text
 https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/qwen-cloud-journey-blog-post.md
@@ -252,13 +258,7 @@ Substack copy-ready HTML:
 https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/qwen-cloud-journey-blog-post-substack.html
 ```
 
-Devpost asks for a published blog or social post URL. A LinkedIn, Dev.to, Medium, or Hashnode URL is preferable for the prize field.
-
-Until the post is published, use:
-
-```text
-N/A
-```
+Devpost asks for a published blog or social post URL. The Substack URL above is the public prize-field URL.
 
 ## AI Tools Leveraged
 

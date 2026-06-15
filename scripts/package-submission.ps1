@@ -87,6 +87,7 @@ try {
         demoApi = "https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/app.py"
         healthApi = "https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/app.py"
         devpostSubmissionFields = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/devpost-submission-fields.md"
+        publishedJourneyBlogPost = "https://joy.vn/p/hanh-trinh-xay-dung-dosclaw-qwen"
         qwenCloudJourneyBlogPost = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/qwen-cloud-journey-blog-post.md"
         qwenCloudJourneyBlogPostSubstackHtml = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/qwen-cloud-journey-blog-post-substack.html"
         judgingPacket = "https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/judging-packet.md"
