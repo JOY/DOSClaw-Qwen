@@ -328,6 +328,14 @@
         padding: 18px 22px;
         background: #f7f9fc;
       }
+      .empty-thread {
+        display: grid;
+        min-height: 100%;
+        place-items: center;
+        color: var(--muted);
+        font-size: 14px;
+        text-align: center;
+      }
       .message {
         max-width: 720px;
         margin: 0 0 14px;
@@ -875,6 +883,9 @@
       const RETRYABLE_STATUS_CODES = new Set([502, 503, 504]);
 
       function addMessage(text, role) {
+        if (thread.querySelector(".empty-thread")) {
+          thread.replaceChildren();
+        }
         const node = document.createElement("div");
         node.className = `message ${role}`;
         const heading = document.createElement("div");
@@ -894,6 +905,13 @@
 
       function selectedCustomerName() {
         return customer.options[customer.selectedIndex]?.textContent || "Customer";
+      }
+
+      function renderEmptyThread() {
+        const empty = document.createElement("div");
+        empty.className = "empty-thread";
+        empty.textContent = "No messages in this visible session yet.";
+        thread.replaceChildren(empty);
       }
 
       function metadataParts(text) {
@@ -945,7 +963,7 @@
 
       function clearVisibleSession(memoryText = "No relevant memory.") {
         if (activeController) activeController.abort();
-        thread.replaceChildren();
+        renderEmptyThread();
         memoryPanel.textContent = memoryText;
         unlockComposer();
       }
@@ -1534,6 +1552,9 @@
 
       loadTenants()
         .then(loadCustomers)
+        .then(() => {
+          if (!thread.children.length) renderEmptyThread();
+        })
         .then(loadMemory)
         .then(loadConsent)
         .then(loadKnowledge)

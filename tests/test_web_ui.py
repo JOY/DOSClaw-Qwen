@@ -41,6 +41,8 @@ def test_web_ui_surfaces_judge_friendly_demo_flow_above_the_chat():
     assert "class=\"persona-rail\"" in html
     assert "id=\"personaRail\"" in html
     assert "function renderPersonaRail" in html
+    assert "function renderEmptyThread" in html
+    assert "No messages in this visible session yet." in html
     assert "memory saved automatically" in html
 
 
