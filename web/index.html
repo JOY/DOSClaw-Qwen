@@ -184,7 +184,7 @@
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 8px;
-        padding: 0 22px 8px;
+        padding: 0 22px 6px;
         border-bottom: 1px solid var(--line);
         background: #fff;
       }
@@ -192,8 +192,8 @@
         display: grid;
         grid-template-columns: auto minmax(0, 1fr);
         gap: 8px;
-        align-items: start;
-        min-height: 52px;
+        align-items: center;
+        min-height: 44px;
         padding: 8px 10px;
         border: 1px solid var(--line);
         border-radius: var(--radius);
@@ -211,7 +211,7 @@
       .scenario-step {
         display: inline-grid;
         place-items: center;
-        width: 28px;
+        width: 24px;
         height: 24px;
         border-radius: 8px;
         background: var(--accent-soft);
@@ -225,7 +225,7 @@
         font-weight: 800;
       }
       .scenario-copy {
-        display: block;
+        display: none;
         color: var(--muted);
         font-size: 11px;
         font-weight: 500;
@@ -322,10 +322,10 @@
         font-weight: 600;
       }
       .thread {
-        flex: 1 1 420px;
-        min-height: 320px;
+        flex: 1 1 auto;
+        min-height: clamp(260px, 36vh, 520px);
         overflow: auto;
-        padding: 22px;
+        padding: 18px 22px;
         background: #f7f9fc;
       }
       .message {
@@ -390,8 +390,8 @@
         z-index: 10;
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
-        gap: 10px;
-        padding: 14px 18px;
+        gap: 8px;
+        padding: 10px 16px;
         border-top: 1px solid var(--line);
         background: var(--surface);
         box-shadow: 0 -10px 28px rgba(15, 23, 42, 0.06);
@@ -408,6 +408,7 @@
         line-height: 1.4;
       }
       .composer-hint {
+        display: none;
         color: var(--muted);
         font-size: 12px;
       }
@@ -628,6 +629,7 @@
         }
         .scenario-strip { grid-template-columns: 1fr; }
         .scenario-card { grid-template-columns: auto minmax(0, 1fr); }
+        .scenario-copy { display: block; }
         .scenario-title,
         .scenario-copy,
         .demo-copy,
