@@ -31,6 +31,31 @@ def test_web_ui_includes_demo_guide_and_runtime_badge():
     assert "/api/knowledge" in html
 
 
+def test_web_ui_surfaces_judge_friendly_demo_flow_above_the_chat():
+    html = WEB_INDEX.read_text(encoding="utf-8")
+
+    assert "class=\"scenario-strip\"" in html
+    assert "data-action=\"teach-fact\"" in html
+    assert "data-action=\"ask-recall\"" in html
+    assert "data-action=\"switch-customer\"" in html
+    assert "class=\"persona-rail\"" in html
+    assert "id=\"personaRail\"" in html
+    assert "function renderPersonaRail" in html
+    assert "memory saved automatically" in html
+
+
+def test_web_ui_makes_agent_metadata_and_inspector_sections_scannable():
+    html = WEB_INDEX.read_text(encoding="utf-8")
+
+    assert "message-role" in html
+    assert "meta-chip" in html
+    assert "class=\"inspector-card\"" in html
+    assert "class=\"inspector-title\"" in html
+    assert "class=\"inspector-nav\"" in html
+    assert "Qwen Cloud" in html
+    assert "AgentScope 2.0" in html
+
+
 def test_web_ui_unlocks_composer_when_final_reply_arrives():
     html = WEB_INDEX.read_text(encoding="utf-8")
 

@@ -8,19 +8,27 @@
     <style>
       :root {
         color-scheme: light;
-        --ink: #161616;
-        --muted: #666a73;
-        --line: #d9dde5;
+        --ink: #111827;
+        --muted: #5f6b7a;
+        --subtle: #8993a3;
+        --line: #d9e1ea;
         --brand: #c8272d;
         --brand-dark: #971c22;
-        --panel: #f7f8fa;
+        --accent: #0f766e;
+        --accent-dark: #0b5f59;
+        --accent-soft: #ecfdf5;
+        --panel: #f5f7fb;
         --surface: #ffffff;
+        --warning: #b45309;
+        --danger-soft: #fff1f2;
+        --shadow: 0 14px 34px rgba(15, 23, 42, 0.07);
+        --radius: 10px;
       }
       * { box-sizing: border-box; }
       body {
         margin: 0;
         font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        background: var(--surface);
+        background: var(--panel);
         color: var(--ink);
         overflow-x: hidden;
       }
@@ -30,23 +38,43 @@
         display: grid;
         grid-template-rows: auto 1fr;
         overflow: hidden;
+        background: var(--surface);
       }
       header {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 16px;
-        padding: 16px 22px;
+        padding: 14px 22px;
         border-bottom: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.96);
       }
       .brand {
         display: grid;
         gap: 3px;
       }
+      .brand-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .brand-mark {
+        display: inline-grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        border: 1px solid #b7ded3;
+        border-radius: 9px;
+        background: linear-gradient(145deg, #062f2d, #0f766e);
+        color: white;
+        font-size: 13px;
+        font-weight: 800;
+      }
       h1 {
         margin: 0;
         font-size: 20px;
         letter-spacing: 0;
+        line-height: 1.15;
       }
       .tagline {
         margin: 0;
@@ -59,30 +87,50 @@
         align-items: center;
         gap: 10px;
       }
+      .control-stack {
+        display: grid;
+        gap: 4px;
+      }
+      .control-label {
+        color: var(--subtle);
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
       select, button, textarea {
         font: inherit;
       }
-      select, textarea {
+      select, textarea, input {
         border: 1px solid var(--line);
-        border-radius: 6px;
+        border-radius: 8px;
         background: white;
       }
-      select { padding: 8px 10px; min-width: 180px; }
+      select {
+        min-width: 220px;
+        padding: 9px 12px;
+        color: var(--ink);
+      }
       button {
         border: 0;
-        border-radius: 6px;
-        padding: 9px 12px;
+        border-radius: 8px;
+        padding: 10px 13px;
         background: var(--brand);
         color: white;
         cursor: pointer;
+        font-weight: 700;
       }
       button.secondary {
         background: #eceff3;
         color: var(--ink);
       }
+      button.ghost {
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--accent-dark);
+      }
       main {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 360px;
+        grid-template-columns: minmax(0, 1fr) 390px;
         min-height: 0;
         overflow: hidden;
       }
@@ -93,18 +141,26 @@
       }
       .chat {
         border-right: 1px solid var(--line);
+        background: #f9fbfd;
       }
       .demo-banner {
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
-        gap: 14px;
+        gap: 18px;
         align-items: center;
-        padding: 14px 22px;
-        border-bottom: 1px solid var(--line);
+        padding: 16px 22px 10px;
         background: #fff;
       }
+      .section-label {
+        margin: 0 0 6px;
+        color: var(--accent-dark);
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
       .demo-title {
-        margin: 0 0 3px;
+        margin: 0 0 4px;
+        font-size: 18px;
         font-weight: 700;
       }
       .demo-copy {
@@ -117,6 +173,57 @@
         display: grid;
         gap: 8px;
       }
+      .scenario-strip {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        padding: 0 22px 14px;
+        border-bottom: 1px solid var(--line);
+        background: #fff;
+      }
+      .scenario-card {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 10px;
+        align-items: start;
+        min-height: 72px;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #fff;
+        color: var(--ink);
+        text-align: left;
+        box-shadow: 0 1px 0 rgba(15, 23, 42, 0.03);
+      }
+      .scenario-card:hover,
+      .scenario-card:focus-visible {
+        border-color: #9fd4ca;
+        background: #f8fffc;
+        outline: none;
+      }
+      .scenario-step {
+        display: inline-grid;
+        place-items: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: var(--accent-soft);
+        color: var(--accent-dark);
+        font-size: 12px;
+        font-weight: 800;
+      }
+      .scenario-title {
+        display: block;
+        margin-bottom: 2px;
+        font-weight: 800;
+      }
+      .scenario-copy {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1.35;
+      }
       .analytics-strip {
         display: flex;
         flex-wrap: wrap;
@@ -128,7 +235,7 @@
       .stat-pill {
         min-width: 112px;
         border: 1px solid var(--line);
-        border-radius: 6px;
+        border-radius: 8px;
         padding: 7px 9px;
         background: #fff;
       }
@@ -140,7 +247,7 @@
       }
       .runtime-pill {
         max-width: 420px;
-        padding: 7px 9px;
+        padding: 8px 11px;
         border: 1px solid #cfd8d3;
         border-radius: 999px;
         background: #f4faf6;
@@ -152,22 +259,87 @@
         text-overflow: ellipsis;
         overflow-wrap: anywhere;
       }
+      .persona-rail {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(130px, 1fr));
+        gap: 10px;
+        padding: 12px 22px;
+        border-bottom: 1px solid var(--line);
+        background: #fbfcfd;
+      }
+      .persona-card {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 9px;
+        align-items: center;
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #fff;
+        color: var(--ink);
+        text-align: left;
+      }
+      .persona-card.active {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+        box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.16);
+      }
+      .persona-avatar {
+        display: inline-grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #e6f6f3;
+        color: var(--accent-dark);
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .persona-name {
+        display: block;
+        overflow: hidden;
+        color: var(--ink);
+        font-weight: 800;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .persona-tag {
+        display: block;
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 600;
+      }
       .thread {
         flex: 1;
         min-height: 0;
         overflow: auto;
-        padding: 18px 22px;
-        background: #fbfbfc;
+        padding: 22px;
+        background: #f7f9fc;
       }
       .message {
-        max-width: 760px;
-        margin: 0 0 12px;
-        padding: 11px 13px;
+        max-width: 720px;
+        margin: 0 0 14px;
+        padding: 12px 14px;
         border: 1px solid var(--line);
-        border-radius: 8px;
+        border-radius: 12px;
         background: white;
         white-space: pre-wrap;
         line-height: 1.45;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+      }
+      .message-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+      .message-role {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
       }
       .message-body:empty::after {
         content: "Thinking...";
@@ -175,8 +347,8 @@
       }
       .message.user {
         margin-left: auto;
-        border-color: #efc4c7;
-        background: #fff6f6;
+        border-color: #9fd4ca;
+        background: #f4fffb;
       }
       .message.error {
         border-color: #efc4c7;
@@ -184,29 +356,49 @@
         color: var(--brand-dark);
       }
       .message-meta {
-        margin-top: 8px;
-        padding-top: 8px;
-        border-top: 1px solid var(--line);
-        color: var(--muted);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 10px;
+        color: var(--accent-dark);
+      }
+      .meta-chip {
+        display: inline-flex;
+        max-width: 100%;
+        padding: 5px 7px;
+        border: 1px solid #cde9e4;
+        border-radius: 999px;
+        background: #f4faf8;
         font-size: 12px;
         line-height: 1.35;
+        overflow-wrap: anywhere;
       }
       .composer {
         position: sticky;
         bottom: 0;
         z-index: 10;
         display: grid;
-        grid-template-columns: 1fr auto;
+        grid-template-columns: minmax(0, 1fr) auto;
         gap: 10px;
-        padding: 14px;
+        padding: 14px 18px;
         border-top: 1px solid var(--line);
         background: var(--surface);
+        box-shadow: 0 -10px 28px rgba(15, 23, 42, 0.06);
+      }
+      .composer-input {
+        display: grid;
+        gap: 7px;
       }
       textarea {
         min-height: 48px;
         max-height: 120px;
         resize: vertical;
-        padding: 10px;
+        padding: 12px;
+        line-height: 1.4;
+      }
+      .composer-hint {
+        color: var(--muted);
+        font-size: 12px;
       }
       textarea:disabled, button:disabled {
         opacity: 0.6;
@@ -215,26 +407,76 @@
       .memory {
         background: var(--panel);
         overflow: auto;
+        padding: 14px;
+        gap: 12px;
       }
       .memory h2 {
         margin: 0;
-        padding: 16px;
         font-size: 15px;
-        border-bottom: 1px solid var(--line);
+      }
+      .inspector-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 2px 2px 0;
+      }
+      .inspector-header h2 {
+        font-size: 18px;
+      }
+      .inspector-nav {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 6px;
+      }
+      .inspector-nav a {
+        padding: 7px 6px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: #fff;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        text-align: center;
+        text-decoration: none;
+      }
+      .inspector-card {
+        display: grid;
+        gap: 10px;
+        padding: 13px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #fff;
+        box-shadow: 0 1px 0 rgba(15, 23, 42, 0.03);
+      }
+      .inspector-title {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      .inspector-title h2 {
+        font-size: 15px;
+      }
+      .inspector-title span,
+      .inspector-title small {
+        color: var(--muted);
+        font-size: 12px;
       }
       #memoryPanel {
-        padding: 14px 16px;
+        padding: 10px;
         white-space: pre-wrap;
         overflow: auto;
         color: var(--muted);
         line-height: 1.45;
-        min-height: 145px;
-        border-bottom: 1px solid var(--line);
+        min-height: 112px;
+        border: 1px solid #cde9e4;
+        border-radius: 8px;
+        background: #f8fffc;
       }
       .guide {
-        padding: 14px 16px 16px;
-        border-bottom: 1px solid var(--line);
-        background: #fff;
+        display: grid;
+        gap: 10px;
       }
       .guide h2, .side-section h2 {
         padding: 0;
@@ -264,7 +506,7 @@
         background: #f2f4f7;
       }
       .runtime-detail {
-        padding: 14px 16px;
+        padding: 0;
         color: var(--muted);
         font-size: 13px;
         line-height: 1.45;
@@ -312,7 +554,7 @@
       .side-input, .side-textarea {
         width: 100%;
         border: 1px solid var(--line);
-        border-radius: 6px;
+        border-radius: 8px;
         padding: 9px 10px;
       }
       .side-textarea {
@@ -322,13 +564,12 @@
       .item-list {
         display: grid;
         gap: 8px;
-        margin-top: 10px;
         max-height: 190px;
         overflow: auto;
       }
       .list-item {
         border: 1px solid var(--line);
-        border-radius: 6px;
+        border-radius: 8px;
         background: #fbfbfc;
         padding: 9px 10px;
         color: var(--ink);
@@ -359,6 +600,13 @@
         header, .controls { align-items: stretch; flex-direction: column; }
         select { width: 100%; min-width: 0; }
         .demo-banner { grid-template-columns: 1fr; }
+        .scenario-strip { grid-template-columns: 1fr; }
+        .persona-rail {
+          display: flex;
+          overflow-x: auto;
+          padding-bottom: 12px;
+        }
+        .persona-card { min-width: 210px; }
         .runtime-pill { max-width: 100%; white-space: normal; }
         .stat-pill { flex: 1 1 calc(50% - 4px); min-width: 0; }
         main { grid-template-columns: 1fr; overflow: visible; }
@@ -368,6 +616,7 @@
         .composer button { width: 100%; }
         .inline-row { grid-template-columns: 1fr; }
         .memory { min-height: 220px; border-top: 1px solid var(--line); }
+        .inspector-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       }
     </style>
   </head>
@@ -375,12 +624,23 @@
     <div class="app">
       <header>
         <div class="brand">
-          <h1>DOSClaw-Qwen</h1>
-          <p class="tagline">MemoryAgent demo for multilingual SME customer support</p>
+          <div class="brand-row">
+            <span class="brand-mark">DQ</span>
+            <div>
+              <h1>DOSClaw-Qwen</h1>
+              <p class="tagline">MemoryAgent demo for multilingual SME customer support</p>
+            </div>
+          </div>
         </div>
         <div class="controls">
-          <select id="tenant" aria-label="Shop"></select>
-          <select id="customer"></select>
+          <label class="control-stack">
+            <span class="control-label">Tenant / shop</span>
+            <select id="tenant" aria-label="Shop"></select>
+          </label>
+          <label class="control-stack">
+            <span class="control-label">Customer persona</span>
+            <select id="customer"></select>
+          </label>
           <button class="secondary" id="newSession" type="button">New session</button>
         </div>
       </header>
@@ -388,23 +648,78 @@
         <section class="chat">
           <div class="demo-banner">
             <div class="demo-content">
+              <p class="section-label">Demo guide</p>
               <p class="demo-title">Judge the memory, not a canned script.</p>
-              <p class="demo-copy">Teach, reset, then ask what it remembers.</p>
+              <p class="demo-copy">Pick a persona, teach a fact, start a new session, then ask what the agent remembers.</p>
               <div class="analytics-strip" id="analyticsStrip">Support analytics loading...</div>
             </div>
             <div class="runtime-pill" id="runtimeBadge">Runtime loading...</div>
           </div>
+          <div class="scenario-strip" aria-label="Demo scenarios">
+            <button class="scenario-card" type="button" data-action="teach-fact" data-customer="cust_b" data-prompt="I'm JOY, 18 YO">
+              <span class="scenario-step">1</span>
+              <span>
+                <span class="scenario-title">Teach a fact</span>
+                <span class="scenario-copy">Store a new name and age for Customer B.</span>
+              </span>
+            </button>
+            <button class="scenario-card" type="button" data-action="ask-recall" data-prompt="What do you remember about me?">
+              <span class="scenario-step">2</span>
+              <span>
+                <span class="scenario-title">Ask recall</span>
+                <span class="scenario-copy">Start fresh, then ask what memory comes back.</span>
+              </span>
+            </button>
+            <button class="scenario-card" type="button" data-action="switch-customer" data-customer="cust_a" data-prompt="I'm lactose intolerant. What do you recommend?">
+              <span class="scenario-step">3</span>
+              <span>
+                <span class="scenario-title">Switch customer</span>
+                <span class="scenario-copy">Show isolation between seeded personas.</span>
+              </span>
+            </button>
+            <button class="scenario-card" type="button" data-action="knowledge-search" data-prompt="What is your refund policy?">
+              <span class="scenario-step">4</span>
+              <span>
+                <span class="scenario-title">Use knowledge base</span>
+                <span class="scenario-copy">Ground the answer in shop policy.</span>
+              </span>
+            </button>
+          </div>
+          <div class="persona-rail" id="personaRail">Customer personas loading...</div>
           <div class="thread" id="thread"></div>
           <form class="composer" id="composer">
-            <textarea id="message" placeholder="Ask as this customer..."></textarea>
+            <div class="composer-input">
+              <textarea id="message" placeholder="Ask as this customer..."></textarea>
+              <div class="composer-hint">Enter to send. Shift+Enter for a new line. memory saved automatically when consent is active.</div>
+            </div>
             <button type="submit">Send</button>
           </form>
         </section>
         <aside class="memory">
-          <h2>Memory recalled</h2>
-          <div id="memoryPanel">No memory recalled yet.</div>
-          <section class="side-section">
-            <h2>Profile & consent</h2>
+          <div class="inspector-header">
+            <div>
+              <p class="section-label">Live inspector</p>
+              <h2>Memory, tools, and evidence</h2>
+            </div>
+          </div>
+          <nav class="inspector-nav" aria-label="Inspector sections">
+            <a href="#memoryCard">Memory</a>
+            <a href="#profileCard">Profile</a>
+            <a href="#knowledgeCard">Knowledge</a>
+            <a href="#handoffCard">Handoffs</a>
+          </nav>
+          <section class="inspector-card" id="memoryCard">
+            <div class="inspector-title">
+              <h2>Memory recalled</h2>
+              <small>Injected into reply</small>
+            </div>
+            <div id="memoryPanel">No memory recalled yet.</div>
+          </section>
+          <section class="inspector-card" id="profileCard">
+            <div class="inspector-title">
+              <h2>Profile & consent</h2>
+              <small>Customer scoped</small>
+            </div>
             <div class="consent-bar">
               <span class="status-pill" id="consentStatus">Memory consent loading...</span>
               <div class="button-row">
@@ -414,8 +729,11 @@
             </div>
             <div class="item-list" id="profilePanel">No profile loaded.</div>
           </section>
-          <section class="side-section">
-            <h2>Memory controls</h2>
+          <section class="inspector-card">
+            <div class="inspector-title">
+              <h2>Memory controls</h2>
+              <small>Mem0 actions</small>
+            </div>
             <div class="field-stack">
               <div class="inline-row">
                 <input class="side-input" id="memoryQuery" placeholder="Search customer memory..." />
@@ -433,8 +751,11 @@
             </div>
             <div class="item-list" id="memoryList">No saved mem0 memories loaded.</div>
           </section>
-          <section class="side-section">
-            <h2>Knowledge base</h2>
+          <section class="inspector-card" id="knowledgeCard">
+            <div class="inspector-title">
+              <h2>Knowledge base</h2>
+              <small>Tenant scoped</small>
+            </div>
             <div class="inline-row">
               <input class="side-input" id="knowledgeQuery" placeholder="Search shop knowledge..." />
               <button class="secondary" id="searchKnowledge" type="button">Search</button>
@@ -444,8 +765,11 @@
             </div>
             <div class="item-list" id="knowledgeList">Knowledge base loading...</div>
           </section>
-          <section class="side-section">
-            <h2>Staff handoffs</h2>
+          <section class="inspector-card" id="handoffCard">
+            <div class="inspector-title">
+              <h2>Staff handoffs</h2>
+              <small>Escalation proof</small>
+            </div>
             <div class="inline-row">
               <select id="handoffStatus" aria-label="Handoff status">
                 <option value="open">Open</option>
@@ -457,19 +781,15 @@
             </div>
             <div class="item-list" id="handoffList">No handoffs loaded.</div>
           </section>
-          <section class="guide">
-            <h2>Demo guide</h2>
-            <p class="guide-copy">Click a prompt to load it, then press Enter or Send.</p>
-            <div class="prompt-list">
-              <button class="prompt-chip" type="button" data-customer="cust_a" data-prompt="I'm lactose intolerant. What do you recommend?">Customer A: recall dietary preference</button>
-              <button class="prompt-chip" type="button" data-customer="cust_b" data-prompt="I'm JOY, 18 YO">Customer B: teach name and age</button>
-              <button class="prompt-chip" type="button" data-prompt="What do you remember about me?">Ask recalled memory</button>
-              <button class="prompt-chip" type="button" data-prompt="What is your refund policy?">Trigger shop knowledge search</button>
+          <section class="inspector-card">
+            <div class="inspector-title">
+              <h2>Runtime</h2>
+              <small>Qwen Cloud</small>
+            </div>
+            <div class="runtime-detail" id="runtimeDetail">
+              <strong>Runtime:</strong> AgentScope 2.0 + Mem0Middleware loading live Qwen Cloud model details...
             </div>
           </section>
-          <div class="runtime-detail" id="runtimeDetail">
-            <strong>Runtime:</strong> loading live model and memory details...
-          </div>
         </aside>
       </main>
     </div>
@@ -484,7 +804,8 @@
       const form = document.querySelector("#composer");
       const message = document.querySelector("#message");
       const newSession = document.querySelector("#newSession");
-      const promptButtons = document.querySelectorAll(".prompt-chip");
+      const promptButtons = document.querySelectorAll(".prompt-chip, .scenario-card");
+      const personaRail = document.querySelector("#personaRail");
       const profilePanel = document.querySelector("#profilePanel");
       const consentStatus = document.querySelector("#consentStatus");
       const pauseMemory = document.querySelector("#pauseMemory");
@@ -508,18 +829,37 @@
       const refreshHandoffs = document.querySelector("#refreshHandoffs");
       let activeController = null;
       let selectedMemoryId = null;
+      let currentCustomers = [];
       const RETRYABLE_STATUS_CODES = new Set([502, 503, 504]);
 
       function addMessage(text, role) {
         const node = document.createElement("div");
         node.className = `message ${role}`;
+        const heading = document.createElement("div");
+        heading.className = "message-heading";
+        const roleLabel = document.createElement("span");
+        roleLabel.setAttribute("class", "message-role");
+        roleLabel.textContent = role === "user" ? selectedCustomerName() : "DOSClaw-Qwen";
+        heading.appendChild(roleLabel);
         const body = document.createElement("div");
         body.className = "message-body";
         body.textContent = text;
-        node.appendChild(body);
+        node.append(heading, body);
         thread.appendChild(node);
         thread.scrollTop = thread.scrollHeight;
         return { node, body };
+      }
+
+      function selectedCustomerName() {
+        return customer.options[customer.selectedIndex]?.textContent || "Customer";
+      }
+
+      function metadataParts(text) {
+        return text.split("|").map((part) => part.trim()).filter(Boolean);
+      }
+
+      function existingMetaParts(meta) {
+        return [...meta.querySelectorAll(".meta-chip")].map((chip) => chip.textContent);
       }
 
       function setMessageMeta(messageNode, text) {
@@ -530,7 +870,13 @@
           meta.className = "message-meta";
           messageNode.node.appendChild(meta);
         }
-        meta.textContent = text;
+        meta.replaceChildren();
+        for (const part of metadataParts(text)) {
+          const chip = document.createElement("span");
+          chip.setAttribute("class", "meta-chip");
+          chip.textContent = part;
+          meta.appendChild(chip);
+        }
         thread.scrollTop = thread.scrollHeight;
       }
 
@@ -541,10 +887,16 @@
           setMessageMeta(messageNode, text);
           return;
         }
-        const lines = meta.textContent.split("\n").filter(Boolean);
-        if (!lines.includes(text)) {
-          lines.push(text);
-          meta.textContent = lines.join("\n");
+        const lines = existingMetaParts(meta);
+        for (const part of metadataParts(text)) {
+          if (!lines.includes(part)) {
+            const chip = document.createElement("span");
+            chip.setAttribute("class", "meta-chip");
+            chip.textContent = part;
+            meta.appendChild(chip);
+          }
+        }
+        if (metadataParts(text).length > 0) {
           thread.scrollTop = thread.scrollHeight;
         }
       }
@@ -608,12 +960,65 @@
       async function loadCustomers() {
         const response = await fetch(`/api/customers?${new URLSearchParams({ tenant_id: tenant.value })}`);
         const customers = await response.json();
+        currentCustomers = customers;
         customer.replaceChildren();
         for (const item of customers) {
           const option = document.createElement("option");
           option.value = item.id;
           option.textContent = item.name;
           customer.appendChild(option);
+        }
+        renderPersonaRail(customers);
+      }
+
+      function customerTag(item) {
+        if (item.name.includes("Returning")) return "Returning";
+        if (item.name.includes("Complaint")) return "Escalation";
+        if (item.name.includes("Parent")) return "Buyer";
+        if (item.name.includes("Park")) return "Regular";
+        if (item.name.includes("New")) return "New";
+        return "Demo";
+      }
+
+      function customerInitials(name) {
+        return name
+          .split(/\s+/)
+          .filter(Boolean)
+          .map((part) => part[0])
+          .join("")
+          .slice(0, 2)
+          .toUpperCase();
+      }
+
+      function renderPersonaRail(customers) {
+        personaRail.replaceChildren();
+        if (!customers || customers.length === 0) {
+          personaRail.textContent = "No customer personas loaded.";
+          return;
+        }
+        for (const item of customers) {
+          const node = document.createElement("button");
+          node.type = "button";
+          node.className = `persona-card${item.id === customer.value ? " active" : ""}`;
+          node.dataset.customerId = item.id;
+          const avatar = document.createElement("span");
+          avatar.className = "persona-avatar";
+          avatar.textContent = customerInitials(item.name);
+          const copy = document.createElement("span");
+          const name = document.createElement("span");
+          name.className = "persona-name";
+          name.textContent = item.name;
+          const tag = document.createElement("span");
+          tag.className = "persona-tag";
+          tag.textContent = `${customerTag(item)} | ${item.id}`;
+          copy.append(name, tag);
+          node.append(avatar, copy);
+          node.addEventListener("click", () => {
+            if (customer.value === item.id) return;
+            customer.value = item.id;
+            customer.dispatchEvent(new Event("change"));
+          });
+          personaRail.appendChild(node);
         }
       }
 
@@ -954,6 +1359,7 @@
 
       customer.addEventListener("change", () => {
         clearVisibleSession();
+        renderPersonaRail(currentCustomers);
         loadMemory();
         loadConsent();
         loadAnalytics();
@@ -990,6 +1396,9 @@
 
       for (const button of promptButtons) {
         button.addEventListener("click", () => {
+          if (button.dataset.action === "ask-recall") {
+            clearVisibleSession("New visible session. Stored memory remains available.");
+          }
           const targetCustomer = button.dataset.customer;
           if (targetCustomer && customer.value !== targetCustomer) {
             customer.value = targetCustomer;
