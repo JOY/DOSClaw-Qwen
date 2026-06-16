@@ -146,53 +146,55 @@
       .chat {
         border-right: 1px solid var(--line);
         background: #f9fbfd;
+        overflow: hidden;
       }
       .demo-banner {
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
         gap: 18px;
         align-items: center;
-        padding: 16px 22px 10px;
+        padding: 10px 22px 8px;
         background: #fff;
       }
       .section-label {
-        margin: 0 0 6px;
+        margin: 0 0 4px;
         color: var(--accent-dark);
         font-size: 11px;
         font-weight: 800;
         text-transform: uppercase;
       }
       .demo-title {
-        margin: 0 0 4px;
-        font-size: 18px;
+        margin: 0 0 2px;
+        font-size: 16px;
         font-weight: 700;
       }
       .demo-copy {
         margin: 0;
         color: var(--muted);
+        font-size: 13px;
         line-height: 1.4;
         overflow-wrap: anywhere;
       }
       .demo-content {
         display: grid;
-        gap: 8px;
+        gap: 6px;
         min-width: 0;
       }
       .scenario-strip {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 10px;
-        padding: 0 22px 14px;
+        gap: 8px;
+        padding: 0 22px 8px;
         border-bottom: 1px solid var(--line);
         background: #fff;
       }
       .scenario-card {
         display: grid;
         grid-template-columns: auto minmax(0, 1fr);
-        gap: 10px;
+        gap: 8px;
         align-items: start;
-        min-height: 72px;
-        padding: 12px;
+        min-height: 52px;
+        padding: 8px 10px;
         border: 1px solid var(--line);
         border-radius: var(--radius);
         background: #fff;
@@ -210,7 +212,7 @@
         display: inline-grid;
         place-items: center;
         width: 28px;
-        height: 28px;
+        height: 24px;
         border-radius: 8px;
         background: var(--accent-soft);
         color: var(--accent-dark);
@@ -219,35 +221,38 @@
       }
       .scenario-title {
         display: block;
-        margin-bottom: 2px;
+        margin-bottom: 1px;
         font-weight: 800;
       }
       .scenario-copy {
         display: block;
         color: var(--muted);
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 500;
         line-height: 1.35;
       }
       .analytics-strip {
         display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
+        flex-wrap: nowrap;
+        gap: 6px;
         align-items: stretch;
         color: var(--muted);
         font-size: 12px;
+        max-width: 100%;
+        overflow-x: auto;
       }
       .stat-pill {
-        min-width: 112px;
+        flex: 0 0 auto;
+        min-width: 88px;
         border: 1px solid var(--line);
         border-radius: 8px;
-        padding: 7px 9px;
+        padding: 5px 7px;
         background: #fff;
       }
       .stat-pill strong {
         display: block;
         color: var(--ink);
-        font-size: 15px;
+        font-size: 13px;
         line-height: 1.1;
       }
       .runtime-pill {
@@ -267,17 +272,17 @@
       .persona-rail {
         display: grid;
         grid-template-columns: repeat(4, minmax(130px, 1fr));
-        gap: 10px;
-        padding: 12px 22px;
+        gap: 8px;
+        padding: 8px 22px;
         border-bottom: 1px solid var(--line);
         background: #fbfcfd;
       }
       .persona-card {
         display: grid;
         grid-template-columns: auto minmax(0, 1fr);
-        gap: 9px;
+        gap: 8px;
         align-items: center;
-        padding: 10px;
+        padding: 7px 9px;
         border: 1px solid var(--line);
         border-radius: var(--radius);
         background: #fff;
@@ -292,18 +297,19 @@
       .persona-avatar {
         display: inline-grid;
         place-items: center;
-        width: 34px;
-        height: 34px;
+        width: 30px;
+        height: 30px;
         border-radius: 50%;
         background: #e6f6f3;
         color: var(--accent-dark);
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 800;
       }
       .persona-name {
         display: block;
         overflow: hidden;
         color: var(--ink);
+        font-size: 13px;
         font-weight: 800;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -312,12 +318,12 @@
         display: block;
         margin-top: 2px;
         color: var(--muted);
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 600;
       }
       .thread {
-        flex: 1;
-        min-height: 0;
+        flex: 1 1 420px;
+        min-height: 320px;
         overflow: auto;
         padding: 22px;
         background: #f7f9fc;
