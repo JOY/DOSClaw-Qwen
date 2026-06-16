@@ -87,4 +87,6 @@ def test_web_ui_mobile_rules_prevent_horizontal_overflow():
     assert ".demo-content { min-width: 0; }" in html
     assert ".controls { width: 100%;" in html
     assert ".composer { width: 100%;" in html
+    assert ".composer { position: fixed;" in html
+    assert "padding-bottom: 190px;" in html
     assert "max-width: 100vw;" in html
