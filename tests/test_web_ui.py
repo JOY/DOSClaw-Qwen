@@ -78,3 +78,13 @@ def test_web_ui_keeps_chat_composer_pinned_to_viewport():
     assert "overflow: hidden;" in main_rule
     assert "position: sticky;" in composer_rule
     assert "bottom: 0;" in composer_rule
+
+
+def test_web_ui_mobile_rules_prevent_horizontal_overflow():
+    html = WEB_INDEX.read_text(encoding="utf-8")
+
+    assert ".brand-row > div { min-width: 0; }" in html
+    assert ".demo-content { min-width: 0; }" in html
+    assert ".controls { width: 100%;" in html
+    assert ".composer { width: 100%;" in html
+    assert "max-width: 100vw;" in html

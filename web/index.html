@@ -32,6 +32,9 @@
         color: var(--ink);
         overflow-x: hidden;
       }
+      html, body {
+        max-width: 100vw;
+      }
       .app {
         height: 100vh;
         min-height: 100vh;
@@ -58,6 +61,7 @@
         align-items: center;
         gap: 12px;
       }
+      .brand-row > div { min-width: 0; }
       .brand-mark {
         display: inline-grid;
         place-items: center;
@@ -172,6 +176,7 @@
       .demo-content {
         display: grid;
         gap: 8px;
+        min-width: 0;
       }
       .scenario-strip {
         display: grid;
@@ -596,15 +601,39 @@
         color: var(--ink);
       }
       @media (max-width: 860px) {
-        .app { height: auto; overflow: visible; }
+        .app { height: auto; max-width: 100vw; overflow-x: hidden; overflow-y: visible; }
+        header { padding: 16px 18px; max-width: 100vw; }
         header, .controls { align-items: stretch; flex-direction: column; }
+        .controls { width: 100%; }
+        .controls button { width: 100%; }
+        .brand-row { align-items: flex-start; }
+        .brand-row > div { min-width: 0; }
+        .demo-content { min-width: 0; }
         select { width: 100%; min-width: 0; }
         .demo-banner { grid-template-columns: 1fr; }
+        .demo-banner,
+        .scenario-strip,
+        .thread,
+        .composer,
+        .memory {
+          width: 100%;
+          max-width: 100vw;
+        }
         .scenario-strip { grid-template-columns: 1fr; }
+        .scenario-card { grid-template-columns: auto minmax(0, 1fr); }
+        .scenario-title,
+        .scenario-copy,
+        .demo-copy,
+        .tagline,
+        .composer-hint {
+          overflow-wrap: anywhere;
+        }
+        .composer { width: 100%; }
         .persona-rail {
           display: flex;
           overflow-x: auto;
           padding-bottom: 12px;
+          max-width: 100vw;
         }
         .persona-card { min-width: 210px; }
         .runtime-pill { max-width: 100%; white-space: normal; }
