@@ -88,5 +88,7 @@ def test_web_ui_mobile_rules_prevent_horizontal_overflow():
     assert ".controls { width: 100%;" in html
     assert ".composer { width: 100%;" in html
     assert ".composer { position: fixed;" in html
-    assert "padding-bottom: 190px;" in html
+    assert "padding-bottom: 140px;" in html
     assert "max-width: 100vw;" in html
+    assert "Enter to send" not in html
+    assert "Shift+Enter" not in html
