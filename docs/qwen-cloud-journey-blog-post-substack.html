@@ -3,122 +3,385 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Building DOSClaw-Qwen: A Real MemoryAgent Journey With Qwen Cloud</title>
+  <title>Building DOSClaw-Qwen: the technical journey behind a real Qwen Cloud MemoryAgent</title>
   <style>
-    body {
-      color: #1f2937;
-      font-family: Georgia, "Times New Roman", serif;
-      line-height: 1.7;
-      margin: 0 auto;
-      max-width: 760px;
-      padding: 48px 24px;
-    }
-
-    h1,
-    h2 {
-      color: #111827;
-      line-height: 1.2;
-    }
-
-    h1 {
-      font-size: 2.3rem;
-      margin: 0 0 24px;
-    }
-
-    h2 {
-      border-top: 1px solid #e5e7eb;
-      font-size: 1.5rem;
-      margin-top: 48px;
-      padding-top: 28px;
-    }
-
-    p {
-      margin: 0 0 18px;
-    }
-
-    a {
-      color: #0f766e;
-    }
-
-    pre {
-      background: #f3f4f6;
-      border-radius: 8px;
-      overflow-x: auto;
-      padding: 16px;
-    }
-
-    code {
-      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-      font-size: 0.95em;
-    }
-
-    .tags {
-      color: #4b5563;
-      font-family: Arial, sans-serif;
-      font-size: 0.95rem;
-    }
+    body { color: #1f2937; font-family: Georgia, "Times New Roman", serif; line-height: 1.72; margin: 0 auto; max-width: 820px; padding: 48px 24px; }
+    h1, h2, h3 { color: #111827; line-height: 1.2; }
+    h1 { font-size: 2.35rem; margin: 0 0 24px; }
+    h2 { border-top: 1px solid #e5e7eb; font-size: 1.55rem; margin-top: 46px; padding-top: 28px; }
+    h3 { font-size: 1.15rem; margin-top: 28px; }
+    p { margin: 0 0 18px; }
+    a { color: #0f766e; }
+    ul, ol { margin: 0 0 20px 24px; padding: 0; }
+    li { margin: 6px 0; }
+    blockquote { border-left: 4px solid #0f766e; color: #374151; margin: 24px 0; padding: 4px 0 4px 18px; }
+    pre { background: #f3f4f6; border-radius: 8px; overflow-x: auto; padding: 16px; }
+    code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 0.95em; }
+    .tags { color: #4b5563; font-family: Arial, sans-serif; font-size: 0.95rem; }
   </style>
 </head>
 <body>
   <article>
-    <h1>Building DOSClaw-Qwen: A Real MemoryAgent Journey With Qwen Cloud</h1>
-
-    <p>For the Global AI Hackathon Series with Qwen Cloud, I wanted to build something that judges could test instead of something they could only watch. The goal became DOSClaw-Qwen: a multilingual customer-support agent for small and medium businesses that remembers each customer across sessions without mixing people together.</p>
-
-    <p>The idea came from a simple support scenario. A cafe, clinic, repair shop, or local service provider should not have to ask the same returning customer about allergies, preferences, previous orders, or unresolved complaints every time they start a new chat. At the same time, memory can become risky if it is global, invisible, or impossible to audit. A useful support agent needs memory, but it also needs boundaries.</p>
-
-    <p>That is why DOSClaw-Qwen was built as a MemoryAgent. The demo uses Qwen Cloud for both reasoning and embeddings, AgentScope 2.0 for the agent runtime, Mem0Middleware for episodic memory, and a structured profile layer for durable customer facts. The memory scope is intentionally simple:</p>
-
-    <pre><code>mem0 user_id = customer_id
-mem0 agent_id = tenant_id</code></pre>
-
-    <p>This means Customer A can teach the agent a preference, start a new visible session, and ask what the agent remembers. Customer B does not inherit that memory. The demo is designed around that boundary because customer isolation is the difference between a useful SME support agent and a scripted chatbot.</p>
-
-    <p>The runtime is a standalone Python application. FastAPI serves the API and web UI. AgentScope runs the support agent and tools. Qwen Cloud / DashScope provides <code>qwen3.6-plus</code> for chat reasoning and <code>text-embedding-v4</code> for semantic memory and FAQ search. Mem0Middleware stores episodic memory in Qdrant, while Postgres with pgvector stores tenants, customers, structured profiles, FAQ rows, and human handoff tickets. The live app runs on Alibaba Cloud Elastic Container Instance with app, Postgres, Qdrant, and nginx sidecars.</p>
-
-    <p>The most important UI choice was making memory visible. The web demo does not only show an answer. It also shows the recalled memory block, the active Qwen model, the embedding model, the memory backend, the tenant/customer scope, and tool calls such as <code>knowledge_search</code> or <code>human_handoff</code>. That matters because memory agents are easy to fake if the retrieval path is hidden. For a judging demo, the agent should show what it remembered before it answers.</p>
-
-    <p>The hardest engineering challenge was keeping the system real while keeping it small enough for a hackathon. AgentScope 2.0 APIs are moving quickly, so we verified the installed runtime by introspection before wiring the model, tools, and middleware. Mem0 also had to use the same DashScope/Qwen path instead of quietly falling back to OpenAI. On the deployment side, Alibaba Cloud ECI restarts made us treat smoke tests as part of the product: after each live update, we rechecked runtime metadata, memory recall, customer isolation, FAQ grounding, and handoff creation.</p>
-
-    <p>What I am most proud of is that the demo has real behavior behind the buttons. It can remember a name and age across sessions, keep another customer clean, ground policy answers in tenant FAQ data, and create an auditable handoff ticket when the conversation needs a human. It is not just a prompt. It is a small but complete memory system.</p>
-
-    <p>The biggest lesson was that support memory needs two layers. Episodic memory is flexible and conversational, but structured profile memory is better for durable facts that must be displayed, updated, and audited. Qwen Cloud embeddings help the agent search across past interactions and FAQ rows, while the profile layer gives the UI a stable record of what the business thinks it knows about a customer.</p>
-
-    <p>Next, I want to turn DOSClaw-Qwen into a deployable support memory service: improve memory consolidation, add staff assignment and SLA timers for handoff tickets, add richer recall-quality analytics, and make self-serve onboarding easier for real SME teams.</p>
-
+    <h1>Building DOSClaw-Qwen: the technical journey behind a real Qwen Cloud MemoryAgent</h1>
+    <p>Most hackathon chat demos look convincing for one conversation. The harder question is what happens after the tab is refreshed, the customer comes back tomorrow, or a different customer uses the same shop account.</p>
+    <p>That is the problem I wanted DOSClaw-Qwen to answer. It is a multilingual customer-support agent for small and medium businesses, built for the Global AI Hackathon Series with Qwen Cloud. The goal was not only to call a model. The goal was to build a small but real memory system: one that can remember a customer across sessions, keep tenant and customer boundaries intact, ground answers in shop knowledge, and show judges exactly what memory was recalled before an answer is generated.</p>
+    <p>The current live demo runs at:</p>
+    <p><a href="http://8.219.211.170/">http://8.219.211.170/</a></p>
+    <p>The public repository is:</p>
+    <p><a href="https://github.com/JOY/DOSClaw-Qwen">https://github.com/JOY/DOSClaw-Qwen</a></p>
+    <h2>Why this needed to be more than a chatbot</h2>
+    <p>The product scenario is intentionally ordinary: a cafe, clinic, repair shop, or local store that talks to repeat customers every day.</p>
+    <p>A useful support agent should remember facts such as:</p>
+    <ul>
+      <li>the customer prefers oat milk</li>
+      <li>the customer is lactose intolerant</li>
+      <li>the customer bought a specific product last time</li>
+      <li>a complaint is still waiting for human follow-up</li>
+    </ul>
+    <p>But memory is also dangerous if it is global or invisible. If Customer A says &quot;I am allergic to dairy,&quot; Customer B must not inherit that fact. If the agent says &quot;I remember you,&quot; the UI should be able to show what it remembered and where that memory lives. That became the design constraint:</p>
+    <blockquote><p>DOSClaw-Qwen should behave like a support agent with memory, but the memory must be scoped, visible, auditable, and testable.</p></blockquote>
+    <h2>The system architecture</h2>
+    <p>The deployed app is a standalone Python application, not a mock front end around a hidden prompt. The main path is:</p>
+    <pre><code>
+Browser UI
+  -&gt; FastAPI /api/chat
+  -&gt; ChatService
+       1. Load tenant + customer profile from Postgres
+       2. Check memory consent
+       3. Recall episodic memory through Mem0Middleware
+       4. Build a compact support context
+       5. Call an AgentScope 2.0 agent backed by Qwen Cloud
+       6. Let tools search knowledge or create a human handoff
+       7. Persist new memory/profile updates after the reply
+  -&gt; Stream answer + memory/model/tool metadata back to the UI
+</code></pre>
+    <p>The runtime stack is:</p>
+    <ul>
+      <li><strong>Agent runtime:</strong> AgentScope 2.0</li>
+      <li><strong>Chat model:</strong> Qwen Cloud / DashScope <code>qwen3.6-plus</code></li>
+      <li><strong>Embedding model:</strong> Qwen Cloud / DashScope <code>text-embedding-v4</code> with 1024 dimensions</li>
+      <li><strong>Episodic memory:</strong> Mem0Middleware</li>
+      <li><strong>Vector store for mem0:</strong> Qdrant</li>
+      <li><strong>Structured state:</strong> Postgres for tenants, customers, profiles, FAQ rows, analytics, and handoff tickets</li>
+      <li><strong>API and UI:</strong> FastAPI plus a static judge-facing web UI</li>
+      <li><strong>Deployment:</strong> Alibaba Cloud Elastic Container Instance with app, Postgres, Qdrant, and nginx sidecars</li>
+    </ul>
+    <p>The architecture diagram is in the repo:</p>
+    <p><a href="https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/architecture.svg">https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/architecture.svg</a></p>
+    <h2>The memory design: two layers, one boundary</h2>
+    <p>The most important implementation decision was to avoid treating &quot;memory&quot; as one vague bucket. DOSClaw-Qwen uses two layers.</p>
+    <h3>1. Structured profile memory</h3>
+    <p>Structured profile memory stores durable facts that the business should be able to display and audit, for example:</p>
+    <pre><code>
+{
+  &quot;name&quot;: &quot;Linh&quot;,
+  &quot;prefers&quot;: &quot;oat milk lattes&quot;,
+  &quot;lactose_intolerant&quot;: true,
+  &quot;last_order&quot;: &quot;oat latte + almond croissant&quot;
+}
+</code></pre>
+    <p>This is useful for facts that should be stable in the UI and easy to edit or forget.</p>
+    <h3>2. Episodic memory through Mem0Middleware</h3>
+    <p>Episodic memory stores conversational memories and semantic recall. This is where Qwen Cloud embeddings matter: memories and FAQ rows can be retrieved by meaning, not only by exact keywords.</p>
+    <p>The multi-user boundary is simple and deliberate:</p>
+    <pre><code>
+mem0 user_id  = customer_id
+mem0 agent_id = tenant_id
+</code></pre>
+    <p>That means the same backend can support multiple shops and multiple customers without mixing recall. A judge can teach &quot;New Customer B&quot; a name and age, start a new visible session, and ask what the agent remembers. Then they can switch back to &quot;Returning Customer A&quot; and verify that Customer A&#39;s seeded cafe preferences remain separate.</p>
+    <h2>How Qwen Cloud is used</h2>
+    <p>Qwen Cloud is used in two places:</p>
+    <ol>
+      <li><strong>Reasoning and response generation</strong> through the DashScope chat model.</li>
+      <li><strong>Embeddings</strong> for semantic memory and knowledge search.</li>
+    </ol>
+    <p>The proof code for Qwen Cloud model wiring is here:</p>
+    <p><a href="https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/model.py">https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/model.py</a></p>
+    <p>One important constraint was that Mem0Middleware must not silently fall back to an OpenAI path. The memory engine had to be powered through the same DashScope/Qwen stack as the agent. That made the integration more work, but it also made the demo honest: the model, embeddings, memory recall, and visible runtime metadata all point to the same Qwen Cloud-based system.</p>
+    <p>The live runtime endpoint exposes the proof:</p>
+    <pre><code>
+{
+  &quot;chat_model&quot;: &quot;qwen3.6-plus&quot;,
+  &quot;embedding_model&quot;: &quot;text-embedding-v4&quot;,
+  &quot;embedding_dimensions&quot;: 1024,
+  &quot;agent_runtime&quot;: &quot;AgentScope 2.0&quot;,
+  &quot;memory_engine&quot;: &quot;Mem0Middleware&quot;,
+  &quot;vector_store&quot;: &quot;Qdrant server 127.0.0.1:6333&quot;,
+  &quot;memory_scope&quot;: &quot;tenant_id + customer_id&quot;
+}
+</code></pre>
+    <h2>Why the UI exposes internals</h2>
+    <p>For a memory-agent demo, a polished answer is not enough. A judge should be able to tell whether the system actually recalled something or just produced a plausible sentence.</p>
+    <p>That is why the UI shows:</p>
+    <ul>
+      <li>the current tenant/shop</li>
+      <li>the selected customer persona</li>
+      <li>the recalled memory block</li>
+      <li>the structured customer profile</li>
+      <li>the active Qwen model and embedding model</li>
+      <li>the memory backend</li>
+      <li>knowledge base search results</li>
+      <li>human handoff tickets</li>
+      <li>memory controls such as search, add, update, history, forget, and forget all</li>
+    </ul>
+    <p>This is not just a design choice. It is a debugging and trust choice. If recall fails, the failure is visible. If the wrong customer is selected, the scope is visible. If the agent uses knowledge search or handoff tools, the tool evidence is visible.</p>
+    <h2>The build process</h2>
+    <p>The implementation order was intentionally test-driven.</p>
+    <p>First, I verified the installed AgentScope 2.0 API by introspection instead of assuming old examples still worked. AgentScope is moving quickly, so this prevented the project from being built on outdated import paths or old message types.</p>
+    <p>Then I implemented the pure memory-ranking layer first. That gave me deterministic tests for:</p>
+    <ul>
+      <li>time decay</li>
+      <li>memory ranking</li>
+      <li>profile merge behavior</li>
+      <li>empty/null profile values acting as removals</li>
+    </ul>
+    <p>Only after that did I wire the live pieces: DashScope models, Mem0Middleware, Qdrant, Postgres, FastAPI endpoints, tools, and the web UI.</p>
+    <p>The support tools are deliberately product-shaped:</p>
+    <ul>
+      <li><code>knowledge_search</code> answers shop policy questions from tenant-scoped FAQ rows</li>
+      <li><code>human_handoff</code> creates an auditable ticket when the agent should escalate</li>
+      <li>memory admin endpoints let the demo search, add, update, list history, and forget memories</li>
+    </ul>
+    <h2>The hardest bugs</h2>
+    <p>The hardest bugs were not the glamorous ones.</p>
+    <h3>1. API drift</h3>
+    <p>Agent frameworks change quickly. A small mismatch in a message class or model constructor can break the whole agent path. The fix was to treat the installed runtime as the source of truth and confirm by introspection before coding.</p>
+    <h3>2. Memory routing</h3>
+    <p>Memory had to be scoped by both tenant and customer. It was not enough for the agent to remember something; it had to remember it for the right customer under the right shop. The simple <code>user_id=customer_id</code> and <code>agent_id=tenant_id</code> mapping became the core contract.</p>
+    <h3>3. Deployment streaming timeouts</h3>
+    <p>The live Alibaba Cloud deployment uses nginx in front of the app container. Long streamed chat responses can fail if proxy buffering and read timeouts are wrong. The deployed nginx path needed long read/send timeouts and buffering disabled for <code>/api/chat</code>, otherwise the app could be healthy while the chat request returned a 502.</p>
+    <h3>4. Demo UX</h3>
+    <p>The first UI versions were too hard to judge. The memory was real, but it was not obvious enough. The final UI became more of a &quot;live inspector&quot;: the chat is still central, but the right side shows memory, profile, knowledge, handoff, and runtime evidence.</p>
+    <h2>What judges can test</h2>
+    <p>The demo is designed around repeatable scenarios:</p>
+    <ol>
+      <li>Pick <strong>New Customer B</strong>.</li>
+      <li>Tell the agent: <code>I&#39;m JOY, 18 YO</code>.</li>
+      <li>Start a new visible session.</li>
+      <li>Ask: <code>What do you remember about me?</code></li>
+      <li>Switch to another customer and verify the memory does not leak.</li>
+      <li>Ask a policy question and check that the answer comes from the tenant knowledge base.</li>
+      <li>Trigger a complaint and verify that a human handoff ticket is created.</li>
+    </ol>
+    <p>Those are not separate scripted pages. They exercise the same <code>/api/chat</code>, memory, knowledge, and handoff paths.</p>
+    <h2>What I am proud of</h2>
+    <p>I am proud that DOSClaw-Qwen is small enough for a hackathon but still has real system boundaries:</p>
+    <ul>
+      <li>Qwen Cloud powers both chat and embeddings.</li>
+      <li>AgentScope 2.0 runs the agent instead of a one-off prompt function.</li>
+      <li>Mem0Middleware provides real episodic memory.</li>
+      <li>Qdrant stores semantic memory vectors.</li>
+      <li>Postgres stores structured profile and support operations data.</li>
+      <li>The UI makes the memory path visible instead of hiding it.</li>
+      <li>The live Alibaba deployment is verified with smoke tests after updates.</li>
+    </ul>
+    <p>That combination makes the project feel less like a chatbot demo and more like the smallest useful version of a support memory service.</p>
+    <h2>What I learned</h2>
+    <p>The biggest lesson is that memory quality is not only a model problem. It is a product and systems problem.</p>
+    <p>An agent needs:</p>
+    <ul>
+      <li>retrieval that finds the right facts</li>
+      <li>scoping that prevents cross-customer leakage</li>
+      <li>structured memory for facts that need auditability</li>
+      <li>episodic memory for conversational context</li>
+      <li>consent and forgetting controls</li>
+      <li>UI evidence so humans can debug trust</li>
+    </ul>
+    <p>Qwen Cloud made it possible to keep the reasoning and embedding path in one ecosystem. AgentScope gave the project an agent runtime. Mem0Middleware gave the project a real memory engine. But the product only became understandable when those pieces were exposed clearly in the UI and verified through live scenarios.</p>
+    <h2>What is next</h2>
+    <p>The next step is to turn DOSClaw-Qwen from a hackathon demo into a deployable SME support memory service:</p>
+    <ul>
+      <li>better memory consolidation</li>
+      <li>richer recall-quality analytics</li>
+      <li>staff assignment and SLA timers for handoff tickets</li>
+      <li>more tenant onboarding flows</li>
+      <li>stronger customer consent and forgetting UX</li>
+      <li>production deployment options for real shops</li>
+    </ul>
+    <p>The core idea stays the same: customer-support AI should not only answer well. It should remember responsibly.</p>
     <p>Live demo: <a href="http://8.219.211.170/">http://8.219.211.170/</a></p>
     <p>GitHub: <a href="https://github.com/JOY/DOSClaw-Qwen">https://github.com/JOY/DOSClaw-Qwen</a></p>
     <p>Qwen Cloud proof code: <a href="https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/model.py">https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/model.py</a></p>
     <p>Architecture: <a href="https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/architecture.svg">https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/architecture.svg</a></p>
     <p class="tags">Tags: #QwenCloud #AlibabaCloud #AgentScope #MemoryAgent #AIHackathon #FastAPI #Qdrant #Postgres</p>
-
     <h2>Vietnamese</h2>
-
-    <h1>Xây dựng DOSClaw-Qwen: Hành trình làm MemoryAgent thật với Qwen Cloud</h1>
-
-    <p>Với Global AI Hackathon Series with Qwen Cloud, tôi muốn xây dựng một sản phẩm mà giám khảo có thể tự tay kiểm thử, không phải chỉ xem một demo đã được script sẵn. Từ đó, DOSClaw-Qwen ra đời: một agent hỗ trợ khách hàng đa ngôn ngữ cho SME, có khả năng nhớ từng khách hàng qua nhiều phiên mà không trộn dữ liệu giữa các khách hàng.</p>
-
-    <p>Ý tưởng bắt đầu từ một tình huống support rất đời thường. Một quán cafe, phòng khám, tiệm sửa chữa, hay một dịch vụ địa phương không nên hỏi lại khách quen về dị ứng, sở thích, đơn hàng trước đó, hay khiếu nại chưa xử lý mỗi lần họ bắt đầu chat mới. Nhưng memory cũng có rủi ro nếu nó là bộ nhớ chung, không hiển thị rõ, hoặc không thể audit. Một support agent hữu ích cần có trí nhớ, nhưng trí nhớ đó phải có ranh giới.</p>
-
-    <p>Đó là lý do DOSClaw-Qwen được xây dựng theo hướng MemoryAgent. Demo dùng Qwen Cloud cho cả reasoning và embeddings, AgentScope 2.0 cho agent runtime, Mem0Middleware cho episodic memory, và một structured profile layer cho các thông tin khách hàng bền vững. Memory scope được thiết kế rất rõ:</p>
-
-    <pre><code>mem0 user_id = customer_id
-mem0 agent_id = tenant_id</code></pre>
-
-    <p>Nghĩa là Customer A có thể dạy agent một sở thích, bắt đầu một session mới, rồi hỏi agent còn nhớ gì. Customer B sẽ không bị kế thừa memory của Customer A. Demo xoay quanh ranh giới này vì customer isolation là điểm khác nhau giữa một SME support agent dùng được và một chatbot đã script sẵn.</p>
-
-    <p>Runtime là một ứng dụng Python standalone. FastAPI phục vụ API và web UI. AgentScope chạy support agent và tools. Qwen Cloud / DashScope cung cấp <code>qwen3.6-plus</code> cho chat reasoning và <code>text-embedding-v4</code> cho semantic memory và FAQ search. Mem0Middleware lưu episodic memory trong Qdrant, còn Postgres với pgvector lưu tenants, customers, structured profiles, FAQ rows, và human handoff tickets. Bản live chạy trên Alibaba Cloud Elastic Container Instance với các sidecar app, Postgres, Qdrant, và nginx.</p>
-
-    <p>Lựa chọn UI quan trọng nhất là làm memory trở nên thấy được. Web demo không chỉ hiện câu trả lời. Nó còn hiện memory block đã recall, Qwen model đang dùng, embedding model, memory backend, tenant/customer scope, và tool calls như <code>knowledge_search</code> hoặc <code>human_handoff</code>. Điều này quan trọng vì memory agent rất dễ bị biến thành một prompt demo nếu retrieval path bị ẩn đi. Với một hackathon demo, agent nên cho thấy nó đã nhớ gì trước khi trả lời.</p>
-
-    <p>Thách thức kỹ thuật lớn nhất là giữ hệ thống thật trong khi vẫn đủ nhỏ gọn cho hackathon. AgentScope 2.0 API đang thay đổi nhanh, nên chúng tôi verify runtime đã cài bằng introspection trước khi wire model, tools, và middleware. Mem0 cũng phải đi qua cùng DashScope/Qwen path thay vì âm thầm fallback sang OpenAI. Về deployment, Alibaba Cloud ECI có quá trình restart sau mỗi lần update, nên smoke test trở thành một phần của sản phẩm: sau mỗi live update, chúng tôi kiểm tra lại runtime metadata, memory recall, customer isolation, FAQ grounding, và handoff creation.</p>
-
-    <p>Điều tôi tự hào nhất là demo có hành vi thật phía sau các nút bấm. Nó có thể nhớ tên và tuổi qua session mới, giữ Customer B sạch khỏi memory của Customer A, trả lời policy dựa trên FAQ của tenant, và tạo handoff ticket có thể audit khi cần người xử lý. Nó không chỉ là một prompt. Nó là một memory system nhỏ nhưng hoàn chỉnh.</p>
-
-    <p>Bài học lớn nhất là support memory cần hai lớp. Episodic memory linh hoạt và giống hội thoại, nhưng structured profile memory tốt hơn cho các fact bền vững cần hiển thị, cập nhật, và audit. Qwen Cloud embeddings giúp agent tìm lại tương tác cũ và FAQ rows, còn profile layer cho UI một bản ghi ổn định về những gì doanh nghiệp tin là mình biết về khách hàng.</p>
-
-    <p>Bước tiếp theo là biến DOSClaw-Qwen thành một support memory service có thể triển khai thực tế: cải thiện memory consolidation, thêm phân công nhân viên và SLA timer cho handoff tickets, thêm analytics sâu hơn về chất lượng recall, và làm self-serve onboarding dễ dùng hơn cho các SME team thật.</p>
-
+    <h1>X&#226;y dựng DOSClaw-Qwen: h&#224;nh tr&#236;nh kỹ thuật ph&#237;a sau một Qwen Cloud MemoryAgent thật</h1>
+    <p>Phần lớn demo chatbot hackathon nh&#236;n kh&#225; thuyết phục trong một cuộc hội thoại. C&#226;u hỏi kh&#243; hơn l&#224;: chuyện g&#236; xảy ra sau khi refresh tab, kh&#225;ch quay lại ng&#224;y h&#244;m sau, hoặc một kh&#225;ch kh&#225;c d&#249;ng c&#249;ng t&#224;i khoản shop?</p>
+    <p>Đ&#243; l&#224; vấn đề t&#244;i muốn DOSClaw-Qwen trả lời. Đ&#226;y l&#224; một agent hỗ trợ kh&#225;ch h&#224;ng đa ng&#244;n ngữ cho SME, được x&#226;y dựng cho Global AI Hackathon Series with Qwen Cloud. Mục ti&#234;u kh&#244;ng chỉ l&#224; gọi một model. Mục ti&#234;u l&#224; x&#226;y một memory system nhỏ nhưng thật: c&#243; thể nhớ kh&#225;ch h&#224;ng qua nhiều session, giữ đ&#250;ng ranh giới tenant/customer, trả lời dựa tr&#234;n knowledge của shop, v&#224; cho gi&#225;m khảo thấy ch&#237;nh x&#225;c memory n&#224;o đ&#227; được recall trước khi agent trả lời.</p>
+    <p>Live demo hiện chạy tại:</p>
+    <p><a href="http://8.219.211.170/">http://8.219.211.170/</a></p>
+    <p>Public repository:</p>
+    <p><a href="https://github.com/JOY/DOSClaw-Qwen">https://github.com/JOY/DOSClaw-Qwen</a></p>
+    <h2>V&#236; sao b&#224;i to&#225;n n&#224;y kh&#244;ng chỉ l&#224; chatbot</h2>
+    <p>Kịch bản sản phẩm rất đời thường: một qu&#225;n cafe, ph&#242;ng kh&#225;m, tiệm sửa chữa, hoặc local store n&#243;i chuyện với kh&#225;ch quen mỗi ng&#224;y.</p>
+    <p>Một support agent hữu &#237;ch n&#234;n nhớ c&#225;c th&#244;ng tin như:</p>
+    <ul>
+      <li>kh&#225;ch th&#237;ch oat milk</li>
+      <li>kh&#225;ch kh&#244;ng uống được sữa</li>
+      <li>kh&#225;ch đ&#227; mua sản phẩm g&#236; lần trước</li>
+      <li>một complaint vẫn đang chờ nh&#226;n vi&#234;n xử l&#253;</li>
+    </ul>
+    <p>Nhưng memory cũng nguy hiểm nếu n&#243; l&#224; global hoặc bị giấu đi. Nếu Customer A n&#243;i &quot;t&#244;i dị ứng sữa&quot;, Customer B kh&#244;ng được kế thừa th&#244;ng tin đ&#243;. Nếu agent n&#243;i &quot;t&#244;i nhớ bạn&quot;, UI phải cho thấy n&#243; nhớ g&#236; v&#224; memory đ&#243; đang nằm ở đ&#226;u. V&#236; vậy constraint thiết kế l&#224;:</p>
+    <blockquote><p>DOSClaw-Qwen phải h&#224;nh xử như một support agent c&#243; tr&#237; nhớ, nhưng tr&#237; nhớ đ&#243; phải scoped, visible, auditable, v&#224; testable.</p></blockquote>
+    <h2>Kiến tr&#250;c hệ thống</h2>
+    <p>App deploy l&#224; một Python application standalone, kh&#244;ng phải một mock frontend bọc quanh prompt ẩn. Main path:</p>
+    <pre><code>
+Browser UI
+  -&gt; FastAPI /api/chat
+  -&gt; ChatService
+       1. Load tenant + customer profile từ Postgres
+       2. Kiểm tra memory consent
+       3. Recall episodic memory qua Mem0Middleware
+       4. Build support context gọn
+       5. Gọi AgentScope 2.0 agent d&#249;ng Qwen Cloud
+       6. Cho tools search knowledge hoặc tạo human handoff
+       7. Persist memory/profile updates sau reply
+  -&gt; Stream answer + memory/model/tool metadata về UI
+</code></pre>
+    <p>Runtime stack:</p>
+    <ul>
+      <li><strong>Agent runtime:</strong> AgentScope 2.0</li>
+      <li><strong>Chat model:</strong> Qwen Cloud / DashScope <code>qwen3.6-plus</code></li>
+      <li><strong>Embedding model:</strong> Qwen Cloud / DashScope <code>text-embedding-v4</code> với 1024 dimensions</li>
+      <li><strong>Episodic memory:</strong> Mem0Middleware</li>
+      <li><strong>Vector store cho mem0:</strong> Qdrant</li>
+      <li><strong>Structured state:</strong> Postgres cho tenants, customers, profiles, FAQ rows, analytics, v&#224; handoff tickets</li>
+      <li><strong>API v&#224; UI:</strong> FastAPI c&#249;ng static judge-facing web UI</li>
+      <li><strong>Deployment:</strong> Alibaba Cloud Elastic Container Instance với app, Postgres, Qdrant, v&#224; nginx sidecars</li>
+    </ul>
+    <p>Architecture diagram nằm trong repo:</p>
+    <p><a href="https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/architecture.svg">https://github.com/JOY/DOSClaw-Qwen/blob/main/docs/architecture.svg</a></p>
+    <h2>Memory design: hai lớp, một ranh giới</h2>
+    <p>Quyết định quan trọng nhất l&#224; kh&#244;ng xem &quot;memory&quot; như một c&#225;i bucket mơ hồ. DOSClaw-Qwen d&#249;ng hai lớp.</p>
+    <h3>1. Structured profile memory</h3>
+    <p>Structured profile memory lưu c&#225;c fact bền vững m&#224; business n&#234;n hiển thị v&#224; audit được, v&#237; dụ:</p>
+    <pre><code>
+{
+  &quot;name&quot;: &quot;Linh&quot;,
+  &quot;prefers&quot;: &quot;oat milk lattes&quot;,
+  &quot;lactose_intolerant&quot;: true,
+  &quot;last_order&quot;: &quot;oat latte + almond croissant&quot;
+}
+</code></pre>
+    <p>Lớp n&#224;y ph&#249; hợp với c&#225;c fact cần ổn định trong UI v&#224; dễ edit hoặc forget.</p>
+    <h3>2. Episodic memory qua Mem0Middleware</h3>
+    <p>Episodic memory lưu conversational memories v&#224; semantic recall. Đ&#226;y l&#224; nơi Qwen Cloud embeddings quan trọng: memories v&#224; FAQ rows c&#243; thể được retrieve theo nghĩa, kh&#244;ng chỉ exact keyword.</p>
+    <p>Multi-user boundary được giữ đơn giản v&#224; r&#245; r&#224;ng:</p>
+    <pre><code>
+mem0 user_id  = customer_id
+mem0 agent_id = tenant_id
+</code></pre>
+    <p>Nghĩa l&#224; c&#249;ng một backend c&#243; thể phục vụ nhiều shop v&#224; nhiều kh&#225;ch m&#224; kh&#244;ng trộn recall. Gi&#225;m khảo c&#243; thể dạy &quot;New Customer B&quot; một t&#234;n v&#224; tuổi, start một visible session mới, rồi hỏi agent c&#242;n nhớ g&#236;. Sau đ&#243; chuyển về &quot;Returning Customer A&quot; để kiểm tra preference cafe seeded vẫn t&#225;ch biệt.</p>
+    <h2>Qwen Cloud được d&#249;ng ở đ&#226;u</h2>
+    <p>Qwen Cloud được d&#249;ng ở hai nơi:</p>
+    <ol>
+      <li><strong>Reasoning v&#224; response generation</strong> qua DashScope chat model.</li>
+      <li><strong>Embeddings</strong> cho semantic memory v&#224; knowledge search.</li>
+    </ol>
+    <p>Proof code cho phần Qwen Cloud model wiring:</p>
+    <p><a href="https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/model.py">https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/model.py</a></p>
+    <p>Một constraint quan trọng l&#224; Mem0Middleware kh&#244;ng được &#226;m thầm fallback sang OpenAI path. Memory engine phải chạy qua c&#249;ng DashScope/Qwen stack với agent. Việc n&#224;y l&#224;m integration phức tạp hơn, nhưng gi&#250;p demo trung thực: model, embeddings, memory recall, v&#224; visible runtime metadata đều trỏ về c&#249;ng một Qwen Cloud-based system.</p>
+    <p>Live runtime endpoint expose proof như sau:</p>
+    <pre><code>
+{
+  &quot;chat_model&quot;: &quot;qwen3.6-plus&quot;,
+  &quot;embedding_model&quot;: &quot;text-embedding-v4&quot;,
+  &quot;embedding_dimensions&quot;: 1024,
+  &quot;agent_runtime&quot;: &quot;AgentScope 2.0&quot;,
+  &quot;memory_engine&quot;: &quot;Mem0Middleware&quot;,
+  &quot;vector_store&quot;: &quot;Qdrant server 127.0.0.1:6333&quot;,
+  &quot;memory_scope&quot;: &quot;tenant_id + customer_id&quot;
+}
+</code></pre>
+    <h2>V&#236; sao UI expose internals</h2>
+    <p>Với memory-agent demo, một c&#226;u trả lời mượt l&#224; chưa đủ. Gi&#225;m khảo cần biết hệ thống thật sự recall g&#236; hay chỉ sinh ra một c&#226;u nghe hợp l&#253;.</p>
+    <p>V&#236; vậy UI hiển thị:</p>
+    <ul>
+      <li>tenant/shop hiện tại</li>
+      <li>customer persona đang chọn</li>
+      <li>memory block đ&#227; recall</li>
+      <li>structured customer profile</li>
+      <li>Qwen model v&#224; embedding model đang chạy</li>
+      <li>memory backend</li>
+      <li>knowledge base search results</li>
+      <li>human handoff tickets</li>
+      <li>memory controls như search, add, update, history, forget, forget all</li>
+    </ul>
+    <p>Đ&#226;y kh&#244;ng chỉ l&#224; lựa chọn design. Đ&#226;y l&#224; lựa chọn debugging v&#224; trust. Nếu recall fail, lỗi hiện ra. Nếu chọn nhầm customer, scope hiện ra. Nếu agent d&#249;ng knowledge search hoặc handoff tool, evidence cũng hiện ra.</p>
+    <h2>Qu&#225; tr&#236;nh build</h2>
+    <p>Thứ tự implement được l&#224;m theo hướng test-driven.</p>
+    <p>Đầu ti&#234;n, t&#244;i verify AgentScope 2.0 API đ&#227; c&#224;i bằng introspection thay v&#236; tin rằng example cũ vẫn đ&#250;ng. AgentScope thay đổi nhanh, n&#234;n bước n&#224;y gi&#250;p tr&#225;nh build dự &#225;n tr&#234;n import path hoặc message type lỗi thời.</p>
+    <p>Sau đ&#243; t&#244;i implement pure memory-ranking layer trước. Phần n&#224;y c&#243; deterministic tests cho:</p>
+    <ul>
+      <li>time decay</li>
+      <li>memory ranking</li>
+      <li>profile merge behavior</li>
+      <li>empty/null profile values được xử l&#253; như removals</li>
+    </ul>
+    <p>Chỉ sau đ&#243; mới wire c&#225;c phần live: DashScope models, Mem0Middleware, Qdrant, Postgres, FastAPI endpoints, tools, v&#224; web UI.</p>
+    <p>Support tools được thiết kế theo hướng sản phẩm:</p>
+    <ul>
+      <li><code>knowledge_search</code> trả lời c&#226;u hỏi policy từ tenant-scoped FAQ rows</li>
+      <li><code>human_handoff</code> tạo ticket c&#243; thể audit khi agent cần escalate</li>
+      <li>memory admin endpoints cho ph&#233;p demo search, add, update, list history, v&#224; forget memories</li>
+    </ul>
+    <h2>Những lỗi kh&#243; nhất</h2>
+    <p>C&#225;c lỗi kh&#243; nhất kh&#244;ng phải l&#250;c n&#224;o cũng h&#224;o nho&#225;ng.</p>
+    <h3>1. API drift</h3>
+    <p>Agent frameworks thay đổi nhanh. Chỉ cần lệch một message class hoặc model constructor l&#224; to&#224;n bộ agent path hỏng. C&#225;ch xử l&#253; l&#224; xem installed runtime l&#224; source of truth v&#224; confirm bằng introspection trước khi code.</p>
+    <h3>2. Memory routing</h3>
+    <p>Memory phải được scope theo cả tenant v&#224; customer. Agent nhớ được một thứ l&#224; chưa đủ; n&#243; phải nhớ đ&#250;ng cho kh&#225;ch đ&#250;ng trong shop đ&#250;ng. Mapping <code>user_id=customer_id</code> v&#224; <code>agent_id=tenant_id</code> trở th&#224;nh core contract.</p>
+    <h3>3. Deployment streaming timeouts</h3>
+    <p>Live Alibaba Cloud deployment d&#249;ng nginx ph&#237;a trước app container. Streamed chat response d&#224;i c&#243; thể fail nếu proxy buffering v&#224; read timeout sai. Nginx path cho <code>/api/chat</code> cần read/send timeout d&#224;i v&#224; tắt buffering; nếu kh&#244;ng, app vẫn healthy nhưng chat request trả 502.</p>
+    <h3>4. Demo UX</h3>
+    <p>C&#225;c bản UI đầu ti&#234;n qu&#225; kh&#243; judge. Memory l&#224; thật, nhưng chưa đủ r&#245;. UI cuối c&#249;ng trở th&#224;nh một &quot;live inspector&quot;: chat vẫn l&#224; trung t&#226;m, nhưng b&#234;n phải hiển thị memory, profile, knowledge, handoff, v&#224; runtime evidence.</p>
+    <h2>Gi&#225;m khảo c&#243; thể test g&#236;</h2>
+    <p>Demo được thiết kế quanh c&#225;c scenario lặp lại được:</p>
+    <ol>
+      <li>Chọn <strong>New Customer B</strong>.</li>
+      <li>N&#243;i với agent: <code>I&#39;m JOY, 18 YO</code>.</li>
+      <li>Start một visible session mới.</li>
+      <li>Hỏi: <code>What do you remember about me?</code></li>
+      <li>Chuyển sang customer kh&#225;c để kiểm tra memory kh&#244;ng leak.</li>
+      <li>Hỏi một policy question v&#224; kiểm tra answer đến từ tenant knowledge base.</li>
+      <li>Trigger complaint v&#224; x&#225;c nhận human handoff ticket được tạo.</li>
+    </ol>
+    <p>Đ&#226;y kh&#244;ng phải c&#225;c trang script ri&#234;ng. Ch&#250;ng exercise c&#249;ng <code>/api/chat</code>, memory, knowledge, v&#224; handoff paths.</p>
+    <h2>Điều t&#244;i tự h&#224;o</h2>
+    <p>T&#244;i tự h&#224;o v&#236; DOSClaw-Qwen đủ nhỏ cho hackathon nhưng vẫn c&#243; system boundaries thật:</p>
+    <ul>
+      <li>Qwen Cloud powers cả chat v&#224; embeddings.</li>
+      <li>AgentScope 2.0 chạy agent thay v&#236; một prompt function tự chế.</li>
+      <li>Mem0Middleware cung cấp episodic memory thật.</li>
+      <li>Qdrant lưu semantic memory vectors.</li>
+      <li>Postgres lưu structured profile v&#224; support operations data.</li>
+      <li>UI l&#224;m memory path visible thay v&#236; giấu đi.</li>
+      <li>Live Alibaba deployment được verify bằng smoke tests sau mỗi update.</li>
+    </ul>
+    <p>Tổ hợp n&#224;y l&#224;m project giống phi&#234;n bản nhỏ nhất c&#243; &#237;ch của một support memory service hơn l&#224; một chatbot demo.</p>
+    <h2>Điều t&#244;i học được</h2>
+    <p>B&#224;i học lớn nhất l&#224; memory quality kh&#244;ng chỉ l&#224; model problem. N&#243; l&#224; product v&#224; systems problem.</p>
+    <p>Một agent cần:</p>
+    <ul>
+      <li>retrieval t&#236;m đ&#250;ng fact</li>
+      <li>scoping để tr&#225;nh cross-customer leakage</li>
+      <li>structured memory cho fact cần auditability</li>
+      <li>episodic memory cho conversational context</li>
+      <li>consent v&#224; forgetting controls</li>
+      <li>UI evidence để con người debug trust</li>
+    </ul>
+    <p>Qwen Cloud gi&#250;p giữ reasoning v&#224; embedding path trong c&#249;ng một ecosystem. AgentScope cho project một agent runtime. Mem0Middleware cho project một memory engine thật. Nhưng sản phẩm chỉ trở n&#234;n dễ hiểu khi c&#225;c phần đ&#243; được expose r&#245; trong UI v&#224; verify qua live scenarios.</p>
+    <h2>Tiếp theo</h2>
+    <p>Bước tiếp theo l&#224; biến DOSClaw-Qwen từ hackathon demo th&#224;nh một SME support memory service c&#243; thể deploy thật:</p>
+    <ul>
+      <li>memory consolidation tốt hơn</li>
+      <li>recall-quality analytics s&#226;u hơn</li>
+      <li>staff assignment v&#224; SLA timers cho handoff tickets</li>
+      <li>nhiều tenant onboarding flows hơn</li>
+      <li>customer consent v&#224; forgetting UX mạnh hơn</li>
+      <li>production deployment options cho shop thật</li>
+    </ul>
+    <p>Core idea vẫn giữ nguy&#234;n: customer-support AI kh&#244;ng chỉ n&#234;n trả lời tốt. N&#243; n&#234;n nhớ một c&#225;ch c&#243; tr&#225;ch nhiệm.</p>
     <p>Live demo: <a href="http://8.219.211.170/">http://8.219.211.170/</a></p>
     <p>GitHub: <a href="https://github.com/JOY/DOSClaw-Qwen">https://github.com/JOY/DOSClaw-Qwen</a></p>
     <p>Qwen Cloud proof code: <a href="https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/model.py">https://github.com/JOY/DOSClaw-Qwen/blob/main/dosclaw_qwen/model.py</a></p>
